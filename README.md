@@ -40,9 +40,11 @@ $  npm install -g node-gyp
 
 ### 작성할 내용
 
+- `hwId`가 `awesome`인 하드웨어를 예로 든다면,
+
 - 구현할 내용은  `IAwesomeControl.ts` , `AwesomeControl.ts`과 `index.ts` 파일입니다.
     - `IAwesomeControl.ts` 은 하드웨어 인터페이스에 대한 내용이고
-    - `AwesomeControl.ts` 은 하드웨어 인터페이스의 구현체입니다.
+    - `AwesomeControl.ts` 은 하드웨어 인터페이스의 구현체입니다. 실제로 하드웨어와 통신하는 코드가 포함됩니다.
     - `index.ts`는 기타 부가적인 정보와 함께 인터페이스와 구현체를 `export`합니다.
 
 ### TODO 
