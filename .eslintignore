@@ -1,0 +1,12 @@
+out/
+logs/
+.webpack/
+logs/
+build/
+dist/
+node_modules/
+*.min.js
+*.css
+*.module.css
+*.svg
+*.d.ts

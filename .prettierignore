@@ -1,0 +1,9 @@
+out/
+.webpack/
+logs/
+build/
+dist/
+node_modules/
+**/dist/**
+*.png
+*.svg
