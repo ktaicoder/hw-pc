@@ -1,4 +1,4 @@
-import { Socket } from 'socket.io/dist'
+import { Socket } from 'socket.io'
 import { IHwCmdRequest, IHwControl } from 'src/custom-types/hw-types'
 import { IHwContext, SerialPortHelper } from 'src/custom/serial-port'
 import { HwRegistry } from './HwRegistry'

@@ -1,10 +1,9 @@
 import { Menu as MenuIcon, MenuOpen as MenuOpenIcon } from '@mui/icons-material'
-import { IconButton, InputBase, Toolbar, Typography, useTheme } from '@mui/material'
+import { IconButton, Toolbar, Typography, useTheme } from '@mui/material'
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar'
-import SearchIcon from '@mui/icons-material/Search'
-import { SIDEMENU_WIDTH } from '../../main-layout-constants'
-import { styled, alpha } from '@mui/material/styles'
+import { styled } from '@mui/material/styles'
 import { Box } from '@mui/system'
+import { SIDEMENU_WIDTH } from '../../main-layout-constants'
 
 interface AppBarProps extends MuiAppBarProps {
     open?: boolean

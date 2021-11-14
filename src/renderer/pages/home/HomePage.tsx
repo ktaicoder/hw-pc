@@ -23,6 +23,7 @@ export default function Home() {
         }
     }, [hwServerState?.hwId])
 
+    console.log('HOME Compoent Render', { hwInfo })
     return hwInfo ? (
         <DeviceSelectionView hwInfo={hwInfo} />
     ) : (

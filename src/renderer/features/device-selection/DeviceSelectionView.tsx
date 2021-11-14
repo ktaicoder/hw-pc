@@ -246,8 +246,9 @@ export default function DeviceSelectionView(props: Props) {
                                 alignItems: 'center',
                             }}
                         >
-                            {pcDrivers.map((driver) => (
+                            {pcDrivers.map((driver, idx) => (
                                 <Button
+                                    key={driver.uri}
                                     variant="contained"
                                     sx={{ width: 180, height: 40 }}
                                     onClick={() => _onClickDriver(driver.uri)}

@@ -1,7 +1,7 @@
 import { shell } from 'electron'
 import { injectable } from 'inversify'
 import path from 'path'
-import { BehaviorSubject, filter, firstValueFrom, take, timeout, timer } from 'rxjs'
+import { BehaviorSubject, filter, firstValueFrom, take, timeout } from 'rxjs'
 import SerialPort from 'serialport'
 import { controls as HwRegistry } from 'src/custom'
 import { IHwInfo } from 'src/custom-types/hw-types'
@@ -68,14 +68,6 @@ export class HwService implements IHwService {
         if (!readable) return false
 
         return true
-        // const sp = new SerialPort(portPath, {
-        //     autoOpen: true,
-        //     baudRate: 38400,
-        //     lock: false,
-        // })
-        // sp.open()
-        // sp.close()
-        // return sp.isOpen
     }
 
     async downloadDriver(driverUri: string): Promise<void> {
@@ -95,8 +87,6 @@ export class HwService implements IHwService {
             shell.openPath(path.resolve(folder, firmwareUri))
         }
     }
-
-    private initControls() {}
 
     private findSerialPortInfo = async (portPath: string): Promise<SerialPort.PortInfo | undefined> => {
         const list = await SerialPort.list()
@@ -129,7 +119,7 @@ export class HwService implements IHwService {
 
         const requestHandler = await this._controlManager.createSerialPortRequestHandler(hwId, portPath)
 
-        const server = new HwServer(hwId, requestHandler, { listenPort: 4000 })
+        const server = new HwServer(hwId, requestHandler)
         await firstValueFrom(
             server.observeRunning().pipe(
                 filter((it) => it === true),
@@ -162,20 +152,22 @@ export class HwService implements IHwService {
     }
 
     async stopServer(): Promise<void> {
+        console.log('HwService stopServer()')
         if (this._serverDisposeFn) {
             await this._serverDisposeFn?.()
         }
         this._serverDisposeFn = undefined
         const state = this.hwServerState$.value ?? {}
         state.running = false
-        this.hwServerState$.next(state)
+        this.hwServerState$.next({ ...state })
     }
 
     async stop(): Promise<void> {
+        console.log('HwService stop()')
         if (this._serverDisposeFn) {
             await this._serverDisposeFn?.()
         }
         this._serverDisposeFn = undefined
-        this.hwServerState$.next({ running: false })
+        this.hwServerState$.next({ hwId: undefined, running: false })
     }
 }

@@ -1,5 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+// const { IgnorePlugin } = require('webpack');
 
 module.exports = [
     new ForkTsCheckerWebpackPlugin({
@@ -7,5 +8,5 @@ module.exports = [
             // 기본값 2048은 개발모드에서 메모리 부족 에러가 발생
             memoryLimit: 8 * 1026
         }
-    })
+    }),
 ];
