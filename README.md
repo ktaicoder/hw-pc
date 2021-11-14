@@ -32,7 +32,9 @@ $  npm install -g node-gyp
 ## 커스텀 하드웨어 작성
 
 -  모든 하드웨어에는 `하드웨어 ID(hwId)`를 부여합니다.
--  `src/custom/hw` 폴더에 `hwId` 폴더를 만드세요. hwId는 원하는 것으로 결정하면 되고, 만약 hwId가 `awesome`인 하드웨어를 추가한다면 `src/custom/hw/awesome` 폴더를 만들면 됩니다.
+-  `src/custom/hw` 폴더에 `hwId` 폴더를 만드세요. 
+- hwId는 원하는 것으로 결정하면 되고, 
+- 만약 hwId가 `awesome`인 하드웨어를 추가한다면 src/custom/hw/`awesome` 폴더를 만들면 됩니다.
 
 ### `hwId` 규칙
 - `hwId`는 소문자로 시작해야 하고, 공백이 없습니다.
