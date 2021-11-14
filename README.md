@@ -6,13 +6,6 @@
 
 -   패키지 관리 도구로는 `yarn`을 사용합니다. `npm` 사용해도 되지만, 여기서는 `yarn`을 기준으로 설명합니다.
 
--   `yarn` 설치는 검색을 통해서 설치하세요. `choco`를 사용중인 윈도우 사용자라면 다음과 같이 설치할 수 있습니다.
-
-```dos
->  choco install yarn
-1.22.15
-```
-
 ## Quick Start
 
 빠르게 실행하는 방법은 다음과 같습니다.
@@ -21,7 +14,6 @@
 $  git clone https://github.com/ktaicoder/hw-pc.git
 $  cd hw-pc
 $  yarn install
-$  yarn prebuild
 $  yarn dev
 ```
 
@@ -37,21 +29,21 @@ $  yarn dev
 $  npm install -g node-gyp
 ```
 
-## 서브 모듈 설명
+## 커스텀 하드웨어 작성
 
--   PC용 프로그램은 두 개의 git 서브 모듈을 사용합니다.
+-  모든 하드웨어에는 `하드웨어 ID(hwId)`를 부여합니다.
+-  `src/custom/hw` 폴더에 `hwId` 폴더를 만드세요. hwId는 원하는 것으로 결정하면 되고, 만약 hwId가 `awesome`인 하드웨어를 추가한다면 `src/custom/hw/awesome` 폴더를 만들면 됩니다.
 
-    1. `hw-control`: https://github.com/aicoders/hw-control.git
-    1. `hw-proto` : https://github.com/aicoders/hw-proto.git
+### `hwId` 규칙
+- `hwId`는 소문자로 시작해야 하고, 공백이 없습니다.
+- `camel case` 표기법을 권장합니다.
 
--   예를 들어 설명하는 것이 좋겠습니다. `hw-proto`에서 `LED를 켜라`는 요청을 보내면, `hw-control`은 이 요청을 받아서, 하드웨어에 전달하는 방식으로 동작합니다. 또 `hw-control`은 하드웨어에서 값을 읽어서 응답을 하기도 합니다. 둘 사이의 통신은 웹소켓을 이용하며, `hw-control`은 웹소켓의 서버측에 해당하고, `hw-proto`는 클라이언트에 해당합니다.
+### 작성할 내용
 
-### `hw-control` 모듈
+- 구현할 내용은  `IAwesomeControl.ts` , `AwesomeControl.ts`과 `index.ts` 파일입니다.
+    - `IAwesomeControl.ts` 은 하드웨어 인터페이스에 대한 내용이고
+    - `AwesomeControl.ts` 은 하드웨어 인터페이스의 구현체입니다.
+    - `index.ts`는 기타 부가적인 정보와 함께 인터페이스와 구현체를 `export`합니다.
 
--   `hw-control`은 하드웨어를 제어하는 기능이 담긴 라이브러리입니다. 웹소켓 명령을 받아서 하드웨어에 전달합니다. 현재는 `USB-TO-SERIAL`만 지원하며, 블루투스도 곧 지원할 예정입니다.
-
-### `hw-proto` 모듈
-
--   `hw-proto`는 웹소켓 클라이언트라고 할 수 있는데, 사실은 웹소켓 프로토콜이라고 하는 것이 더 정확합니다. 웹소켓을 통해 제어 명령을 전달하는 기능이 있는 라이브러리이기 때문입니다.
-
--   이 라이브러리를 이용한 애플리케이션은 NodeJS 기반의 콘솔용 프로그램도 가능하고, 웹페이지도 가능합니다. `mini-demo/src` 폴더에 콘솔용 프로그램의 샘플이 있습니다.
+### TODO 
+- 더 자세한 내용을 곧 작성하겠습니다.
