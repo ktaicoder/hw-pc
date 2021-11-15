@@ -30,8 +30,8 @@ if (!isTest) {
         logger: logger.error.bind(logger),
         reportButton: (error) => {
             openNewGitHubIssue({
-                user: 'cp949',
-                repo: 'AIMK-HW',
+                user: 'ktaicoder',
+                repo: 'hw-pc',
                 template: 'bug.md',
                 title: `bug: ${(error.message ?? '').substring(0, 100)}`,
                 body: `## Environment

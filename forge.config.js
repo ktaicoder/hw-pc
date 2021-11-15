@@ -8,7 +8,7 @@ module.exports = {
         {
             name: "@electron-forge/maker-squirrel",
             config: {
-                name: "aimk_hw"
+                name: "aicodingblock-hw"
             }
         },
         {
@@ -36,7 +36,7 @@ module.exports = {
                     config: "./webpack.renderer.config.js",
                     entryPoints: [
                         {
-                            html: "./public/index.html",
+                            html: "./src/index.html",
                             js: "./src/renderer/index.tsx",
                             preload: {
                                 js: './src/preload/index.ts'
