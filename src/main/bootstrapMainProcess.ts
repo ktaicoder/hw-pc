@@ -103,19 +103,22 @@ async function customInit() {
     }
 
     if (mainWindow) {
-        // mainWindow.webContents.session.setPermissionCheckHandler(
-        //     (webContents, permission, requestingOrigin, details) => {
-        //         if (permission === 'serial' && details.securityOrigin === 'file:///') {
-        //             return true
-        //         }
-        //     },
-        // )
-        // mainWindow.webContents.session.setDevicePermissionHandler((details) => {
-        //     if (details.deviceType === 'serial' && details.origin === 'file://') {
-        //         return true
-        //     }
-        //     return false
-        // })
+        mainWindow.webContents.session.setPermissionCheckHandler(
+            (webContents, permission, requestingOrigin, details) => {
+                console.log('setPermissionCheckHandler', { webContents, permission, requestingOrigin, details })
+                if (permission === 'serial' && details.securityOrigin === 'file:///') {
+                    return true
+                }
+                return true
+            },
+        )
+        mainWindow.webContents.session.setDevicePermissionHandler((details) => {
+            console.log('setDevicePermissionHandler', { details })
+            if (details.deviceType === 'serial' && details.origin === 'file://') {
+                return true
+            }
+            return true
+        })
         // mainWindow.webContents.session.on('select-serial-port', (event, portList, webContents, callback) => {
         //     event.preventDefault()
         //     logger.info('select-serial-port: ' + portList?.map((it) => it.portId).join(','))
