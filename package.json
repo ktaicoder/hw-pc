@@ -1,8 +1,8 @@
 {
   "name": "@ktaicoder/hw-pc",
-  "productName": "AiCodingBlockHW",
-  "version": "1.0.1",
-  "description": "AiCodingBlockHW",
+  "productName": "AiCodingBlock-HW",
+  "version": "1.0.2",
+  "description": "AiCodingBlock hardware electron application",
   "main": ".webpack/main",
   "scripts": {
     "postinstall": "rimraf node_modules/socket.io/client-dist",
@@ -15,12 +15,6 @@
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx ."
   },
-  "keywords": [],
-  "author": {
-    "name": "ktaicoder",
-    "email": "ktaicodingblock.dev@gmail.com"
-  },
-  "license": "MIT",
   "config": {
     "forge": "./forge.config.js"
   },
@@ -114,5 +108,11 @@
     "ts-loader": "^9.2.2",
     "ts-node": "^10.3.0",
     "typescript": "^4.3.5"
-  }
+  },
+  "keywords": [],
+  "author": {
+    "name": "ktaicoder",
+    "email": "ktaicodingblock.dev@gmail.com"
+  },
+  "license": "MIT"
 }
