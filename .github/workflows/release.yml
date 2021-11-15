@@ -30,8 +30,8 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: 14
-    - run: npm install
-    - run: npm run rebuild
+    - run: yarn install
+    - run: yarn rebuild
     - name: Make
       env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
