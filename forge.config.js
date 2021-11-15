@@ -1,7 +1,7 @@
 module.exports = {
     packagerConfig: {
-        name: 'AiCodingBlockHW',
-        executableName: 'AiCodingBlockHW',
+        name: 'aicodingblock-hw',
+        executableName: 'aicodingblock-hw',
         icon: 'build-resources/icons/icon',
     },
     makers: [
@@ -37,7 +37,7 @@ module.exports = {
                     entryPoints: [
                         {
                             html: "./src/index.html",
-                            js: "./src/renderer/index.tsx",
+                            js: "./src/renderer.tsx",
                             preload: {
                                 js: './src/preload/index.ts'
                             },
