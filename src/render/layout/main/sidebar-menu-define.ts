@@ -43,10 +43,16 @@ const menusTemp: (ILabel | IDivider | IMenu | ISection)[] = [
         title: 'SERIAL 장치',
         href: '/inspect-serial',
     },
+    // {
+    //     type: 'menu',
+    //     icon: 'bluetooth',
+    //     title: 'BLUETOOTH 장치',
+    //     href: '/inspect-hid',
+    // },
     {
         type: 'menu',
-        icon: 'bluetooth',
-        title: 'BLUETOOTH 장치',
+        icon: 'usb',
+        title: 'HID 장치',
         href: '/inspect-hid',
     },
     {
