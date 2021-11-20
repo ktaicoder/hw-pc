@@ -1,6 +1,17 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import { Alert, Button, Grid, IconButton, Toolbar, Tooltip, Typography } from '@mui/material'
-import { Box } from '@mui/system'
+import {
+    Container,
+    Box,
+    Alert,
+    Button,
+    ButtonBase,
+    Grid,
+    IconButton,
+    Toolbar,
+    Tooltip,
+    Typography,
+} from '@mui/material'
+
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { PulseLoader } from 'react-spinners'
 import { useUnmount } from 'react-use'
@@ -283,41 +294,65 @@ export default function DeviceSelectionView(props: Props) {
                     </Grid>
                 </Grid>
                 <Box mt={10}>
-                    {hwServerState?.running === true ? (
-                        <Alert
-                            severity="info"
-                            sx={{
-                                display: 'flex',
-                                mt: 1,
-                                width: 300,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                backgroundColor: '#EBF2F8',
-                                margin: '0 auto',
-                            }}
-                            icon={false}
-                        >
-                            서버 실행중...
-                        </Alert>
-                    ) : (
-                        <Alert
-                            severity="warning"
-                            sx={{
-                                display: 'flex',
-                                mt: 1,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                            }}
-                            icon={false}
-                        >
-                            <ul>
-                                {portInfos.length === 0 && <li>장치를 연결해주세요.</li>}
+                    <Container maxWidth="sm" disableGutters>
+                        {hwServerState?.running === true ? (
+                            <Alert
+                                severity="info"
+                                sx={{
+                                    display: 'flex',
+                                    mt: 1,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    backgroundColor: '#EBF2F8',
+                                    margin: '0 auto',
+                                }}
+                                icon={false}
+                            >
+                                <ul>
+                                    <li>장치에 연결되었습니다. </li>
+                                    <li>이제 블록코딩으로 장치를 제어할 수 있습니다.</li>
+                                </ul>
+                                <ButtonBase
+                                    component="div"
+                                    onClick={_onClickChrome}
+                                    sx={{
+                                        ml: 4,
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        px: 2,
+                                        py: 1,
+                                        border: '1px solid #01415E',
+                                        borderRadius: 1,
+                                    }}
+                                >
+                                    <Image sx={{ width: 20, height: 20, mr: 1 }} src="static/images/ic_chrome.png" />
+                                    <Typography variant="body1" sx={{ fontSize: '0.9rem', color: '#01415E' }}>
+                                        블록 코딩 실행
+                                    </Typography>
+                                </ButtonBase>
+                            </Alert>
+                        ) : (
+                            <Alert
+                                severity="warning"
+                                sx={{
+                                    display: 'flex',
+                                    mt: 1,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                }}
+                                icon={false}
+                            >
+                                <ul>
+                                    {portInfos.length === 0 && <li>장치를 연결해주세요.</li>}
 
-                                <li>장치를 연결했는데 연결포트가 보이지 않는 경우 드라이버를 설치해주세요.</li>
-                            </ul>
-                        </Alert>
-                    )}
+                                    <li>장치를 연결했는데 연결포트가 보이지 않는 경우 드라이버를 설치해주세요.</li>
+                                </ul>
+                            </Alert>
+                        )}
+                    </Container>
                 </Box>
+
                 {/*
                 <Box>
                     <Typography variant="h6">장치 정보</Typography>
