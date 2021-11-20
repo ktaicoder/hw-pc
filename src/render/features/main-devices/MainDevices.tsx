@@ -1,14 +1,27 @@
 import RefreshIcon from '@mui/icons-material/Refresh'
-import { Box, Grid, IconButton, Tooltip } from '@mui/material'
-import { styled } from '@mui/material/styles'
+import { Box, Grid, IconButton } from '@mui/material'
 import ToggleButton from '@mui/material/ToggleButton'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useMeasure } from 'react-use'
 import { IHwInfo } from 'src/custom-types/hw-types'
+import Image from 'src/render/components/Image'
 import MainLayoutContext from 'src/render/layout/main/MainLayoutContext'
 import DeviceGridItem from './components/device-grid-item/DeviceGridItem'
 import { useHwInfoList } from './useHwInfoList'
+import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip'
+import { styled } from '@mui/material/styles'
+
+const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+        backgroundColor: theme.palette.common.white,
+        color: 'rgba(0, 0, 0, 0.87)',
+        boxShadow: theme.shadows[1],
+        fontSize: 11,
+    },
+}))
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
     '& .MuiToggleButtonGroup-grouped': {
@@ -128,7 +141,16 @@ export default function MainDevices() {
     }
 
     return (
-        <Box sx={{ position: 'relative', flexGrow: 1, px: 2, display: 'flex', flexDirection: 'column' }}>
+        <Box
+            sx={{
+                position: 'relative',
+                flexGrow: 1,
+                px: 2,
+                display: 'flex',
+                border: '0px solid red',
+                flexDirection: 'column',
+            }}
+        >
             <Box
                 sx={{
                     position: 'fixed',
@@ -197,7 +219,7 @@ export default function MainDevices() {
                     </Tooltip>
                 </Box>
             </Box>
-            <Box sx={{ flexGrow: 1, py: 1, mt: 9 }} ref={contentDivRef}>
+            <Box sx={{ flexGrow: 1, py: 1, mt: 9, position: 'relative' }} ref={contentDivRef}>
                 <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
                     {deviceList.map((device, i) => (
                         <Grid item lg={3} md={4} sm={6} xs={12} key={device.hwId}>
@@ -211,6 +233,35 @@ export default function MainDevices() {
                     ))}
                 </Grid>
             </Box>
+            <Box
+                sx={{
+                    position: 'absolute',
+                    background: 'rgba(0,0,0, 0.05)',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: '28px',
+                }}
+            />
+            <LightTooltip title="안녕~">
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        width: 80,
+                        height: 80,
+                        bottom: 16,
+                        right: 32,
+                    }}
+                >
+                    <Image
+                        sx={{
+                            width: '100%',
+                            height: '100%',
+                        }}
+                        src="static/images/robot_167.svg"
+                    />
+                </Box>
+            </LightTooltip>
         </Box>
     )
 }

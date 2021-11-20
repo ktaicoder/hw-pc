@@ -83,6 +83,8 @@ function MainLayout(props: Props) {
                     <Box
                         sx={{
                             flexGrow: 1,
+                            display: 'flex',
+                            flexDirection: 'column',
                         }}
                     >
                         {children}
