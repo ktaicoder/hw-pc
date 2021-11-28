@@ -1,16 +1,15 @@
 import { shell } from 'electron'
 import { injectable } from 'inversify'
 import path from 'path'
-import { BehaviorSubject, filter, firstValueFrom, take, timeout } from 'rxjs'
+import { BehaviorSubject, Subscription } from 'rxjs'
 import SerialPort from 'serialport'
-import { controls as HwRegistry } from 'src/custom'
 import { IHwInfo } from 'src/custom-types/hw-types'
+import { HwManager } from 'src/hw-server/HwManager'
+import { HwServer } from 'src/hw-server/HwServer'
 import { lazyInject } from 'src/services/container'
 import { IContextService } from '../context/interface'
 import { ISerialPortService } from '../serialport/interface'
 import serviceIdentifier from '../serviceIdentifier'
-import { HwControlManager } from './HwRequestHandler'
-import { HwServer } from './HwServer'
 import { HwServerState, IHwService } from './interface'
 
 @injectable()
@@ -21,53 +20,81 @@ export class HwService implements IHwService {
     /**
      * @override
      */
-    public hwServerState$ = new BehaviorSubject<HwServerState>({ running: false })
-
-    private _controlManager = new HwControlManager()
-    private _serverDisposeFn: (() => Promise<void>) | undefined = undefined
+    public hwServerState$ = new BehaviorSubject<HwServerState>({ running: false, hwId: undefined })
+    private _hwServer: HwServer
+    private _hwManager: HwManager
+    private _hwServerSubscription?: Subscription | null = null
 
     constructor() {
-        // empty
+        this._hwManager = new HwManager()
+        this._hwServer = new HwServer(this._hwManager)
+        const subscription = this._hwServer.observeRunning().subscribe((running) => {
+            this.updateStateRunning(running)
+        })
+        subscription.add(
+            this._hwManager.observeHwIds().subscribe((hwIds) => {
+                const prev = this.hwServerState$.value
+                if (hwIds.length === 0) {
+                    this.updateStateHwId(undefined)
+                } else {
+                    const hwId = prev.hwId
+                    if (hwId) {
+                        this.updateStateHwId(hwIds.includes(hwId) ? hwId : undefined)
+                    }
+                }
+            }),
+        )
+        this._hwServerSubscription = subscription
+        this._hwServer.start()
+    }
+
+    private updateStateHwId = (hwId: string | undefined) => {
+        const prev = { ...this.hwServerState$.value }
+        prev.hwId = hwId
+        this.hwServerState$.next(prev)
+    }
+
+    private updateStateRunning = (running: boolean) => {
+        const prev = { ...this.hwServerState$.value }
+        prev.running = running
+        this.hwServerState$.next(prev)
     }
 
     async getHwServerState(): Promise<HwServerState> {
         return this.hwServerState$.value
     }
 
-    private _onStop = () => {
-        console.log('hw service stopped')
-        this.stop()
-    }
-
     async infoList(): Promise<IHwInfo[]> {
         try {
-            return Object.values(HwRegistry).map((it) => it.info)
+            return this._hwManager.list().map((it) => it.info)
         } catch (err) {
             console.log('error', err)
             return []
         }
     }
 
-    async findInfoById(hwId: string): Promise<IHwInfo> {
-        return HwRegistry[hwId].info
+    async findInfoById(hwId: string): Promise<IHwInfo | null> {
+        return this._hwManager.findHw(hwId)?.info ?? null
     }
 
     async isSupportHw(hwId: string): Promise<boolean> {
-        return hwId in HwRegistry
+        return this._hwManager.findHw(hwId) ? true : false
     }
 
     async serialPortList(hwId: string): Promise<SerialPort.PortInfo[]> {
-        const hw = HwRegistry[hwId]
+        const hw = this._hwManager.findHw(hwId)
+        if (!hw) return []
         const list = await this.serialPortService.list()
+        if (!hw.operator.isMatch) {
+            console.log('isMatch 함수가 없습니다. 전체 시리얼포트를 리턴합니다')
+            return list
+        }
         return list.filter(hw.operator.isMatch)
     }
 
+    // TODO 이름 변경, checkReadable
     async isReadable(hwId: string, portPath: string): Promise<boolean> {
-        const readable = this._controlManager.isHwReady(hwId)
-
-        if (!readable) return false
-
-        return true
+        return this._hwManager.isRegisteredHw(hwId)
     }
 
     async downloadDriver(driverUri: string): Promise<void> {
@@ -94,80 +121,32 @@ export class HwService implements IHwService {
     }
 
     /**
-     * 하드웨어를 선택하면, 동작중인 서버를 중지시킨다
+     * 하드웨어를 선택하기
      * @param hwId
      * @returns
      */
     async selectHw(hwId: string): Promise<void> {
-        const state = this.hwServerState$.value ?? {}
-        if (state.hwId === hwId) {
-            return
+        this._hwManager.selectHw(hwId)
+        this.updateStateHwId(hwId)
+        if (!this._hwServer.isRunning) {
+            this._hwServer.start()
         }
-        await this.stopServer()
-        this.hwServerState$.next({ hwId, running: false })
     }
 
-    async start(hwId: string, portPath: string): Promise<void> {
-        await this.stopServer()
-        console.log(`hw service starting: ${hwId},  ${portPath}`)
+    async unselectHw(hwId: string): Promise<void> {
+        this._hwManager.unselectHw(hwId)
+        this.updateStateHwId(undefined)
+    }
 
-        const portInfo = await this.findSerialPortInfo(portPath)
-        if (!portInfo) {
-            console.log('cannot find serialPort:' + portPath)
-            return
-        }
-
-        const requestHandler = await this._controlManager.createSerialPortRequestHandler(hwId, portPath)
-
-        const server = new HwServer(hwId, requestHandler)
-        await firstValueFrom(
-            server.observeRunning().pipe(
-                filter((it) => it === true),
-                timeout(5000),
-            ),
-        )
-        console.log('hw service started')
-        this.hwServerState$.next({ hwId, running: true })
-
-        const subscription = server
-            .observeRunning()
-            .pipe(
-                filter((it) => it === false),
-                take(1),
-            )
-            .subscribe(() => {
-                this._onStop()
-            })
-
-        this._serverDisposeFn = async () => {
-            try {
-                await server.stop()
-            } catch (ignore: any) {
-                console.log(ignore.message)
-            }
-            try {
-                subscription.unsubscribe()
-            } catch (ignore: any) {}
+    async selectSerialPort(hwId: string, portPath: string): Promise<void> {
+        this._hwManager.selectSerialPort(hwId, portPath)
+        this.updateStateHwId(hwId)
+        if (!this._hwServer.isRunning) {
+            this._hwServer.start()
         }
     }
 
     async stopServer(): Promise<void> {
-        console.log('HwService stopServer()')
-        if (this._serverDisposeFn) {
-            await this._serverDisposeFn?.()
-        }
-        this._serverDisposeFn = undefined
-        const state = this.hwServerState$.value ?? {}
-        state.running = false
-        this.hwServerState$.next({ ...state })
-    }
-
-    async stop(): Promise<void> {
-        console.log('HwService stop()')
-        if (this._serverDisposeFn) {
-            await this._serverDisposeFn?.()
-        }
-        this._serverDisposeFn = undefined
-        this.hwServerState$.next({ hwId: undefined, running: false })
+        this.updateStateRunning(false)
     }
 }

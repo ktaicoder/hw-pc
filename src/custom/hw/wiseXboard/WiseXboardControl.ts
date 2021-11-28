@@ -1,6 +1,5 @@
 import SerialPort, { parsers } from 'serialport'
-import { ISerialPortInfo } from 'src/custom-types/base-types'
-import { IHwContext, SerialPortHelper } from 'src/custom/serial-port'
+import { IHwContext, SerialPortHelper, ISerialPortInfo } from 'src/custom-types'
 import { IWiseXboardControl } from './IWiseXboardControl'
 
 const DEBUG = true
@@ -10,15 +9,26 @@ const DELIMITER = Buffer.from([0x52, 0x58, 0x3d, 0x0, 0x0e])
 const chr = (ch: string): number => ch.charCodeAt(0)
 
 /**
- * 하드웨어 서비스
+ * 하드웨어 제어
  */
 export class WiseXboardControl implements IWiseXboardControl {
     private _context: IHwContext | null = null
 
+    /**
+     * 하드웨어 컨텍스트
+     * 프레임워크에서 Injection 해준다.
+     * @param context
+     */
     setContext = (context: IHwContext | undefined | null) => {
         this._context = context ?? null
     }
 
+    /**
+     * 시리얼포트 헬퍼 생성
+     * 프레임워크에서 호출한다.
+     * @param path 시리얼포트 패스(ex: COM1, /dev/ttyUSB0, ...)
+     * @returns SerialPortHelper
+     */
     static createSerialPortHelper = (path: string): SerialPortHelper => {
         const sp = new SerialPort(path, {
             autoOpen: true,
@@ -30,11 +40,16 @@ export class WiseXboardControl implements IWiseXboardControl {
         return SerialPortHelper.create(sp, parser)
     }
 
+    /**
+     * 시리얼포트가 처리할 수 있는지 체크
+     * @param portInfo
+     * @returns
+     */
     static isMatch = (portInfo: ISerialPortInfo): boolean => {
         return portInfo.manufacturer === 'Silicon Labs'
     }
 
-    private get serialPortHelper(): SerialPortHelper | undefined {
+    private getSerialPortHelper(): SerialPortHelper | undefined {
         return this._context?.provideSerialPortHelper?.()
     }
 
@@ -43,15 +58,15 @@ export class WiseXboardControl implements IWiseXboardControl {
      * @returns 읽기 가능 여부
      */
     isReadable = (): boolean => {
-        return this.serialPortHelper?.isReadable() === true
+        const sp = this.getSerialPortHelper()
+        return sp?.isReadable() === true
     }
 
     private checkSerialPort(): SerialPortHelper {
         if (!this.isReadable()) {
             throw new Error('hw not open')
         }
-
-        return this.serialPortHelper!
+        return this.getSerialPortHelper()!
     }
 
     private async sendPacketMRTEXE(exeIndex: number) {

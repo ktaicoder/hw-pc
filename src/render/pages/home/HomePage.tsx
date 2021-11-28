@@ -11,7 +11,12 @@ export default function Home() {
 
     const loadHwInfo = useCallback(async (hwId: string) => {
         const hw = await window.service.hw.findInfoById(hwId)
-        setHwInfo(hw)
+        if (hw) {
+            console.log('loadHwInfo = ', hw)
+        } else {
+            console.warn('cannot find loadHwInfo = ', hwId)
+        }
+        setHwInfo(hw ?? undefined)
     }, [])
 
     useEffect(() => {
@@ -23,7 +28,14 @@ export default function Home() {
         }
     }, [hwServerState?.hwId])
 
-    console.log('HOME Compoent Render', { hwInfo })
+    console.log('HOME Component Render', { hwInfo })
+    // if (true) {
+    //     return (
+    //         <MainLayout title="장치 연결" isMainPage={true}>
+    //             <MainDevices />
+    //         </MainLayout>
+    //     )
+    // }
     return hwInfo ? (
         <DeviceSelectionView hwInfo={hwInfo} />
     ) : (

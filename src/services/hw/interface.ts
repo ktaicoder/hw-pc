@@ -11,35 +11,35 @@ export type HwServerState = {
 
 export interface IHwService {
     hwServerState$: BehaviorSubject<HwServerState>
-    start(hwId: string, portPath: string): Promise<void>
-    stop(): Promise<void>
     stopServer(): Promise<void>
     getHwServerState(): Promise<HwServerState>
     serialPortList(hwId: string): Promise<SerialPort.PortInfo[]>
     downloadDriver(driverUri: string): Promise<void>
     downloadFirmware(firmwareUri: string): Promise<void>
-    findInfoById(hwId: string): Promise<IHwInfo>
+    findInfoById(hwId: string): Promise<IHwInfo | null>
     isSupportHw(hwId: string): Promise<boolean>
     infoList(): Promise<IHwInfo[]>
     isReadable(hwId: string, portPath: string): Promise<boolean>
     selectHw(hwId: string): Promise<void>
+    unselectHw(hwId: string): Promise<void>
+    selectSerialPort(hwId: string, portPath: string): Promise<void>
 }
 
 export const HwServiceIPCDescriptor = {
     channel: HwChannel.name,
     properties: {
         hwServerState$: ProxyPropertyType.Value$,
+        stopServer: ProxyPropertyType.Function,
         getHwServerState: ProxyPropertyType.Function,
         serialPortList: ProxyPropertyType.Function,
         downloadDriver: ProxyPropertyType.Function,
         downloadFirmware: ProxyPropertyType.Function,
-        infoList: ProxyPropertyType.Function,
         findInfoById: ProxyPropertyType.Function,
         isSupportHw: ProxyPropertyType.Function,
+        infoList: ProxyPropertyType.Function,
         isReadable: ProxyPropertyType.Function,
-        start: ProxyPropertyType.Function,
-        stop: ProxyPropertyType.Function,
-        stopServer: ProxyPropertyType.Function,
         selectHw: ProxyPropertyType.Function,
+        unselectHw: ProxyPropertyType.Function,
+        selectSerialPort: ProxyPropertyType.Function,
     },
 }

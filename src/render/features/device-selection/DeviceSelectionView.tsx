@@ -57,11 +57,12 @@ export default function DeviceSelectionView(props: Props) {
 
     const hwServerState = useHwServerState()
     const checkReadable = useCallback(async (hwId: string, portPath: string) => {
-        console.log('checkReadable:' + hwId + ',' + portPath)
         let readable = false
         try {
             readable = await window.service.hw.isReadable(hwId, portPath)
         } catch (ignore) {}
+        console.log('DeviceSelectionView.checkReadable:' + hwId + ',' + portPath + ', readable=' + readable)
+
         if (readable) {
             setReadablePath(portPath)
         } else {
@@ -75,13 +76,15 @@ export default function DeviceSelectionView(props: Props) {
     }, [])
 
     useEffect(() => {
-        if (portInfos.length > 0) {
-            const exists = portInfo && portInfos.find((it) => it.path === portInfo.path)
-            if (!exists) {
-                setPortInfo(portInfos[0])
+        const newPorts = portInfos
+        const prevPort = portInfo
+        if (newPorts.length > 0) {
+            const found = prevPort ? newPorts.find((it) => it.path === prevPort.path) : undefined
+            if (!found) {
+                setPortInfo(newPorts[0])
             }
         } else {
-            if (portInfo) {
+            if (prevPort) {
                 setPortInfo(undefined)
             }
         }
@@ -100,16 +103,17 @@ export default function DeviceSelectionView(props: Props) {
 
     useEffect(() => {
         if (!portInfo) {
-            window.service.hw.stopServer()
+            // alert('포트인포 없어')
+            // window.service.hw.stopServer()
             return
         }
         const hwId = info.hwId
-        window.service.hw.start(hwId, portInfo.path)
+        window.service.hw.selectSerialPort(hwId, portInfo.path)
     }, [info.hwId, portInfo])
 
-    useUnmount(() => {
-        window.service.hw.stop()
-    })
+    // useUnmount(() => {
+    //     window.service.hw.unselectHw(info.hwId)
+    // })
 
     useEffect(() => {
         loadPorts(info.hwId)
@@ -120,7 +124,7 @@ export default function DeviceSelectionView(props: Props) {
     }
 
     const _onClickBack = () => {
-        window.service.hw.stop()
+        window.service.hw.unselectHw(info.hwId)
     }
 
     const _onClickFirmwareDownload = () => {

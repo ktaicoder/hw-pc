@@ -1,4 +1,4 @@
-import { HardwareDescriptor, IHwControl } from 'src/custom-types/hw-types'
+import { HardwareDescriptor, IHwControl } from 'src/custom-types'
 
 /**
  * 컨트롤 인터페이스 - 클라이언트(ex: 블록코딩)에서 사용
