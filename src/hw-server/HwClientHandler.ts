@@ -1,6 +1,6 @@
 import { Observable, Subscription, takeUntil } from 'rxjs'
 import { Socket } from 'socket.io'
-import { IHwCmdRequest } from 'src/custom-types'
+import { IHwCmdRequest, IHwControl } from 'src/custom-types'
 import { HwManager } from './HwManager'
 import { RxSocketIoClient } from './util/RxSocketIoClient'
 
@@ -27,15 +27,24 @@ export type DeviceControlRequest = {
 
 export type WebSocketRequestPayload = DeviceControlRequest
 
+type AutoCall = {
+    hwId: string
+    isCalledAfterOpen: boolean
+    isCalledBeforeClose: boolean
+}
+
 export class HwClientHandler {
     _subscription?: Subscription | null = null
     _socket?: Socket | null = null
+
+    _autoCall?: AutoCall = undefined
 
     constructor(socket: Socket, destroyTrigger$: Observable<any>, private hwManager: HwManager) {
         this._socket = socket
         const subscription = RxSocketIoClient.fromDisconnectEvent(socket)
             .pipe(takeUntil(destroyTrigger$))
             .subscribe((reason) => {
+                this.callBeforeClose()
                 this.close()
             })
         RxSocketIoClient.fromMessageEvent(socket, DEVICE_CTL_REQUEST_V2)
@@ -60,7 +69,40 @@ export class HwClientHandler {
         this._socket = null
     }
 
-    handleMessage = async (message: any) => {
+    private callAfterOpen = async () => {
+        const autoCall = this._autoCall
+        if (!autoCall || autoCall.isCalledAfterOpen) return
+        autoCall.isCalledAfterOpen = true
+        const control = this.hwManager.findHwControl(autoCall.hwId)
+        if (!control) {
+            console.info('callAfterOpen(): hw not registered:' + autoCall.hwId)
+            return
+        }
+        try {
+            await this.callQuietly(control, 'onAfterOpen')
+        } catch (err) {
+            console.log('error:', err.messsage)
+        }
+    }
+
+    private callBeforeClose = async () => {
+        const autoCall = this._autoCall
+        if (!autoCall || autoCall.isCalledBeforeClose) return
+        autoCall.isCalledBeforeClose = true
+        const control = this.hwManager.findHwControl(autoCall.hwId)
+        if (!control) {
+            console.info('hw registered')
+            return
+        }
+        autoCall.isCalledBeforeClose = true
+        try {
+            await this.callQuietly(control, 'onBeforeClose')
+        } catch (err) {
+            console.log('error:', err.messsage)
+        }
+    }
+
+    private handleMessage = async (message: any) => {
         const sock = this._socket
         if (!sock) {
             return
@@ -73,10 +115,21 @@ export class HwClientHandler {
         }
 
         // hwId의 컨트롤을 찾고
-        const control = this.hwManager.findHwControl(hwId) ?? {}
+        const control = this.hwManager.findHwControl(hwId)
         if (!control) {
             sendError(sock, requestId, new Error('not registered hw:' + JSON.stringify({ hwId, requestId, cmd })))
             return
+        }
+        if (!this._autoCall) {
+            this._autoCall = {
+                hwId,
+                isCalledAfterOpen: false,
+                isCalledBeforeClose: false,
+            }
+        }
+
+        if (!this._autoCall.isCalledAfterOpen) {
+            await this.callAfterOpen()
         }
 
         // cmd 함수를 찾고
@@ -100,5 +153,14 @@ export class HwClientHandler {
             .catch((err) => {
                 sendError(sock, requestId, err)
             })
+    }
+
+    /**
+     * 하드웨어 함수를 호출하고, 에러는 무시한다.
+     * onAfterOpen과 onBeforeClose는 무시한다
+     */
+    private callQuietly = (control: IHwControl, cmd: string, args?: any[]): Promise<any> => {
+        const fn = control[cmd]!
+        return fn.apply(control, args).catch(() => {})
     }
 }

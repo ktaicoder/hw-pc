@@ -29,17 +29,18 @@ export class HwService implements IHwService {
         this._hwManager = new HwManager()
         this._hwServer = new HwServer(this._hwManager)
         const subscription = this._hwServer.observeRunning().subscribe((running) => {
-            this.updateStateRunning(running)
+            this._updateStateRunning(running)
         })
+
         subscription.add(
             this._hwManager.observeHwIds().subscribe((hwIds) => {
                 const prev = this.hwServerState$.value
                 if (hwIds.length === 0) {
-                    this.updateStateHwId(undefined)
+                    this._updateStateHwId(undefined)
                 } else {
                     const hwId = prev.hwId
                     if (hwId) {
-                        this.updateStateHwId(hwIds.includes(hwId) ? hwId : undefined)
+                        this._updateStateHwId(hwIds.includes(hwId) ? hwId : undefined)
                     }
                 }
             }),
@@ -48,13 +49,13 @@ export class HwService implements IHwService {
         this._hwServer.start()
     }
 
-    private updateStateHwId = (hwId: string | undefined) => {
+    private _updateStateHwId = (hwId: string | undefined) => {
         const prev = { ...this.hwServerState$.value }
         prev.hwId = hwId
         this.hwServerState$.next(prev)
     }
 
-    private updateStateRunning = (running: boolean) => {
+    private _updateStateRunning = (running: boolean) => {
         const prev = { ...this.hwServerState$.value }
         prev.running = running
         this.hwServerState$.next(prev)
@@ -127,7 +128,7 @@ export class HwService implements IHwService {
      */
     async selectHw(hwId: string): Promise<void> {
         this._hwManager.selectHw(hwId)
-        this.updateStateHwId(hwId)
+        this._updateStateHwId(hwId)
         if (!this._hwServer.isRunning) {
             this._hwServer.start()
         }
@@ -135,18 +136,18 @@ export class HwService implements IHwService {
 
     async unselectHw(hwId: string): Promise<void> {
         this._hwManager.unselectHw(hwId)
-        this.updateStateHwId(undefined)
+        this._updateStateHwId(undefined)
     }
 
     async selectSerialPort(hwId: string, portPath: string): Promise<void> {
         this._hwManager.selectSerialPort(hwId, portPath)
-        this.updateStateHwId(hwId)
+        this._updateStateHwId(hwId)
         if (!this._hwServer.isRunning) {
             this._hwServer.start()
         }
     }
 
     async stopServer(): Promise<void> {
-        this.updateStateRunning(false)
+        this._updateStateRunning(false)
     }
 }
