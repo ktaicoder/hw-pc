@@ -190,13 +190,13 @@ export class HwClient {
     }
 
     runWifiList = (): Observable<WifiAp[]> => {
-        return this._runCmdWithOutput('sh /home/pi/nmcli-wifi-list.sh').pipe(
+        return this._runCmdWithOutput('sh /usr/local/bin/aimk-wifi-list.sh 3').pipe(
             map((lines) => parseWifiList(lines.join(''))),
         )
     }
 
     runAudioTest = (): Observable<any> => {
-        return this._runCmd('yes | sh /home/pi/.aicodingblock/bin/CheckAudio.sh')
+        return this._runCmd('yes | sh /usr/local/bin/aimk-check-audio.sh')
     }
 
     runReboot = (): Observable<any> => {
