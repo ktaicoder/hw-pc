@@ -58,6 +58,7 @@ export interface IHwCmdRequest {
  */
 export enum HwKind {
     serial = 'serial',
+    terminal = 'terminal',
 }
 
 export interface IHwControl {

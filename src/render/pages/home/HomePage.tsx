@@ -36,11 +36,13 @@ export default function Home() {
     //         </MainLayout>
     //     )
     // }
-    return hwInfo ? (
-        <DeviceSelectionView hwInfo={hwInfo} />
-    ) : (
-        <MainLayout title="장치 연결" isMainPage={true}>
-            <MainDevices />
-        </MainLayout>
-    )
+    if (!hwInfo) {
+        return (
+            <MainLayout title="장치 연결" isMainPage={true}>
+                <MainDevices />
+            </MainLayout>
+        )
+    } else {
+        return <DeviceSelectionView hwInfo={hwInfo} />
+    }
 }

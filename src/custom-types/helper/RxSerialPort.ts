@@ -1,26 +1,27 @@
-import { Observable } from 'rxjs'
+import Stream from 'stream'
+import { from, Observable } from 'rxjs'
 import SerialPort from 'serialport'
-
+const DEBUG = true
 /**
  * 현재 미사용
  */
 export class RxSerialPort {
-    static fromConnectEvent = (sp: SerialPort) => {
-        return new Observable((emit) => {
+    static fromOpenEvent = (sp: SerialPort) => {
+        return new Observable((emitter) => {
             const handle = () => {
-                emit.next()
+                emitter.next()
             }
-            sp.on('connect', handle)
+            sp.on('open', handle)
             return () => {
-                sp.off('connect', handle)
+                sp.off('open', handle)
             }
         })
     }
 
-    static fromCloseEvent = (sp: SerialPort) => {
-        return new Observable((emit) => {
-            const handle = () => {
-                emit.next()
+    static fromCloseEvent = (sp: SerialPort): Observable<string> => {
+        return new Observable((emitter) => {
+            const handle = (reason) => {
+                emitter.next(reason)
             }
             sp.on('close', handle)
             return () => {
@@ -30,9 +31,9 @@ export class RxSerialPort {
     }
 
     static fromEndEvent = (sp: SerialPort) => {
-        return new Observable((emit) => {
+        return new Observable((emitter) => {
             const handle = () => {
-                emit.next()
+                emitter.next()
             }
             sp.on('end', handle)
             return () => {
@@ -42,13 +43,44 @@ export class RxSerialPort {
     }
 
     static fromErrorEvent = (sp: SerialPort) => {
-        return new Observable((emit) => {
+        return new Observable((emitter) => {
             const handle = (err) => {
-                emit.next(err)
+                emitter.next(err)
             }
             sp.on('error', handle)
             return () => {
                 sp.off('error', handle)
+            }
+        })
+    }
+
+    static fromDataEvent = (sp: SerialPort | Stream.Transform) => {
+        return new Observable((emitter) => {
+            const handle = (data: Buffer) => {
+                emitter.next(data)
+            }
+            sp.on('data', handle)
+            return () => {
+                sp.off('data', handle)
+            }
+        })
+    }
+
+    static write = (sp: SerialPort, values: string | number[] | Buffer): Observable<void> => {
+        return new Observable((emitter) => {
+            if (emitter.closed) return
+            if (!sp.isOpen) {
+                emitter.complete()
+                return
+            }
+            try {
+                sp.write(values)
+                sp.drain()
+
+                emitter.next()
+                emitter.complete()
+            } catch (err) {
+                emitter.error(err)
             }
         })
     }

@@ -81,7 +81,7 @@ const getHwName = (info: IHwInfo): string => {
 
 export default function MainDevices() {
     const [contentDivRef, { width: contentWidth }] = useMeasure<HTMLDivElement>()
-    const [allDeviceList, favorHwIds, refresh, toggleFavor] = useHwInfoList()
+    const [allDeviceList, favorHwIds, refresh, toggleFavor] = useHwInfoList({ withTerminal: false })
     const [option, setOption] = useState<SearchOption>(DEFAULT_SEARCH_OPTION)
     const { hwKind, searchQuery } = useContext(MainLayoutContext)!
     const [deviceList, setDeviceList] = useState<IHwInfo[]>([])

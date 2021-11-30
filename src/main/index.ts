@@ -12,7 +12,7 @@ app.commandLine.appendSwitch('enable-web-bluetooth', 'true')
 
 const gotTheLock = app.requestSingleInstanceLock()
 if (!gotTheLock) {
-    logger.info('Quitting dut to we only allow one instance to run.')
+    logger.info('Quitting due to we only allow one instance to run.')
     app.quit()
 } else {
     import('./bootstrapMainProcess')

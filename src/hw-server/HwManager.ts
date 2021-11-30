@@ -1,6 +1,6 @@
 import { BehaviorSubject, filter, map, Observable } from 'rxjs'
 import { controls } from 'src/custom'
-import { SerialPortHelper } from 'src/custom-types'
+import { SerialPortHelper, HwKind } from 'src/custom-types'
 import { HwControlFactoryFn, IHwControl, IHwInfo, IHwOperator } from 'src/custom-types/hw-types'
 import { HwControlHolder } from './util/HwControlHolder'
 import { HwSerialPortHolder } from './util/HwSerialPortHolder'
@@ -52,9 +52,9 @@ export class HwManager {
         return this._controlHolder.getOrNull(hwId)
     }
 
-    selectHw = (hwId: string): { operator: IHwOperator; control: IHwControl } | null => {
-        const { operator, controlFactoryFn } = this.findHw(hwId) ?? {}
-        if (!operator || !controlFactoryFn) {
+    selectHw = (hwId: string): { info: IHwInfo; operator: IHwOperator; control: IHwControl } | null => {
+        const { info, operator, controlFactoryFn } = this.findHw(hwId) ?? {}
+        if (!info || !operator || !controlFactoryFn) {
             return null
         }
 
@@ -67,7 +67,7 @@ export class HwManager {
             console.log('controlHolder already exists. hwId=', hwId)
         }
 
-        return { control, operator }
+        return { info, control, operator }
     }
 
     /**
@@ -103,6 +103,11 @@ export class HwManager {
         return helper
     }
 
+    recreateSerialPortHelper = (hwId: string, serialPortPath: string) => {
+        this._serialPortHolder.removeAll()
+        this.selectSerialPort(hwId, serialPortPath)
+    }
+
     /**
      * 시리얼포트와 하드웨어를 선택한다.
      * @param hwId 하드웨어 ID
@@ -110,8 +115,8 @@ export class HwManager {
      * @returns
      */
     selectSerialPort = (hwId: string, serialPortPath: string): SerialPortHelper | null => {
-        const { control, operator } = this.selectHw(hwId) ?? {}
-        if (!control || !operator) {
+        const { info, control, operator } = this.selectHw(hwId) ?? {}
+        if (!info || !control || !operator) {
             console.warn('TODO 하드웨어 not registered', { hwId })
             return null
         }
@@ -120,6 +125,13 @@ export class HwManager {
         if (helper && helper.serialPortPath !== serialPortPath) {
             helper.close()
             helper = null
+        }
+
+        if (helper) {
+            if (helper.state !== 'first' && helper.state !== 'opened') {
+                helper.close()
+                helper = null
+            }
         }
 
         if (!helper) {
@@ -134,6 +146,7 @@ export class HwManager {
         control.setContext({
             provideSerialPortHelper: () => helper!,
         })
+
         return helper
     }
 }

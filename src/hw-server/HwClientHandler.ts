@@ -1,12 +1,17 @@
 import { Observable, Subscription, takeUntil } from 'rxjs'
 import { Socket } from 'socket.io'
-import { IHwCmdRequest, IHwControl } from 'src/custom-types'
+import { IHwControl } from 'src/custom-types'
 import { HwManager } from './HwManager'
 import { RxSocketIoClient } from './util/RxSocketIoClient'
 
 const DEBUG = true
 const DEVICE_CTL_REQUEST_V2 = 'deviceCtlMsg_v2:request'
 const DEVICE_CTL_RESPONSE_V2 = 'deviceCtlMsg_v2:response'
+export const OPEN_TERMINAL_REQUEST = 'openTerminal:request'
+export const CLOSE_TERMINAL_REQUEST = 'closeTerminal:request'
+export const TERMINAL_CMD_RESPONE = 'terminalCmd:response'
+export const TERMINAL_MESSAGE_RESPONSE = 'terminalTessage:response'
+export const TERMINAL_MESSAGE_REQUEST = 'terminalTessage:request'
 
 function sendError(socket: Socket, requestId: string, err: any) {
     console.log(err)
@@ -17,15 +22,13 @@ function sendError(socket: Socket, requestId: string, err: any) {
     }
 }
 
-export type DisposeFn = () => void
-export type CommandHandlerFn = () => Promise<any>
-
-export type DeviceControlRequest = {
-    type: 'deviceCtl'
-    body: IHwCmdRequest
+// 구현못하겠다
+function removeControlCharacter(data: Buffer) {
+    return data
 }
 
-export type WebSocketRequestPayload = DeviceControlRequest
+export type DisposeFn = () => void
+export type CommandHandlerFn = () => Promise<any>
 
 type AutoCall = {
     hwId: string
@@ -47,11 +50,37 @@ export class HwClientHandler {
                 this.callBeforeClose()
                 this.close()
             })
-        RxSocketIoClient.fromMessageEvent(socket, DEVICE_CTL_REQUEST_V2)
-            .pipe(takeUntil(destroyTrigger$))
-            .subscribe((msg) => {
-                this.handleMessage(msg)
-            })
+
+        subscription.add(
+            RxSocketIoClient.fromMessageEvent(socket, DEVICE_CTL_REQUEST_V2)
+                .pipe(takeUntil(destroyTrigger$))
+                .subscribe((msg) => {
+                    this.handleHwControlMessage(msg)
+                }),
+        )
+
+        subscription.add(
+            RxSocketIoClient.fromMessageEvent(socket, OPEN_TERMINAL_REQUEST)
+                .pipe(takeUntil(destroyTrigger$))
+                .subscribe((msg) => {
+                    this.handleOpenTerminal(msg)
+                }),
+        )
+        subscription.add(
+            RxSocketIoClient.fromMessageEvent(socket, TERMINAL_MESSAGE_REQUEST)
+                .pipe(takeUntil(destroyTrigger$))
+                .subscribe((msg) => {
+                    this.handleTerminalCommand(msg)
+                }),
+        )
+        subscription.add(
+            RxSocketIoClient.fromMessageEvent(socket, CLOSE_TERMINAL_REQUEST)
+                .pipe(takeUntil(destroyTrigger$))
+                .subscribe((msg) => {
+                    this.close()
+                }),
+        )
+
         this._subscription = subscription
     }
 
@@ -102,7 +131,7 @@ export class HwClientHandler {
         }
     }
 
-    private handleMessage = async (message: any) => {
+    private handleHwControlMessage = async (message: any) => {
         const sock = this._socket
         if (!sock) {
             return
@@ -153,6 +182,83 @@ export class HwClientHandler {
             .catch((err) => {
                 sendError(sock, requestId, err)
             })
+    }
+
+    private handleTerminalCommand = async (message: any) => {
+        console.log('handleTerminalCommand', message)
+        const sock = this._socket
+        if (!sock) {
+            return
+        }
+
+        const { requestId, hwId, data, contentEncoding = 'plain' } = message
+        if (!hwId) {
+            sendError(sock, requestId, new Error('invalid packet:' + JSON.stringify({ hwId, requestId })))
+            return
+        }
+
+        // hwId의 컨트롤을 찾고
+        const control = this.hwManager.findHwControl(hwId)
+        if (!control) {
+            sendError(sock, requestId, new Error('not registered hw:' + JSON.stringify({ hwId, requestId })))
+            return
+        }
+        const helper = this.hwManager.getSerialPortHelperOrNull(hwId)
+
+        if (contentEncoding === 'base64') {
+            helper?.write(Buffer.from(data, 'base64'))
+        } else {
+            helper?.write(data)
+        }
+        // helper?.serialPort?.write(data)
+    }
+
+    private handleOpenTerminal = async (message: any) => {
+        console.log('handleOpenTerminal', message)
+        const sock = this._socket
+        if (!sock) {
+            return
+        }
+
+        const { requestId, hwId } = message
+        if (!hwId) {
+            sendError(sock, requestId, new Error('invalid packet:' + JSON.stringify({ hwId, requestId })))
+            return
+        }
+
+        // hwId의 컨트롤을 찾고
+        const control = this.hwManager.findHwControl(hwId)
+        if (!control) {
+            sendError(sock, requestId, new Error('not registered hw:' + JSON.stringify({ hwId, requestId })))
+            return
+        }
+
+        // 사전에 시리얼포트가 만들어져야 한다.
+        const helper = this.hwManager.getSerialPortHelperOrNull(hwId)
+        if (!helper) {
+            sendError(sock, requestId, new Error('serialport not opend:' + JSON.stringify({ hwId, requestId })))
+            return
+        }
+
+        const subscription = this._subscription
+        if (!subscription) {
+            sendError(sock, requestId, new Error('serialport not opend:' + JSON.stringify({ hwId, requestId })))
+            return
+        }
+
+        sock.emit(TERMINAL_CMD_RESPONE, { requestId, success: true })
+        subscription.add(
+            helper.observeData().subscribe({
+                next: ({ timestamp, data }) => {
+                    data = removeControlCharacter(data)
+                    if (DEBUG) console.log('TERMINAL_MESSAGE_RESPONSE', message)
+                    sock.emit(TERMINAL_MESSAGE_RESPONSE, data.toString('utf8'))
+                },
+                error: (err) => {
+                    sock.emit(TERMINAL_CMD_RESPONE)
+                },
+            }),
+        )
     }
 
     /**

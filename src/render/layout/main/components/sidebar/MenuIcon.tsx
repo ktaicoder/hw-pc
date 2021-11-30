@@ -15,6 +15,7 @@ import GitHubIcon from '@mui/icons-material/GitHub'
 import GradeIcon from '@mui/icons-material/Grade'
 import ScienceIcon from '@mui/icons-material/Science'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
+import CableIcon from '@mui/icons-material/Cable'
 
 type Props = {
     iconName: string
@@ -53,6 +54,8 @@ export default function MenuIcon(props: Props) {
             return <BluetoothIcon />
         case 'info':
             return <InfoOutlinedIcon />
+        case 'cable':
+            return <CableIcon />
         case 'mosaic':
             return <AutoAwesomeMosaicIcon />
     }

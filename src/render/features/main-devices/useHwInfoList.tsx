@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { IHwInfo } from 'src/custom-types/hw-types'
+import { IHwInfo, HwKind } from 'src/custom-types'
 import { usePreference } from 'src/services/preferences/hooks'
 
 type RefreshFn = () => void
 type ToggleFavorFn = (hwId: string, isFavor?: boolean) => void
 
-export function useHwInfoList(): [IHwInfo[], Set<string>, RefreshFn, ToggleFavorFn] {
+export function useHwInfoList(params: { withTerminal: boolean }): [IHwInfo[], Set<string>, RefreshFn, ToggleFavorFn] {
+    const { withTerminal } = params
     const { favorHwIdList = [] } = usePreference() ?? {}
     const favorHwIdsRef = useRef(new Set<string>())
     const [originalHwMetaList, setOriginalHwMetaList] = useState<IHwInfo[]>([])
@@ -47,11 +48,15 @@ export function useHwInfoList(): [IHwInfo[], Set<string>, RefreshFn, ToggleFavor
         try {
             const metaList = await window.service.hw.infoList()
             console.log('metaList = ', { metaList })
-            setOriginalHwMetaList(metaList)
+            if (withTerminal) {
+                setOriginalHwMetaList(metaList)
+            } else {
+                setOriginalHwMetaList(metaList.filter((it) => it.hwKind !== HwKind.terminal))
+            }
         } catch (err) {
             console.warn(err)
         }
-    }, [])
+    }, [withTerminal])
 
     const sort = useCallback(async (infos: IHwInfo[], favorHwIds: Set<string>) => {
         const favorInfos: IHwInfo[] = []

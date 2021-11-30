@@ -1,9 +1,10 @@
 import { shell } from 'electron'
 import { injectable } from 'inversify'
+
 import path from 'path'
 import { BehaviorSubject, Subscription } from 'rxjs'
 import SerialPort from 'serialport'
-import { IHwInfo } from 'src/custom-types/hw-types'
+import { IHwInfo, HwKind } from 'src/custom-types'
 import { HwManager } from 'src/hw-server/HwManager'
 import { HwServer } from 'src/hw-server/HwServer'
 import { lazyInject } from 'src/services/container'
@@ -93,9 +94,30 @@ export class HwService implements IHwService {
         return list.filter(hw.operator.isMatch)
     }
 
+    private _tryOpenAndClose = async (sp: SerialPort): Promise<boolean> => {
+        return new Promise<boolean>((resolve, reject) => {
+            sp.open((err) => {
+                if (err) {
+                    resolve(false)
+                } else {
+                    sp.close()
+                    resolve(true)
+                }
+            })
+        })
+    }
+
     // TODO 이름 변경, checkReadable
     async isReadable(hwId: string, portPath: string): Promise<boolean> {
         return this._hwManager.isRegisteredHw(hwId)
+        // if (!this._hwManager.isRegisteredHw(hwId)) return false
+        // const { info, operator } = this._hwManager.findHw(hwId) ?? {}
+        // if (!info || !operator) {
+        //     console.log(`isReadable: false, not registered hw, ${hwId}, ${portPath}:`)
+        //     return false
+        // }
+        // const found = (await this.serialPortList(hwId)).find((it) => it.path === portPath)
+        // return found ? true : false
     }
 
     async downloadDriver(driverUri: string): Promise<void> {

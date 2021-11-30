@@ -19,13 +19,12 @@ import { PortInfo } from 'serialport'
 type Props = {
     portInfos: PortInfo[]
     portPath?: string
-    readable: boolean
     onClickPort: (port: PortInfo) => void
     onClickRefresh: () => void
 }
 
 export default function PortsView(props: Props) {
-    const { portInfos, portPath, readable, onClickPort, onClickRefresh } = props
+    const { portInfos, portPath, onClickPort, onClickRefresh } = props
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const port = useMemo<PortInfo | undefined>(
         () => portInfos.find((it) => it.path === portPath),

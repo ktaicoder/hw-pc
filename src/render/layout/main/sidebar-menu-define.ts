@@ -39,6 +39,12 @@ const menusTemp: (ILabel | IDivider | IMenu | ISection)[] = [
     },
     {
         type: 'menu',
+        icon: 'cable',
+        title: '코딩팩 설정',
+        href: '/codingpack',
+    },
+    {
+        type: 'menu',
         icon: 'usb',
         title: 'SERIAL 장치',
         href: '/inspect-serial',

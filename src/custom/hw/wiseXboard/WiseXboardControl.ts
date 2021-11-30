@@ -31,7 +31,7 @@ export class WiseXboardControl implements IWiseXboardControl {
      */
     static createSerialPortHelper = (path: string): SerialPortHelper => {
         const sp = new SerialPort(path, {
-            autoOpen: true,
+            autoOpen: false,
             baudRate: 38400,
             lock: false,
         })
@@ -41,12 +41,15 @@ export class WiseXboardControl implements IWiseXboardControl {
     }
 
     /**
-     * 시리얼포트가 처리할 수 있는지 체크
+     * 시리얼포트를 처리할 수 있는지 체크
      * @param portInfo
      * @returns
      */
     static isMatch = (portInfo: ISerialPortInfo): boolean => {
-        return portInfo.manufacturer === 'Silicon Labs'
+        if (portInfo.manufacturer) {
+            return portInfo.manufacturer.includes('Silicon Labs')
+        }
+        return false
     }
 
     private getSerialPortHelper(): SerialPortHelper | undefined {

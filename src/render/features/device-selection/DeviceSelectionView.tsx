@@ -42,12 +42,16 @@ const filterPcDrivers = (platform: string, arch: string, pcDrivers: PcDriver[]):
         })
 }
 
+function isNullish(t: any): boolean {
+    if (t === undefined || t === null) return true
+    return false
+}
+
 export default function DeviceSelectionView(props: Props) {
     const { hwInfo: info } = props
     const context = usePromiseValue<IContext | undefined>(async () => await window.service.context.getAll(), undefined)
     const [portInfos, setPortInfos] = useState<PortInfo[]>([])
     const [portInfo, setPortInfo] = useState<PortInfo>()
-    const [readablePath, setReadablePath] = useState<string>()
     const [refreshToken, setRefreshToken] = useState(0)
 
     const pcDrivers = useMemo<PcDriverMatched[]>(() => {
@@ -56,19 +60,6 @@ export default function DeviceSelectionView(props: Props) {
     }, [context, info.pcDrivers])
 
     const hwServerState = useHwServerState()
-    const checkReadable = useCallback(async (hwId: string, portPath: string) => {
-        let readable = false
-        try {
-            readable = await window.service.hw.isReadable(hwId, portPath)
-        } catch (ignore) {}
-        console.log('DeviceSelectionView.checkReadable:' + hwId + ',' + portPath + ', readable=' + readable)
-
-        if (readable) {
-            setReadablePath(portPath)
-        } else {
-            setReadablePath(undefined)
-        }
-    }, [])
 
     const loadPorts = useCallback(async (hwId: string) => {
         const ports = await window.service.hw.serialPortList(hwId)
@@ -91,15 +82,14 @@ export default function DeviceSelectionView(props: Props) {
     }, [portInfo, portInfos])
 
     useEffect(() => {
-        if (!portInfo) return
         const hwId = info.hwId
-        const s1 = interval(5000)
-            .pipe(mergeMapTo(from(checkReadable(hwId, portInfo.path))))
-            .subscribe()
+        const s1 = interval(5000).subscribe(() => {
+            loadPorts(hwId)
+        })
         return () => {
             s1.unsubscribe()
         }
-    }, [info.hwId, portInfo, checkReadable])
+    }, [info.hwId, portInfo, loadPorts])
 
     useEffect(() => {
         if (!portInfo) {
@@ -110,10 +100,6 @@ export default function DeviceSelectionView(props: Props) {
         const hwId = info.hwId
         window.service.hw.selectSerialPort(hwId, portInfo.path)
     }, [info.hwId, portInfo])
-
-    // useUnmount(() => {
-    //     window.service.hw.unselectHw(info.hwId)
-    // })
 
     useEffect(() => {
         loadPorts(info.hwId)
@@ -142,7 +128,9 @@ export default function DeviceSelectionView(props: Props) {
         window.service.native.openUrl('https://aicodingblock.kt.co.kr/maker')
     }
 
-    const readable = Boolean(readablePath && readablePath === portInfo?.path)
+    // const serialPortReadable = Boolean(readablePath && readablePath === portInfo?.path)
+    // const hwReady = serialPortReadable && hwServerState?.running === true
+    const hwReady = hwServerState?.running === true && !isNullish(portInfo)
 
     return (
         <Box
@@ -211,7 +199,7 @@ export default function DeviceSelectionView(props: Props) {
                             <Box sx={{ position: 'absolute', right: 0, top: 70 }}>
                                 <PulseLoader
                                     color="steelblue"
-                                    loading={hwServerState?.running === true}
+                                    loading={hwReady}
                                     size={8}
                                     margin={5}
                                     speedMultiplier={0.35}
@@ -223,7 +211,6 @@ export default function DeviceSelectionView(props: Props) {
                         <PortsView
                             portInfos={portInfos}
                             portPath={portInfo?.path}
-                            readable={readable}
                             onClickPort={_onClickPort}
                             onClickRefresh={() => setRefreshToken(Date.now())}
                         />
@@ -244,7 +231,7 @@ export default function DeviceSelectionView(props: Props) {
                             <Box sx={{ position: 'absolute', left: 0, top: 70 }}>
                                 <PulseLoader
                                     color="steelblue"
-                                    loading={hwServerState?.running === true}
+                                    loading={hwReady}
                                     size={8}
                                     margin={5}
                                     speedMultiplier={0.25}
@@ -299,7 +286,7 @@ export default function DeviceSelectionView(props: Props) {
                 </Grid>
                 <Box mt={10}>
                     <Container maxWidth="sm" disableGutters>
-                        {hwServerState?.running === true ? (
+                        {hwReady ? (
                             <Alert
                                 severity="info"
                                 sx={{

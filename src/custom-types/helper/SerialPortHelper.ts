@@ -6,16 +6,18 @@ import {
     firstValueFrom,
     map,
     mapTo,
+    merge,
     Observable,
     Subject,
     Subscription,
     take,
+    takeUntil,
     tap,
     timeout,
 } from 'rxjs'
 import SerialPort from 'serialport'
-import { serialPort } from 'src/preload/common/services'
 import Stream from 'stream'
+import { RxSerialPort } from '..'
 
 const DEBUG = false
 
@@ -28,15 +30,46 @@ export class SerialPortHelper {
     private _state$ = new BehaviorSubject<SerialPortState>('first')
     private _subscription: Subscription | null = null
     private _path?: string | null = null
+    private _destroyed$ = new BehaviorSubject<boolean>(false)
+
     constructor(serialPort: SerialPort, parser?: Stream.Transform | null) {
-        this._sp = serialPort
         this._path = serialPort.path
+        this._sp = serialPort
         this._parser = parser ?? null
         if (DEBUG) console.log('SerialPortHelper.create()')
-        this._sp.on('open', this.onOpenEvent)
-        this._sp.on('close', this.onCloseEvent)
-        this._sp.on('end', this.onEnd)
-        this._sp.on('error', this.onError)
+        const subscription = RxSerialPort.fromOpenEvent(this._sp).subscribe(() => {
+            this.onOpenEvent()
+        })
+        subscription.add(
+            RxSerialPort.fromCloseEvent(this._sp).subscribe((reason) => {
+                if (DEBUG) console.log('SerialPortHelper.onClose()', reason)
+                this.onCloseEvent(reason)
+            }),
+        )
+        subscription.add(
+            RxSerialPort.fromEndEvent(this._sp).subscribe(() => {
+                if (DEBUG) console.log('SerialPortHelper.onEnd()')
+                this._state$.next('ended')
+            }),
+        )
+        subscription.add(
+            RxSerialPort.fromErrorEvent(this._sp).subscribe((err) => {
+                console.log('SerialPortHelper.onError()', err)
+                this._state$.next('error')
+            }),
+        )
+
+        if (this._parser) {
+            this._sp.pipe(this._parser)
+        }
+
+        const source = this._parser ?? this._sp
+        subscription.add(
+            RxSerialPort.fromDataEvent(source).subscribe((data: Buffer) => {
+                if (DEBUG) console.log('SerialPortHelper.onData', data)
+                this._data$.next({ timestamp: Date.now(), data })
+            }),
+        )
     }
 
     static create = (serialPort: SerialPort, parser?: Stream.Transform | null): SerialPortHelper => {
@@ -51,39 +84,24 @@ export class SerialPortHelper {
         return this._path ?? null
     }
 
+    private closeTrigger = () => {
+        return this._destroyed$.pipe(filter((it) => it === true))
+    }
+
     isReadable = (): boolean => {
         if (DEBUG) console.log('SerialPortHelper.isOpen()', this._sp && this._sp.isOpen)
         return this._sp && this._sp.isOpen
     }
 
-    async write(values: number[]): Promise<void> {
+    async write(values: Buffer | number[]): Promise<void> {
         if (DEBUG) console.log('SerialPortHelper.write()', values)
 
-        if (!this._sp.isOpen) {
-            return new Promise((resolve, reject) => {
-                this._sp.once('open', () => {
-                    this._sp.write(Buffer.from(values), function (err, bytesWritten) {
-                        if (DEBUG) console.log('SerialPortHelper.write(): result = ', { err, bytesWritten })
-                        if (err) {
-                            reject(err)
-                        } else {
-                            resolve()
-                        }
-                    })
-                })
-            })
+        const sp = this._sp
+        try {
+            await firstValueFrom(RxSerialPort.write(sp, values).pipe(takeUntil(this.closeTrigger())))
+        } catch (ignore) {
+            console.log('write fail:' + ignore.message)
         }
-
-        return new Promise((resolve, reject) => {
-            this._sp.write(Buffer.from(values), function (err, bytesWritten) {
-                if (DEBUG) console.log('SerialPortHelper.write(): result = ', { err, bytesWritten })
-                if (err) {
-                    reject(err)
-                } else {
-                    resolve()
-                }
-            })
-        })
     }
 
     async readNext(): Promise<Buffer> {
@@ -91,6 +109,7 @@ export class SerialPortHelper {
             this.observeData().pipe(
                 take(1),
                 map((it) => it.data),
+                takeUntil(this.closeTrigger()),
             ),
         )
     }
@@ -101,6 +120,7 @@ export class SerialPortHelper {
                 filter((it) => predicate(it.data)),
                 take(1),
                 map((it) => it.data),
+                takeUntil(this.closeTrigger()),
             ),
         )
     }
@@ -116,11 +136,6 @@ export class SerialPortHelper {
         this._state$.next('closed')
     }
 
-    private onEnd = () => {
-        if (DEBUG) console.log('SerialPortHelper.onEnd()')
-        this._state$.next('ended')
-    }
-
     private onError = (err) => {
         console.log('SerialPortHelper.onError()', err)
         this._state$.next('error')
@@ -128,57 +143,11 @@ export class SerialPortHelper {
 
     private onOpenEvent = () => {
         if (DEBUG) console.log('SerialPortHelper.onOpenEvent()')
-
-        if (this._parser) {
-            this._sp.pipe(this._parser)
-        }
-
-        const source = this._parser ?? this._sp
-
-        const observable = new Observable<{ timestamp: number; data: Buffer }>((subscriber) => {
-            const onData = (data: Buffer) => {
-                if (DEBUG) console.log('SerialPortHelper.onData', data)
-                subscriber.next({ timestamp: Date.now(), data })
-            }
-
-            const onClose = () => {
-                subscriber.complete()
-            }
-
-            const onError = (err) => {
-                console.log('SerialPortHelper.onError(): ', { err })
-                subscriber.complete()
-            }
-
-            source.on('data', onData)
-            source.on('error', onError)
-            source.once('close', onClose)
-            return () => {
-                console.log('serial data monitor finished')
-                source.off('data', onData)
-                source.off('close', onClose)
-                source.off('error', onError)
-            }
-        })
-
-        this._subscription = observable
-            .pipe(
-                finalize(() => {
-                    if (DEBUG) console.log('XXX finalize')
-                }),
-            )
-            .subscribe({
-                next: (data) => {
-                    if (DEBUG) console.log('data:', data)
-                    this._data$.next(data)
-                },
-                error: (err) => {
-                    console.log('err:', err.message)
-                },
-                complete: () => {},
-            })
-
         this._state$.next('opened')
+    }
+
+    isOpened = (): boolean => {
+        return this._sp.isOpen
     }
 
     isOpenedOrOpening = (): boolean => {
@@ -202,7 +171,14 @@ export class SerialPortHelper {
         return true
     }
 
+    isDestroyed = (): boolean => {
+        return this._destroyed$.value
+    }
+
     open = () => {
+        if (this._destroyed$.value) {
+            throw new Error('serialport helper destroyed, create new one')
+        }
         if (DEBUG) console.log('SerialPortHelper.open()')
         if (!this.isOpenedOrOpening()) {
             try {
@@ -217,6 +193,11 @@ export class SerialPortHelper {
 
     close = () => {
         if (DEBUG) console.log('SerialPortHelper.close()')
+        if (this._destroyed$.value) {
+            console.log('SerialPortHelper.destroy() already destroyed')
+        } else {
+            this._destroyed$.next(true)
+        }
         try {
             // close 체크는 이걸로 해야 한다
             if (this._sp.isOpen) {
@@ -225,13 +206,19 @@ export class SerialPortHelper {
                         console.log('SerialPortHelper.close() ignore error ', err)
                     }
                 })
+            } else {
+                console.log('SerialPortHelper.close() already closed')
             }
         } catch (ignore) {}
     }
 
     observeData = (): Observable<{ timestamp: number; data: Buffer }> => {
         const now = Date.now()
-        const observable = this._data$.pipe(filter((it) => it.timestamp >= now))
+
+        const observable = this._data$.pipe(
+            filter((it) => it.timestamp >= now),
+            takeUntil(this.closeTrigger()),
+        )
         if (DEBUG) {
             return observable.pipe(
                 tap((it) => {
@@ -245,6 +232,10 @@ export class SerialPortHelper {
 
     observeState = (): Observable<SerialPortState> => {
         return this._state$.asObservable()
+    }
+
+    get state(): SerialPortState {
+        return this._state$.value
     }
 
     waitUntilOpen = (timeoutMilli = 0): Promise<boolean> => {
@@ -264,16 +255,5 @@ export class SerialPortHelper {
                 ),
             )
         }
-    }
-
-    destroy = () => {
-        console.log('SerialPortHelper.destroy()')
-        try {
-            this.close()
-        } catch (ignore) {}
-        this._sp.off('open', this.onOpenEvent)
-        this._sp.off('close', this.onCloseEvent)
-        this._sp.off('end', this.onEnd)
-        this._sp.off('error', this.onError)
     }
 }

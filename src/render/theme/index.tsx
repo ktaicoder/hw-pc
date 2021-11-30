@@ -1,32 +1,22 @@
 import { createTheme } from '@mui/material/styles'
 import { red, pink, purple } from '@mui/material/colors'
-
+import typography from './typography'
 // Create a theme instance.
 const theme = createTheme({
-    typography: {
-        fontFamily: [
-            '"Noto Sans KR"',
-            'Roboto',
-            '-apple-system',
-            'BlinkMacSystemFont',
-            '"Segoe UI"',
-            '"Helvetica Neue"',
-            'Arial',
-            'sans-serif',
-            '"Apple Color Emoji"',
-            '"Segoe UI Emoji"',
-            '"Segoe UI Symbol"',
-        ].join(','),
-    },
+    typography,
     palette: {
         primary: {
+            // main: '#007FFF',
             main: '#005CA2',
         },
         secondary: {
-            main: '#f44336',
+            main: '#19857b',
         },
         error: {
-            main: pink.A700,
+            main: red.A400,
+        },
+        text: {
+            primary: '#0A1929',
         },
     },
     components: {},
