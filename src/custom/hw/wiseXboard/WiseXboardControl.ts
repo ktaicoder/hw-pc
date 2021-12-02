@@ -1,8 +1,8 @@
 import SerialPort, { parsers } from 'serialport'
-import { IHwContext, SerialPortHelper, ISerialPortInfo } from 'src/custom-types'
+import { IHwContext, ISerialPortInfo, SerialPortHelper } from 'src/custom-types'
 import { IWiseXboardControl } from './IWiseXboardControl'
 
-const DEBUG = true
+const DEBUG = false
 
 const DELIMITER = Buffer.from([0x52, 0x58, 0x3d, 0x0, 0x0e])
 
@@ -172,7 +172,7 @@ export class WiseXboardControl implements IWiseXboardControl {
      * 연결 종료합니다
      * 클라이언트의 연결이 종료되었을 때,
      * 프레임워크가 자동으로 호출해준다.
-     * 이름은 onCloseBefore(), 함수인자는 없어야 한다.
+     * 이름은 onBeforeClose(), 함수인자는 없어야 한다.
      */
     async onBeforeClose(): Promise<void> {
         if (DEBUG) console.log('XXX onBeforeClose()')

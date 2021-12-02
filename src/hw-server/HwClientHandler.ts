@@ -4,7 +4,8 @@ import { IHwControl } from 'src/custom-types'
 import { HwManager } from './HwManager'
 import { RxSocketIoClient } from './util/RxSocketIoClient'
 
-const DEBUG = true
+const DEBUG = false
+
 const DEVICE_CTL_REQUEST_V2 = 'deviceCtlMsg_v2:request'
 const DEVICE_CTL_RESPONSE_V2 = 'deviceCtlMsg_v2:response'
 export const OPEN_TERMINAL_REQUEST = 'openTerminal:request'
@@ -132,6 +133,7 @@ export class HwClientHandler {
     }
 
     private handleHwControlMessage = async (message: any) => {
+        console.log('handleHwControlMessage = ', message)
         const sock = this._socket
         if (!sock) {
             return

@@ -1,7 +1,8 @@
 import Stream from 'stream'
 import { from, Observable } from 'rxjs'
 import SerialPort from 'serialport'
-const DEBUG = true
+
+const DEBUG = false
 
 export class RxSerialPort {
     static fromOpenEvent = (sp: SerialPort) => {

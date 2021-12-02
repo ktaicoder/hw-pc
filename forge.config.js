@@ -44,7 +44,9 @@ module.exports = {
                             name: "main_window"
                         }
                     ]
-                }
+                },
+                "port": 19990, // default is 3000
+                "loggerPort": 19991, // default is 9000
             }
         ]
     ]

@@ -2,11 +2,9 @@ import { Buffer } from 'buffer'
 import {
     BehaviorSubject,
     filter,
-    finalize,
     firstValueFrom,
     map,
     mapTo,
-    merge,
     Observable,
     Subject,
     Subscription,

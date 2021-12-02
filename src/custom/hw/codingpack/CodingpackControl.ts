@@ -3,7 +3,7 @@ import { IHwContext, ISerialPortInfo, SerialPortHelper } from 'src/custom-types'
 import { TerminalOutputTranslator } from 'src/custom-types/helper/TerminalOutputTranslator'
 import { ICodingpackControl } from './ICodingpackControl'
 
-const DEBUG = true
+const DEBUG = false
 
 const chr = (ch: string): number => ch.charCodeAt(0)
 

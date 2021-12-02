@@ -2,7 +2,8 @@ import { injectable } from 'inversify'
 import SerialPort from 'serialport'
 import { logger } from '../libs/log'
 import { ISerialPortService } from './interface'
-const DEBUG = true
+
+const DEBUG = false
 
 @injectable()
 export class SerialPortService implements ISerialPortService {
@@ -10,11 +11,9 @@ export class SerialPortService implements ISerialPortService {
 
     async list(): Promise<SerialPort.PortInfo[]> {
         const ports = await SerialPort.list()
-        if (DEBUG)
-            logger.debug(
-                'SerialPort.list() = ',
-                ports.map((it) => it.path),
-            )
+        if (DEBUG) {
+            logger.debug('SerialPort.list() = ', ports)
+        }
         return ports
     }
 }
