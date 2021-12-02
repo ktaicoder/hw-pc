@@ -10,19 +10,23 @@ process.env['ELECTRON_DISABLE_SECURITY_WARNINGS '] = 'true'
 
 app.commandLine.appendSwitch('enable-web-bluetooth', 'true')
 
-const gotTheLock = app.requestSingleInstanceLock()
-if (!gotTheLock) {
-    logger.info('Quitting due to we only allow one instance to run.')
-    app.quit()
-} else {
-    import('./bootstrapMainProcess')
+function runMain() {
+    const gotTheLock = app.requestSingleInstanceLock()
+    if (!gotTheLock) {
+        logger.info('Quitting due to we only allow one instance to run.')
+        app.quit()
+        return
+    }
+
+    if (require('electron-squirrel-startup')) {
+        app.quit()
+        return
+    }
+
+    return import('./bootstrapMainProcess')
 }
 
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
-    // eslint-disable-line global-require
-    app.quit()
-}
+runMain()
 
 if (!isTest) {
     unhandled({
@@ -52,7 +56,7 @@ if (!isTest) {
 
   ---
 
-  <!-- List any other information that is relevant to your issue. Stack traces, related issues, suggestions on how to add, use case, forum links, screenshots, OS if applicable, etc. 列出与你的问题有关的任何其他信息。报错堆栈、相关问题（issue）、关于如何添加的建议、使用案例、论坛链接、屏幕截图、操作系统（如果适用）等等。 -->
+  <!-- List any other information that is relevant to your issue. Stack traces, related issues, suggestions on how to add, use case, forum links, screenshots, OS if applicable, etc.  -->
 
   `,
             })
