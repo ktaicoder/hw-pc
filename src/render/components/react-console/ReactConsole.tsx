@@ -67,6 +67,7 @@ type ReactConsoleState = {
 
 export interface ReactConsoleControl {
     print: (msg: string[]) => void
+    getLineCount: () => number
     clear: () => void
     scrollToBottom: () => void
 }
@@ -131,6 +132,9 @@ class ReactConsole extends React.Component<Props, ReactConsoleState> implements 
         }
     }
 
+    public getLineCount = (): number => {
+        return this.state.output.length
+    }
     public print = async (msgLines: string[]) => {
         // console.log('print:' + inputString)
         if (msgLines.length === 0) {

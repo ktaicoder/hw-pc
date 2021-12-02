@@ -1,3 +1,4 @@
+import { Details } from '@mui/icons-material'
 import { app, ipcMain, session, powerMonitor, protocol } from 'electron'
 import settings from 'electron-settings'
 import fs from 'fs-extra'
@@ -106,9 +107,15 @@ async function customInit() {
     }
 
     if (mainWindow) {
+        mainWindow.webContents.session.setPermissionRequestHandler((webContents, permission, callback, details) => {
+            console.log('setPermissionRequestHandler', { permission, details })
+            callback(true)
+            return
+        })
+
         mainWindow.webContents.session.setPermissionCheckHandler(
             (webContents, permission, requestingOrigin, details) => {
-                console.log('setPermissionCheckHandler', { webContents, permission, requestingOrigin, details })
+                console.log('setPermissionCheckHandler', { permission, requestingOrigin, details })
                 if (permission === 'serial' && details.securityOrigin === 'file:///') {
                     return true
                 }

@@ -165,8 +165,7 @@ export class WiseXboardControl implements IWiseXboardControl {
      * 하드웨어를 연결했을때 자동으로 호출합니다
      */
     async onAfterOpen(): Promise<void> {
-        if (DEBUG) console.log(`XXX onAfterOpen()`)
-        const helper = this.checkSerialPort()
+        if (DEBUG) console.log('XXX onAfterOpen()')
     }
 
     /**
@@ -176,7 +175,7 @@ export class WiseXboardControl implements IWiseXboardControl {
      * 이름은 onCloseBefore(), 함수인자는 없어야 한다.
      */
     async onBeforeClose(): Promise<void> {
-        if (DEBUG) console.log(`XXX onBeforeClose()`)
+        if (DEBUG) console.log('XXX onBeforeClose()')
         const helper = this.checkSerialPort()
 
         // 모터 중지

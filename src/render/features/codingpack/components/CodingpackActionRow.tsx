@@ -106,7 +106,7 @@ export default function CodingpackActionRow(props: Props) {
                     >
                         {title}
                     </Typography>
-                    <Button
+                    {/* <Button
                         endIcon={<ChevronRight />}
                         onClick={(e) => {
                             e.preventDefault()
@@ -115,7 +115,7 @@ export default function CodingpackActionRow(props: Props) {
                         }}
                     >
                         가이드
-                    </Button>
+                    </Button> */}
                 </Box>
                 <Typography variant="body1" sx={{ mt: 1, color: '#666', fontSize: '0.9rem' }}>
                     {subtitle}

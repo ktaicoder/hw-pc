@@ -1,11 +1,12 @@
 import { Palette } from '@mui/material'
 
 const FONT_FAMILIES = [
-    'Noto Sans KR',
+    'Noto Sans KR', //
     'sans-serif',
+    '맑은 고딕',
+    'Nanum Gothic',
     'Do Hyeon',
     'Nanum Gothic Coding',
-    'Black Han Sans',
     'Jua',
     'Nanum Pen Script',
 ]

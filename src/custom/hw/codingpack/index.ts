@@ -12,8 +12,8 @@ const info: IHwInfo = {
     pcDrivers: [
         {
             name: 'USB 드라이버',
-            'win32-ia32': 'CP210x_Universal_Windows_Driver/CP210xVCPInstaller_x86.exe',
-            'win32-x64': 'CP210x_Universal_Windows_Driver/CP210xVCPInstaller_x64.exe',
+            'win32-ia32': 'CH34x/CH34x_Install_Windows_v3_4.exe',
+            'win32-x64': 'CH34x/CH34x_Install_Windows_v3_4.exe',
         },
     ],
 }

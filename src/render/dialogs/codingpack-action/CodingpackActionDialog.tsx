@@ -1,10 +1,19 @@
 import CloseIcon from '@mui/icons-material/Close'
-import { Box, CircularProgress, Dialog, DialogContent, DialogTitle, IconButton, LinearProgress } from '@mui/material'
+import {
+    Box,
+    CircularProgress,
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    IconButton,
+    LinearProgress,
+    Typography,
+} from '@mui/material'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useMeasure } from 'react-use'
-import { bufferTime, debounceTime, filter, mergeMapTo, timer } from 'rxjs'
+import { BehaviorSubject, bufferTime, debounceTime, filter, firstValueFrom, take, takeUntil, timeout } from 'rxjs'
 import { CodingpackActionKind, CodingpackActionKindKey } from 'src/domain/codingpack'
-import ReactConsole, { ControlKeys, ReactConsoleControl } from 'src/render/components/react-console/ReactConsole'
+import ReactConsole, { ReactConsoleControl } from 'src/render/components/react-console/ReactConsole'
 import { fixWebPath } from 'src/render/util/fixWebPath'
 import BluetoothSettingView from './components/BluetoothSettingView'
 import CheckAudioView from './components/CheckAudioView'
@@ -22,6 +31,8 @@ export type CodingpackActionDialogProps = {
     onClose: () => void
 }
 
+const INITIAL_SETUP_TIMEOUT_SEC = 5
+
 export default function CodingpackActionDialog(props: CodingpackActionDialogProps) {
     const { actionKind, open, onClose } = props
     const [containerRef, { height: containerHeight }] = useMeasure()
@@ -29,16 +40,16 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
     const [loading, setLoading] = useState(true)
     const [cmdRunning, setCmdRunning] = useState(false)
     const [minimized, setMinimized] = useState(false)
-    const [connected, setConnected] = useState(false)
+    const [initialReady, setInitialReady] = useState(false)
     const title = CodingpackActionKind[actionKind]
     const hwClient = useMemo(() => new HwClient('codingpack', 'ws://127.0.0.1:3001'), [])
 
     const [terminal, setTerminal] = useState<ReactConsoleControl | null>(null)
 
-    const [inputReady, setInputReady] = useState<boolean>(false)
+    const [promptReady, setPromptReady] = useState<boolean>(false)
 
     const doConnect = useCallback(
-        async (ctx: { canceled: boolean }) => {
+        async (cancelTrigger$: BehaviorSubject<number>) => {
             setLoading(true)
             // 연결하기
             hwClient.connect()
@@ -46,17 +57,32 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
             try {
                 console.log('웹소켓 연결을 기다리기')
                 await hwClient.waitForConnected()
+                if (cancelTrigger$.value > 0) return
                 console.log('웹소켓 연결이 되었습니다. 이제 터미널을 엽니다')
+
                 await hwClient.sendOpenTerminalRequest()
+                if (cancelTrigger$.value > 0) return
                 console.log('터미널이 열렸습니다')
+
                 // 시작할때 컨트롤 d를 두번 누르고 시작한다.
-                hwClient.sendBinary(new Uint8Array(ControlKeys.d))
-                hwClient.sendBinary(new Uint8Array(ControlKeys.d))
+                /// hwClient.sendBinary(new Uint8Array(ControlKeys.d))
+                /// hwClient.sendBinary(new Uint8Array(ControlKeys.d))
                 hwClient.sendText('\n')
+                hwClient.sendText('\n')
+                await firstValueFrom(
+                    hwClient.observeTerminalPrompt().pipe(
+                        debounceTime(500),
+                        filter((it) => it === true),
+                        take(1),
+                        takeUntil(cancelTrigger$.pipe(filter((it) => it > 0))),
+                        timeout(INITIAL_SETUP_TIMEOUT_SEC * 1000), // 타임아웃
+                    ),
+                )
+                setInitialReady(true)
             } catch (err) {
                 console.log(err)
+                setInitialReady(false)
             } finally {
-                setConnected(hwClient.isConnected())
                 setLoading(false)
             }
         },
@@ -65,11 +91,14 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
 
     useEffect(() => {
         if (!terminal) return
-        const s1 = timer(0, 300)
-            .pipe(mergeMapTo(hwClient.observeTerminalPrompt()))
-            .pipe(debounceTime(100))
+        const s1 = hwClient
+            .observeTerminalPrompt()
+            .pipe(debounceTime(300))
             .subscribe((isPromptReceived) => {
-                setInputReady(isPromptReceived)
+                setPromptReady(isPromptReceived)
+                if (isPromptReceived) {
+                    setInitialReady(true)
+                }
             })
         return () => {
             s1.unsubscribe()
@@ -96,10 +125,10 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
     }, [hwClient, terminal])
 
     useEffect(() => {
-        const ctx = { canceled: false }
-        doConnect(ctx)
+        const cancelTrigger$ = new BehaviorSubject<number>(0)
+        doConnect(cancelTrigger$)
         return () => {
-            ctx.canceled = true
+            cancelTrigger$.next(Date.now())
             hwClient.disconnect()
         }
     }, [hwClient])
@@ -108,6 +137,7 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
         setCmdRunning(running)
     }, [])
 
+    const terminalLineCount = terminal?.getLineCount() ?? 0
     return (
         <Dialog
             open={open}
@@ -146,8 +176,6 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
                             },
                         }}
                     >
-                        {/* <span>@cp949</span>
-                        <ArrowDropDownIcon sx={{ ml: 1, fontSize: '1rem' }} /> */}
                         {title}
                     </Box>
                 </Box>
@@ -173,7 +201,7 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
                         consoleRef={setTerminal}
                         onSubmitText={hwClient.sendTextLine}
                         onSubmitBinary={hwClient.sendBinary}
-                        readonly={!cmdRunning && minimized ? false : true}
+                        readonly={!cmdRunning && minimized && promptReady ? false : true}
                         sx={{
                             flex: 1,
                             position: 'relative',
@@ -189,7 +217,7 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
                             backgroundRepeat: 'no-repeat',
                         }}
                     />
-                    {!loading && (
+                    {initialReady && (
                         <Box
                             sx={{
                                 position: 'absolute',
@@ -307,13 +335,109 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
                         <Box
                             sx={{
                                 position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                background: 'rgba(255,255,255,0.5)',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: '100%',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                background: 'rgba(255,255,255,0.3)',
                             }}
                         >
                             <CircularProgress />
+                        </Box>
+                    )}
+                    {!loading && !initialReady && !promptReady && (
+                        <Box
+                            sx={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                minWidth: '200px',
+                                pt: 0,
+                                px: 4,
+                                pb: 5,
+                                transform: 'translate(-50%, -50%)',
+                                borderRadius: '8px',
+                                background: 'rgba(255,255,255)',
+                            }}
+                        >
+                            {terminalLineCount > 1 && (
+                                <Box>
+                                    <Typography variant="subtitle1">다른 명령이 실행중인 것 같습니다.</Typography>
+                                </Box>
+                            )}
+
+                            {terminalLineCount < 1 && (
+                                <>
+                                    <Box py={2}>
+                                        <Typography
+                                            variant="subtitle1"
+                                            sx={{ fontSize: '1.1rem', textAlign: 'center' }}
+                                        >
+                                            코딩팩과 연결이 안되는 것 같습니다.
+                                        </Typography>
+                                    </Box>
+                                    <Box>
+                                        <Typography
+                                            variant="body1"
+                                            sx={{ color: 'secondary.main', fontSize: '0.85rem' }}
+                                        >
+                                            아래 내용을 체크해주세요
+                                        </Typography>
+                                    </Box>
+                                    <Box
+                                        mt={4}
+                                        sx={{
+                                            '& .question': {
+                                                fontSize: '0.95rem',
+                                                color: '#191919',
+                                            },
+                                            '& ul': {
+                                                ml: 0,
+                                                fontSize: '0.85rem',
+                                                color: 'primary.main',
+                                            },
+                                        }}
+                                    >
+                                        <Typography variant="body1" sx={{ fontSize: '0.95rem' }} className="question">
+                                            1. 혹시 재부팅 중인가요?
+                                        </Typography>
+                                        <ul>
+                                            <li>잠시만 기다려주세요.</li>
+                                            <li>재부팅이 완료되면 현재 화면에서 자동으로 연결됩니다.</li>
+                                        </ul>
+                                        <Typography variant="body1" className="question" sx={{ mt: 2 }}>
+                                            2. 케이블을 연결하셨나요?
+                                        </Typography>
+                                        <ul>
+                                            <li>케이블이 정상적으로 연결되었는지 확인해주세요.</li>
+                                            <li>케이블 연결이 정상이라면 코딩팩 전원선을 뺐다가 다시 꽂아주세요.</li>
+                                        </ul>
+                                        <Typography variant="body1" className="question" sx={{ mt: 2 }}>
+                                            3. PC용 드라이버 프로그램을 설치하셨나요?
+                                        </Typography>
+                                        <ul>
+                                            <li>PC용 드라이버 프로그램을 설치해주세요.</li>
+                                            <li>
+                                                윈도우인 경우 제어판의 장치 관리자에서 장치가 인식되었는지 확인할 수
+                                                있습니다.
+                                            </li>
+                                        </ul>
+                                        <Typography variant="body1" className="question" sx={{ mt: 2 }}>
+                                            4. 코딩팩 업데이트 및 시스템 초기화를 실행하셨나요?
+                                        </Typography>
+                                        <ul>
+                                            <li>
+                                                코딩팩 바탕화면의 코딩팩 업데이트 및 시스템 초기화 아이콘을 더블
+                                                클릭해주세요.
+                                            </li>
+                                            <li>오랫동안 실행하지 않았다면 한번 더 실행해주세요.</li>
+                                        </ul>
+                                    </Box>
+                                </>
+                            )}
                         </Box>
                     )}
                 </Box>

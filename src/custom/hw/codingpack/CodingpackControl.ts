@@ -1,6 +1,5 @@
-import SerialPort, { parsers } from 'serialport'
-import { IHwContext, SerialPortHelper, ISerialPortInfo } from 'src/custom-types'
-import { InterByteTimeoutParser } from 'src/custom-types/helper/InterByteTimeoutParser'
+import SerialPort from 'serialport'
+import { IHwContext, ISerialPortInfo, SerialPortHelper } from 'src/custom-types'
 import { TerminalOutputTranslator } from 'src/custom-types/helper/TerminalOutputTranslator'
 import { ICodingpackControl } from './ICodingpackControl'
 
@@ -10,6 +9,7 @@ const chr = (ch: string): number => ch.charCodeAt(0)
 
 /**
  * 하드웨어 제어
+ * 코딩팩은 특수 동작을 하므로
  */
 export class CodingpackControl implements ICodingpackControl {
     private _context: IHwContext | null = null
@@ -48,6 +48,7 @@ export class CodingpackControl implements ICodingpackControl {
      * @returns
      */
     static isMatch = (portInfo: ISerialPortInfo): boolean => {
+        // console.log('XXX portInfo', portInfo)
         if (portInfo.manufacturer) {
             return portInfo.manufacturer.includes('wch.cn')
         }
@@ -72,18 +73,5 @@ export class CodingpackControl implements ICodingpackControl {
             throw new Error('hw not open')
         }
         return this.getSerialPortHelper()!
-    }
-
-    async readStream(): Promise<number[]> {
-        const helper = this.checkSerialPort()
-        const values = await helper.readNext()
-
-        // [pin1 ~ pin5]
-        return new Array(5).fill(0).map((_, i) => values[i] ?? 0)
-    }
-
-    async writeStream(input: string): Promise<void> {
-        const helper = this.checkSerialPort()
-        await helper.write(Buffer.from(input, 'utf8'))
     }
 }

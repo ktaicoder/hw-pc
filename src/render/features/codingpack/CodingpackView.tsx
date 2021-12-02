@@ -1,3 +1,4 @@
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { Alert, Box, Button, Container, Grid, Stack } from '@mui/material'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { PulseLoader } from 'react-spinners'
@@ -10,6 +11,7 @@ import Image from 'src/render/components/Image'
 import CodingpackActionDialog, {
     CodingpackActionDialogProps,
 } from 'src/render/dialogs/codingpack-action/CodingpackActionDialog'
+import { CustomEvents } from 'src/render/lib/CustomEvents'
 import { usePromiseValue } from 'src/render/util/useServiceValue'
 import { IContext } from 'src/services/context/interface'
 import { useHwServerState } from 'src/services/hw/hook'
@@ -320,6 +322,18 @@ function CodingpackInternalView(props: Props) {
 
                 <Box mt={10}>
                     <Container maxWidth="sm" disableGutters>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <Button
+                                endIcon={<ChevronRightIcon />}
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    CustomEvents.doc.openDialog.send({ docId: 'hw-pc-how-to-codingpack-setup' })
+                                }}
+                            >
+                                도움말
+                            </Button>
+                        </Box>
                         <Stack spacing={2}>
                             {CodingpackActions.filter((it) => !DISABLED_KIND.includes(it.kind)).map(
                                 ({ title, subtitle, docId, kind }) => (

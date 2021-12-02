@@ -17,7 +17,7 @@ import {
 } from 'rxjs'
 import SerialPort from 'serialport'
 import Stream from 'stream'
-import { RxSerialPort } from '..'
+import { RxSerialPort } from './RxSerialPort'
 
 const DEBUG = false
 

@@ -35,7 +35,13 @@ const toBase64 = (u8: Uint8Array) => {
 }
 
 const isPrompt = (line: string): boolean => {
-    return /^pi@raspberrypi:(~|\/)/.test(line)
+    const yes = /^pi@raspberrypi:(~|\/)/.test(line)
+    if (yes) {
+        console.log('line is prompt:' + line)
+    } else {
+        console.log('line is not prompt:' + line)
+    }
+    return yes
 }
 // WPA1 WPA2  100     abcd
 // WPA2       100     ohlab5g
@@ -140,7 +146,7 @@ export class HwClient {
     sendAndWait = async (messageName: string, requestBody: any): Promise<ResponseFrame> => {
         const requestId = nextRequestId()
 
-        // 연결이 안되채로 호출하면 예외가 발생한다
+        // 연결이 안된 채로 호출하면 예외가 발생한다
         this.socket.send(messageName, {
             requestId,
             ...requestBody,
@@ -154,7 +160,12 @@ export class HwClient {
     }
 
     observeTerminalPrompt = (): Observable<boolean> => {
-        return this.socket.observeTerminalMessage().pipe(map(isPrompt))
+        return this.socket.observeTerminalMessage().pipe(
+            map(isPrompt),
+            tap((ok) => {
+                console.log('터미널 프롬프트인가?' + ok)
+            }),
+        )
     }
 
     sendOpenTerminalRequest = () => {

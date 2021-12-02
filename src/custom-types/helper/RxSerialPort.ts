@@ -2,9 +2,7 @@ import Stream from 'stream'
 import { from, Observable } from 'rxjs'
 import SerialPort from 'serialport'
 const DEBUG = true
-/**
- * 현재 미사용
- */
+
 export class RxSerialPort {
     static fromOpenEvent = (sp: SerialPort) => {
         return new Observable((emitter) => {
@@ -74,11 +72,16 @@ export class RxSerialPort {
                 return
             }
             try {
-                sp.write(values)
-                sp.drain()
-
-                emitter.next()
-                emitter.complete()
+                sp.write(values, (err) => {
+                    if (err) {
+                        emitter.error(err)
+                    } else {
+                        sp.drain(function () {
+                            emitter.next()
+                            emitter.complete()
+                        })
+                    }
+                })
             } catch (err) {
                 emitter.error(err)
             }

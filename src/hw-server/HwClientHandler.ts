@@ -1,4 +1,4 @@
-import { Observable, Subscription, takeUntil } from 'rxjs'
+import { bufferTime, EMPTY, from, map, of, mapTo, mergeMap, Observable, Subscription, takeUntil, filter } from 'rxjs'
 import { Socket } from 'socket.io'
 import { IHwControl } from 'src/custom-types'
 import { HwManager } from './HwManager'
@@ -185,7 +185,7 @@ export class HwClientHandler {
     }
 
     private handleTerminalCommand = async (message: any) => {
-        console.log('handleTerminalCommand', message)
+        if (DEBUG) console.log('handleTerminalCommand', message)
         const sock = this._socket
         if (!sock) {
             return
@@ -247,17 +247,77 @@ export class HwClientHandler {
         }
 
         sock.emit(TERMINAL_CMD_RESPONE, { requestId, success: true })
+
+        function splitLines(msgLines: Buffer[]): [Buffer[], Buffer | null] {
+            if (msgLines.length === 0) return [[], null]
+
+            const LF = 10
+            const bufferList: Buffer[] = []
+            let tempArray: number[] = []
+            for (const msg of msgLines) {
+                for (let i = 0; i < msg.length; i++) {
+                    tempArray.push(msg[i])
+                    if (msg[0] === LF) {
+                        bufferList.push(Buffer.from(tempArray))
+                        tempArray = []
+                    }
+                }
+            }
+            if (tempArray.length === 0) {
+                return [bufferList, null]
+            } else {
+                return [bufferList, Buffer.from(tempArray)]
+            }
+        }
+
+        let prevPending: Buffer | null = null
         subscription.add(
-            helper.observeData().subscribe({
-                next: ({ timestamp, data }) => {
-                    data = removeControlCharacter(data)
-                    if (DEBUG) console.log('TERMINAL_MESSAGE_RESPONSE', message)
-                    sock.emit(TERMINAL_MESSAGE_RESPONSE, data.toString('utf8'))
-                },
-                error: (err) => {
-                    sock.emit(TERMINAL_CMD_RESPONE)
-                },
-            }),
+            helper
+                .observeData()
+                .pipe(
+                    map((it) => it.data),
+                    bufferTime(300),
+                    mergeMap((lines): Observable<Buffer> => {
+                        const [acceptedLines, newPending] = splitLines(lines)
+                        if (acceptedLines.length > 0) {
+                            if (prevPending && prevPending.length > 0) {
+                                acceptedLines[0] = Buffer.concat([prevPending, acceptedLines[0]])
+                            }
+                            prevPending = newPending
+                            return from(acceptedLines as Buffer[])
+                        } else {
+                            // 새로운 pending이 있다면 저장, 다음턴에 보낸다
+                            if (newPending && newPending.length > 0) {
+                                if (prevPending && prevPending.length > 0) {
+                                    prevPending = Buffer.concat([prevPending, newPending])
+                                } else {
+                                    prevPending = newPending
+                                }
+                                return EMPTY
+                            } else {
+                                // 새로운 pending이 없으므로 이전 pending을 보낸다
+                                if (prevPending && prevPending.length > 0) {
+                                    const v = prevPending
+                                    prevPending = null
+                                    return of(v)
+                                } else {
+                                    return EMPTY
+                                }
+                            }
+                        }
+                    }),
+                    filter((line) => line.length > 0),
+                )
+                .subscribe({
+                    next: (data) => {
+                        data = removeControlCharacter(data)
+                        if (DEBUG) console.log('TERMINAL_MESSAGE_RESPONSE', message)
+                        sock.emit(TERMINAL_MESSAGE_RESPONSE, data.toString('utf8'))
+                    },
+                    error: (err) => {
+                        console.log('error:' + err.message)
+                    },
+                }),
         )
     }
 

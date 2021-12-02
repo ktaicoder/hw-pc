@@ -171,7 +171,7 @@ export class HwSocket {
                         }
                     }),
                     filter((line) => line.length > 0),
-                    tap((line) => console.log(`terminal=${line.length}:[${line}]`)),
+                    // tap((line) => console.log(`terminal=${line.length}:[${line}]`)),
                 )
                 .subscribe((msg) => {
                     this._terminalMessage$.next(msg)
