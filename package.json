@@ -1,7 +1,7 @@
 {
   "name": "@ktaicoder/hw-pc",
-  "productName": "AiCodingBlock-HW",
-  "version": "1.0.16",
+  "productName": "AICODINGBLOCK-HW",
+  "version": "1.0.17",
   "description": "AiCodingBlock hardware electron application",
   "main": ".webpack/main",
   "scripts": {

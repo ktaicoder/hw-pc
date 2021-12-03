@@ -1,10 +1,9 @@
-import { Details } from '@mui/icons-material'
-import { app, ipcMain, session, powerMonitor, protocol } from 'electron'
+import { app, ipcMain, session, powerMonitor, protocol, dialog } from 'electron'
 import settings from 'electron-settings'
 import fs from 'fs-extra'
 import path from 'path'
 import 'reflect-metadata'
-import { SETTINGS_FOLDER } from 'src/constants/appPaths'
+import { SETTINGS_FOLDER, LAUNCH_SCHEMA } from 'src/constants/appPaths'
 import { MainChannel } from 'src/constants/channels'
 import { isTest } from 'src/constants/environment'
 import { bindServiceProxy } from 'src/main/bindServiceProxy'
@@ -16,6 +15,14 @@ import { IWindowService } from 'src/services/windows/interface'
 import { WindowNames } from 'src/services/windows/WindowProperties'
 
 app.commandLine.appendSwitch('enable-web-bluetooth', 'true')
+
+if (process.defaultApp) {
+    if (process.argv.length >= 2) {
+        app.setAsDefaultProtocolClient(LAUNCH_SCHEMA, process.execPath, [path.resolve(process.argv[1])])
+    }
+} else {
+    app.setAsDefaultProtocolClient(LAUNCH_SCHEMA)
+}
 
 const CSP = [
     `'self'`,
@@ -153,12 +160,18 @@ async function customInit() {
 app.on('second-instance', () => {
     // Someone tried to run a second instance, we should focus our window.
     const mainWindow = windowService.get(WindowNames.main)
-    if (mainWindow !== undefined) {
+    if (mainWindow) {
         if (mainWindow.isMinimized()) {
             mainWindow.restore()
         }
         mainWindow.focus()
     }
+})
+
+// Handle the protocol. In this case, we choose to show an Error Box.
+app.on('open-url', (event, url) => {
+    // dialog.showErrorBox('Welcome Back', `You arrived from: ${url}`)
+    console.log(`Welcome Back You arrived from: ${url}`)
 })
 
 if (fs.existsSync(settings.file())) {

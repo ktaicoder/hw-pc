@@ -1,8 +1,17 @@
+const { utils: { fromBuildIdentifier } } = require('@electron-forge/core');
+
 module.exports = {
     packagerConfig: {
         name: 'aicodingblock-hw',
         executableName: 'aicodingblock-hw',
         icon: 'build-resources/icons/icon',
+        appBundleId: fromBuildIdentifier({ beta: 'kr.co.kt.aicodingblock.pc-hw-beta', prod: 'kr.co.kt.aicodingblock.pc-hw' }),
+        protocols: [
+            {
+                name: '',
+                schemas: ['ktaicodingblock-hw']
+            }
+        ],
     },
     makers: [
         {
@@ -19,7 +28,9 @@ module.exports = {
         },
         {
             name: "@electron-forge/maker-deb",
-            config: {}
+            config: {
+                mimeType: ['x-scheme-handler/ktaicodingblock-hw']
+            }
         },
         {
             name: "@electron-forge/maker-rpm",
