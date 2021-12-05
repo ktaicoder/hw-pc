@@ -12,11 +12,11 @@ export type DocViewDialogProps = {
 }
 
 function getDocUrl(docId: string): string {
-    return `https://ktaicoder.github.io/post/${docId}`
+    return `https://ktaicoder.github.io/post/${docId}?_access=pc`
 }
 
 function getDocSiteUrl(docId: string): string {
-    return `https://ktaicoder.github.io/post-frame/${docId}`
+    return `https://ktaicoder.github.io/post-frame/${docId}?_access=pc`
 }
 
 export default function DocViewDialog(props: DocViewDialogProps) {
