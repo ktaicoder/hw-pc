@@ -24,6 +24,8 @@ if (process.defaultApp) {
     app.setAsDefaultProtocolClient(LAUNCH_SCHEMA)
 }
 
+// require('update-electron-app')()
+
 const CSP = [
     `'self'`,
     `'unsafe-eval'`,

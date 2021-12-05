@@ -1,7 +1,7 @@
 import { toast } from 'react-toastify'
 import React from 'react'
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'
-import { Box, Button, ButtonBase, SvgIconProps, Typography } from '@mui/material'
+import { Box, Button, ButtonBase, SvgIconProps, SxProps, Typography } from '@mui/material'
 import WifiIcon from '@mui/icons-material/Wifi'
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded'
 import BluetoothRoundedIcon from '@mui/icons-material/BluetoothRounded'
@@ -13,6 +13,7 @@ import { CodingpackActionKindKey } from 'src/domain/codingpack'
 import { ChevronRight } from '@mui/icons-material'
 import { CustomEvents } from 'src/render/lib/CustomEvents'
 import { HwKind } from 'src/custom-types'
+import Image from 'src/render/components/Image'
 
 type Props = {
     disabled: boolean
@@ -20,11 +21,12 @@ type Props = {
     title: React.ReactNode
     subtitle: React.ReactNode
     docId: string
+    sx?: SxProps
     onClick: () => void
 }
 
 const KindIcon = (props: { kind: CodingpackActionKindKey } & SvgIconProps) => {
-    const { kind, ...restProps } = props
+    const { kind, sx, ...restProps } = props
     switch (kind) {
         case 'wifi':
             return <WifiIcon {...restProps} />
@@ -71,42 +73,71 @@ const tintOfKind = (kind: CodingpackActionKindKey) => {
 }
 
 export default function CodingpackActionRow(props: Props) {
-    const { disabled, docId, onClick, title, subtitle, kind } = props
+    const { disabled, sx, docId, onClick, title, subtitle, kind } = props
     return (
         <ButtonBase
             component="div"
-            onClick={disabled ? undefined : onClick}
+            onClick={onClick}
             sx={{
                 overflow: 'hidden',
                 border: '1px solid #ddd',
                 borderRadius: '8px',
                 background: '#fff',
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                p: 2,
                 '& em': {
                     fontStyle: 'normal',
                     // color: 'secondary.main',
                     color: 'text.main',
                     fontWeight: 700,
                 },
+                ...sx,
             }}
         >
             <Box
-                sx={{ width: '100px', height: '80px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                sx={{
+                    display: 'flex',
+                    minHeight: '110px',
+                    p: 2,
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    maxWidth: '440px',
+                    minWidth: '440px',
+                    mx: 'auto',
+                }}
             >
-                <KindIcon kind={kind} sx={{ fontSize: '2rem', color: tintOfKind(kind) }} />
-            </Box>
-            <Box ml={2} flex={1}>
-                <Box sx={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography
-                        variant="subtitle1"
-                        sx={{ flex: 1, color: '#111', fontWeight: 700, fontSize: '1.1rem' }}
-                    >
-                        {title}
-                    </Typography>
-                    {/* <Button
+                <Box
+                    sx={{
+                        width: '32px',
+                        height: '32px',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                >
+                    <Image
+                        sx={{
+                            width: '100%',
+                            border: '0px solid #ccc',
+                            objectFit: 'contain',
+                            ...(disabled && { filter: 'grayscale(80%)' }),
+                        }}
+                        src={`static/images/codingpack/codingpack_${kind}.png`}
+                    />
+                    {/* <KindIcon kind={kind} sx={{ fontSize: '2rem', color: tintOfKind(kind) }} /> */}
+                </Box>
+                <Box ml={5} flex={1}>
+                    <Box sx={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography
+                            variant="subtitle1"
+                            sx={{
+                                flex: 1,
+                                color: '#0A1929',
+                                fontWeight: disabled ? 400 : 700,
+                                fontSize: '1.05rem',
+                            }}
+                        >
+                            {title}
+                        </Typography>
+                        {/* <Button
                         endIcon={<ChevronRight />}
                         onClick={(e) => {
                             e.preventDefault()
@@ -116,10 +147,11 @@ export default function CodingpackActionRow(props: Props) {
                     >
                         가이드
                     </Button> */}
+                    </Box>
+                    <Typography variant="body1" sx={{ mt: 1, color: '#666', fontSize: '0.9rem' }}>
+                        {subtitle}
+                    </Typography>
                 </Box>
-                <Typography variant="body1" sx={{ mt: 1, color: '#666', fontSize: '0.9rem' }}>
-                    {subtitle}
-                </Typography>
             </Box>
         </ButtonBase>
     )

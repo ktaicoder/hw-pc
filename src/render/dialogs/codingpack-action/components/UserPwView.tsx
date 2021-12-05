@@ -107,10 +107,17 @@ export default function UserPwView(props: Props) {
             alert('비밀번호가 너무 짧습니다')
             return
         }
+
         if (pw.length > 30) {
             alert('비밀번호가 너무 깁니다')
             return
         }
+
+        if (pw.includes(`'`) && pw.includes(`"`)) {
+            toast.warn('비밀번호에 따옴표를 포함할 수 없습니다')
+            return
+        }
+
         doStart(pw)
     }
 

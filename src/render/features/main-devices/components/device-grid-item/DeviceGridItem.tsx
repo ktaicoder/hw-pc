@@ -23,7 +23,7 @@ const getHwName = (info: IHwInfo): string => {
 export default function DeviceGridItem(props: Props) {
     const { onClick, onClickFavor, star, info } = props
 
-    const isUsb = info.hwId.startsWith('a') || info.hwId.startsWith('p')
+    const isUsb = info.hwKind === 'serial'
     const isBluetooth = !isUsb
     const hwName = getHwName(info)
 

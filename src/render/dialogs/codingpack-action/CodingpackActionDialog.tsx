@@ -354,24 +354,24 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
                                 position: 'absolute',
                                 top: '50%',
                                 left: '50%',
-                                minWidth: '200px',
+                                minWidth: '300px',
                                 pt: 0,
-                                px: 4,
-                                pb: 5,
+                                px: 0,
+                                pb: 0,
                                 transform: 'translate(-50%, -50%)',
                                 borderRadius: '8px',
                                 background: 'rgba(255,255,255)',
                             }}
                         >
                             {terminalLineCount > 1 && (
-                                <Box>
+                                <Box sx={{ p: 4 }}>
                                     <Typography variant="subtitle1">다른 명령이 실행중인 것 같습니다.</Typography>
                                 </Box>
                             )}
 
                             {terminalLineCount < 1 && (
                                 <>
-                                    <Box py={2}>
+                                    <Box p={2}>
                                         <Typography
                                             variant="subtitle1"
                                             sx={{ fontSize: '1.1rem', textAlign: 'center' }}
@@ -379,7 +379,7 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
                                             코딩팩과 연결이 안되는 것 같습니다.
                                         </Typography>
                                     </Box>
-                                    <Box>
+                                    <Box px={4}>
                                         <Typography
                                             variant="body1"
                                             sx={{ color: 'secondary.main', fontSize: '0.85rem' }}
@@ -388,35 +388,59 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
                                         </Typography>
                                     </Box>
                                     <Box
-                                        mt={4}
+                                        mt={2}
                                         sx={{
+                                            pl: 4,
+                                            pr: 1,
+                                            maxHeight: '480px',
+                                            pb: 5,
+                                            overflowY: 'scroll',
                                             '& .question': {
                                                 fontSize: '0.95rem',
                                                 color: '#191919',
                                             },
                                             '& ul': {
                                                 ml: 0,
+                                                mt: 1,
                                                 fontSize: '0.85rem',
                                                 color: 'primary.main',
                                             },
                                         }}
                                     >
+                                        <Typography variant="body1" className="question" sx={{ mt: 2 }}>
+                                            1. 코딩팩의 OS 이미지를 업그래이드 하셨나요?
+                                        </Typography>
+                                        <ul>
+                                            <li>2021년 12월 6일 이후에 배포된 OS 이미지만 지원합니다.</li>
+                                            <li>코딩팩의 OS 이미지를 구워주세요.</li>
+                                        </ul>
+                                        <Typography variant="body1" className="question" sx={{ mt: 2 }}>
+                                            2. 코딩팩이 콘솔 모드인가요?
+                                        </Typography>
+                                        <ul>
+                                            <li>코딩팩이 콘솔 모드일 때 PC와 통신이 됩니다.</li>
+                                            <li>
+                                                확인을 위해 코딩팩의 버튼을 누른 채로 4~5초 정도 기다리면 음성으로
+                                                알려줍니다.
+                                            </li>
+                                        </ul>
+
                                         <Typography variant="body1" sx={{ fontSize: '0.95rem' }} className="question">
-                                            1. 혹시 재부팅 중인가요?
+                                            3. 혹시 재부팅 중인가요?
                                         </Typography>
                                         <ul>
                                             <li>잠시만 기다려주세요.</li>
                                             <li>재부팅이 완료되면 현재 화면에서 자동으로 연결됩니다.</li>
                                         </ul>
                                         <Typography variant="body1" className="question" sx={{ mt: 2 }}>
-                                            2. 케이블을 연결하셨나요?
+                                            4. 케이블을 연결하셨나요?
                                         </Typography>
                                         <ul>
                                             <li>케이블이 정상적으로 연결되었는지 확인해주세요.</li>
                                             <li>케이블 연결이 정상이라면 코딩팩 전원선을 뺐다가 다시 꽂아주세요.</li>
                                         </ul>
                                         <Typography variant="body1" className="question" sx={{ mt: 2 }}>
-                                            3. PC용 드라이버 프로그램을 설치하셨나요?
+                                            5. PC용 드라이버 프로그램을 설치하셨나요?
                                         </Typography>
                                         <ul>
                                             <li>PC용 드라이버 프로그램을 설치해주세요.</li>
@@ -424,16 +448,6 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
                                                 윈도우인 경우 제어판의 장치 관리자에서 장치가 인식되었는지 확인할 수
                                                 있습니다.
                                             </li>
-                                        </ul>
-                                        <Typography variant="body1" className="question" sx={{ mt: 2 }}>
-                                            4. 코딩팩 업데이트 및 시스템 초기화를 실행하셨나요?
-                                        </Typography>
-                                        <ul>
-                                            <li>
-                                                코딩팩 바탕화면의 코딩팩 업데이트 및 시스템 초기화 아이콘을 더블
-                                                클릭해주세요.
-                                            </li>
-                                            <li>오랫동안 실행하지 않았다면 한번 더 실행해주세요.</li>
                                         </ul>
                                     </Box>
                                 </>

@@ -2,6 +2,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { Alert, Box, Button, Container, Grid, Stack } from '@mui/material'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { PulseLoader } from 'react-spinners'
+import { toast } from 'react-toastify'
 import { useUnmount } from 'react-use'
 import { interval } from 'rxjs'
 import { PortInfo } from 'serialport'
@@ -91,6 +92,8 @@ function CodingpackInternalView(props: Props) {
     const [dialogId, setDialogId] = useState<DialogId>()
     const [codingpackActionDialogProps, setCodingpackActionDialogProps] =
         useState<Omit<CodingpackActionDialogProps, 'open'>>()
+    const hwServerState = useHwServerState()
+    const hwReady = !isNullish(portInfo) && hwServerState?.running === true
 
     const _closeDialog = () => {
         setDialogId(undefined)
@@ -98,6 +101,10 @@ function CodingpackInternalView(props: Props) {
     }
 
     const _openCodingpackActionDialog = (kind: CodingpackActionKindKey) => {
+        if (!hwReady) {
+            toast.warn('연결되지 않았습니다')
+            return
+        }
         setDialogId('CodingpackActionDialog')
         setCodingpackActionDialogProps({
             actionKind: kind,
@@ -109,8 +116,6 @@ function CodingpackInternalView(props: Props) {
         if (!context) return []
         return filterPcDrivers(context.platform, context.osArch, info.pcDrivers)
     }, [context, info.pcDrivers])
-
-    const hwServerState = useHwServerState()
 
     const loadPorts = useCallback(async (hwId: string) => {
         const ports = await window.service.hw.serialPortList(hwId)
@@ -183,8 +188,6 @@ function CodingpackInternalView(props: Props) {
         // window.service.hw.downloadDriver(driverPath)
         window.service.native.openUrl('https://aicodingblock.kt.co.kr/maker')
     }
-
-    const hwReady = !isNullish(portInfo) && hwServerState?.running === true
 
     return (
         <Box
@@ -302,6 +305,28 @@ function CodingpackInternalView(props: Props) {
                         </Box>
                     </Grid>
                 </Grid>
+
+                <Container maxWidth="sm" disableGutters sx={{ mt: 10 }}>
+                    {!hwReady && (
+                        <Alert
+                            severity="warning"
+                            sx={{
+                                display: 'flex',
+                                mt: 1,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            }}
+                            icon={false}
+                        >
+                            <ul>
+                                {portInfos.length === 0 && <li>장치를 연결해주세요.</li>}
+
+                                <li>장치를 연결했는데 연결포트가 보이지 않는 경우 드라이버를 설치해주세요.</li>
+                            </ul>
+                        </Alert>
+                    )}
+                </Container>
+
                 {hwReady && (
                     <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%' }}>
                         <Alert
@@ -315,14 +340,14 @@ function CodingpackInternalView(props: Props) {
                             }}
                             icon={false}
                         >
-                            장치에 연결되었습니다.
+                            PC에 케이블이 연결되었습니다.
                         </Alert>
                     </Box>
                 )}
 
-                <Box mt={10}>
+                <Box mt={2}>
                     <Container maxWidth="sm" disableGutters>
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Button
                                 endIcon={<ChevronRightIcon />}
                                 onClick={(e) => {
@@ -331,7 +356,16 @@ function CodingpackInternalView(props: Props) {
                                     CustomEvents.doc.openDialog.send({ docId: 'hw-pc-how-to-codingpack-setup' })
                                 }}
                             >
-                                도움말
+                                설명서
+                            </Button>
+                            <Button
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    CustomEvents.doc.openDialog.send({ docId: 'hw-pc-codingpack-setup-help' })
+                                }}
+                            >
+                                문제가 생겼나요?
                             </Button>
                         </Box>
                         <Stack spacing={2}>
@@ -349,27 +383,6 @@ function CodingpackInternalView(props: Props) {
                                 ),
                             )}
                         </Stack>
-                    </Container>
-
-                    <Container maxWidth="sm" disableGutters>
-                        {!hwReady && (
-                            <Alert
-                                severity="warning"
-                                sx={{
-                                    display: 'flex',
-                                    mt: 1,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                }}
-                                icon={false}
-                            >
-                                <ul>
-                                    {portInfos.length === 0 && <li>장치를 연결해주세요.</li>}
-
-                                    <li>장치를 연결했는데 연결포트가 보이지 않는 경우 드라이버를 설치해주세요.</li>
-                                </ul>
-                            </Alert>
-                        )}
                     </Container>
                 </Box>
             </Box>

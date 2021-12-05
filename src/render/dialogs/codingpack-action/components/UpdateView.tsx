@@ -127,7 +127,7 @@ export default function UpdateView(props: Props) {
                 </Box>
 
                 <Box sx={{ fontSize: '0.85rem', mt: 1, textAlign: 'center' }}>
-                    보통 10초 이내에 업데이트 됩니다.
+                    보통 20초 이내에 업데이트 됩니다.
                     <br />
                     네트워크 속도에 따라 시간이 더 걸릴 수 있습니다.
                 </Box>

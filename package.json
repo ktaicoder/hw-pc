@@ -1,7 +1,7 @@
 {
   "name": "@ktaicoder/hw-pc",
   "productName": "AICODINGBLOCK-HW",
-  "version": "1.0.17",
+  "version": "1.0.10",
   "description": "AiCodingBlock hardware electron application",
   "main": ".webpack/main",
   "scripts": {
@@ -67,6 +67,7 @@
     "socket.io-client": "^4.4.0",
     "strip-ansi": "^7.0.1",
     "tsconfig-paths": "^3.11.0",
+    "update-electron-app": "^2.0.1",
     "utf-8-validate": "^5.0.7",
     "util": "^0.12.4",
     "uuid": "^8.3.2",

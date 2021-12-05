@@ -43,6 +43,16 @@ const isPrompt = (line: string): boolean => {
     }
     return yes
 }
+
+const _escapeQuote = (str: string) => {
+    if (str.includes('"')) {
+        return `'${str}'`
+    } else if (str.includes("'")) {
+        return `"${str}"`
+    }
+    return str
+}
+
 // WPA1 WPA2  100     abcd
 // WPA2       100     ohlab5g
 // WPA2       39      DIRECT-suC145x Series
@@ -163,7 +173,7 @@ export class HwClient {
         return this.socket.observeTerminalMessage().pipe(
             map(isPrompt),
             tap((ok) => {
-                console.log('터미널 프롬프트인가?' + ok)
+                // console.log('터미널 프롬프트인가?' + ok)
             }),
         )
     }
@@ -231,11 +241,12 @@ export class HwClient {
     }
 
     runWifiSsidChange = (ssid: string, pw: string): Observable<any> => {
-        return this._runCmd(`sudo nmcli device wifi connect '${ssid}' password '${pw}'`)
+        return this._runCmd(`sudo nmcli device wifi connect ${_escapeQuote(ssid)} password ${_escapeQuote(pw)}`)
     }
 
     runPasswdChange = (newPassword: string): Observable<any> => {
-        return this._runCmd(`echo pi:${newPassword} | sudo chpasswd`)
+        const str = _escapeQuote(`pi:${newPassword}`)
+        return this._runCmd(`echo ${str} | sudo chpasswd`)
     }
 
     private _sendTextObservable = (text: string, afterDelayMs = 200): Observable<any> => {
@@ -290,6 +301,7 @@ export class HwClient {
             ),
         ).pipe(takeLast(1))
     }
+
     observeCmdResultCapture = (): Observable<string[]> => {
         const lines: string[] = []
         // this.observeTerminalPrompt()
@@ -312,7 +324,7 @@ export class HwClient {
         )
     }
     private _runCmdWithOutput = (cmd: string): Observable<string[]> => {
-        // ctrl+d를 두번 보내고
+        // ctrl+d를 보내고
         // prompt 기다리고
         // 명령 보내고
         // prompt를 기다린다.

@@ -136,7 +136,20 @@ export default function WifiSettingView(props: Props) {
             toast.warn('비밀번호는 8글자이상으로 입력해주세요')
             return
         }
+
+        // 두 종류의 따옴표가 둘다 포함되어 있으면 처리할 수 없음
+        if (pw.includes(`'`) && pw.includes(`"`)) {
+            toast.warn('비밀번호에 따옴표를 포함할 수 없습니다')
+            return
+        }
+
+        // 두 종류의 따옴표가 둘다 포함되어 있으면 처리할 수 없음
         const wifiSsid = ssid?.trim() ?? ''
+        if (wifiSsid.includes(`'`) && wifiSsid.includes(`"`)) {
+            toast.warn('SSID에 따옴표를 포함할 수 없습니다')
+            return
+        }
+
         if (wifiSsid.length < 1) {
             toast.warn('SSID를 입력해주세요')
             return
