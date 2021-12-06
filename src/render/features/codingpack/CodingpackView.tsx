@@ -287,21 +287,32 @@ function CodingpackInternalView(props: Props) {
                     <Grid item xs={4} sm={4} md={5} lg={5}>
                         <Box
                             sx={{
-                                mt: 3,
+                                mt: 2,
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
+                                fontSize: '0.8rem',
+                                lineHeight: '1.2rem',
                             }}
                         >
-                            {info.firmwareFile && (
-                                <Button
-                                    variant="contained"
-                                    sx={{ width: 180, height: 40 }}
-                                    onClick={() => _onClickFirmwareDownload()}
-                                >
-                                    펌웨어 설치
-                                </Button>
-                            )}
+                            <Box
+                                sx={{
+                                    textAlign: 'left',
+                                    color: 'steelblue',
+                                    ml: -4,
+                                }}
+                            >
+                                ★ 연결이 안될때 체크하기
+                            </Box>
+                            <Box
+                                sx={{
+                                    textAlign: 'left',
+                                    color: '#777',
+                                }}
+                            >
+                                - 전원과 USB 케이블을 모두 연결하셨나요?
+                                <br />- 노랑 버튼을 4초간 길게 누르셨나요? (콘솔모드)
+                            </Box>
                         </Box>
                     </Grid>
                 </Grid>
