@@ -20,7 +20,6 @@ export const CodingpackActions: CodingpackActionData[] = [
             </>
         ),
     },
-
     {
         kind: 'update',
         docId: 'codingpack-how-to-system-reset',
@@ -38,6 +37,16 @@ export const CodingpackActions: CodingpackActionData[] = [
         subtitle: (
             <>
                 코딩팩의 <em>스피커와 마이크</em>를 테스트합니다
+            </>
+        ),
+    },
+    {
+        kind: 'autorun',
+        docId: 'codingpack-how-to-system-reset',
+        title: '오토런',
+        subtitle: (
+            <>
+                코딩팩의 <em>버튼을 눌러서 실행할 작품</em>을 등록합니다.
             </>
         ),
     },

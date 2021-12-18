@@ -15,6 +15,7 @@ import { BehaviorSubject, bufferTime, debounceTime, filter, firstValueFrom, take
 import { CodingpackActionKind, CodingpackActionKindKey } from 'src/domain/codingpack'
 import ReactConsole, { ReactConsoleControl } from 'src/render/components/react-console/ReactConsole'
 import { fixWebPath } from 'src/render/util/fixWebPath'
+import AutoRunView from './components/AutoRunView'
 import BluetoothSettingView from './components/BluetoothSettingView'
 import CheckAudioView from './components/CheckAudioView'
 import RebootView from './components/RebootView'
@@ -252,6 +253,14 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
                         >
                             {actionKind === 'audio' && (
                                 <CheckAudioView
+                                    minimized={minimized}
+                                    toggleMinimize={() => setMinimized((p) => !p)}
+                                    onRunning={_onRunning}
+                                    hwClient={hwClient}
+                                />
+                            )}
+                            {actionKind === 'autorun' && (
+                                <AutoRunView
                                     minimized={minimized}
                                     toggleMinimize={() => setMinimized((p) => !p)}
                                     onRunning={_onRunning}

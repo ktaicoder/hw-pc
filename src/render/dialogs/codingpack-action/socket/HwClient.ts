@@ -249,6 +249,14 @@ export class HwClient {
         return this._runCmd(`echo ${str} | sudo chpasswd`)
     }
 
+    runAutoRunCreate = (url: string): Observable<any> => {
+        return this._runCmd(`aimk-auto-run-file.sh create ${url}`)
+    }
+
+    runAutoRunRemove = (): Observable<any> => {
+        return this._runCmd(`aimk-auto-run-file.sh remove`)
+    }
+
     private _sendTextObservable = (text: string, afterDelayMs = 200): Observable<any> => {
         return new Observable((emitter) => {
             this.sendText(text)
