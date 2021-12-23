@@ -25,6 +25,33 @@ export type WifiAp = {
     wpa1: boolean
     wpa2: boolean
 }
+export type NetworkInterface = {
+    iface: string
+    mac: string
+    ip?: string
+    connection?: string
+}
+
+export type Disk = {
+    total: string
+    used: string
+    avail: string
+    usedPercent: string
+}
+
+export type CodingpackInfo = {
+    model: string
+    modelType: string
+    networkInterfaces: NetworkInterface[]
+    disk?: Disk
+    cpuCount: number
+    cpuModel: string
+    cpuHardware: string
+    cpuArch: string
+    cpuArchModel: string
+    cpuMHz: number
+    memTotal: string
+}
 
 function nextRequestId() {
     return Math.random().toString(36).substring(2) + Date.now()
@@ -88,6 +115,109 @@ function parseWifiList(output: string): WifiAp[] {
         })
     }
     return list
+}
+
+function formatByteCount(size: number): string {
+    const units = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+
+    if (size === 1) return '1 byte'
+
+    let l = 0
+    let n = size
+    while (n >= 1024 && ++l) {
+        n = n / 1024
+    }
+
+    return n.toFixed(n < 10 && l > 0 ? 1 : 0) + ' ' + units[l]
+}
+
+function parseMemTotal(str: string) {
+    str = str.toLowerCase()
+    if (!str.includes('kb')) {
+        return str
+    }
+    return formatByteCount(parseInt(str) * 1024)
+}
+
+function parseInspect(output: string): CodingpackInfo | null {
+    const lines = output
+        .split(/[\r\n]+/)
+        .map((it) => it.trim())
+        .filter((it) => it.length > 0)
+
+    let model: string | undefined = undefined
+    let modelType: string | undefined = undefined
+    let networkInterfaces: NetworkInterface[] = []
+    let disk: Disk | undefined = undefined
+    let cpuCount = 0
+    let cpuModel: string | undefined = undefined
+    let cpuHardware: string | undefined = undefined
+    let memTotal: string | undefined = undefined
+    let cpuArch: string = ''
+    let cpuArchModel: string = ''
+    let cpuMHz: number = 0
+
+    for (let line of lines) {
+        if (line.startsWith('MODEL=')) {
+            model = line.substring('MODEL='.length)
+        } else if (line.startsWith('MODEL_TYPE=')) {
+            modelType = line.substring('MODEL_TYPE='.length)
+        } else if (line.startsWith('CPU_COUNT=')) {
+            cpuCount = +line.substring('CPU_COUNT='.length)
+        } else if (line.startsWith('CPU_MODEL=')) {
+            cpuModel = line.substring('CPU_MODEL='.length)
+        } else if (line.startsWith('CPU_ARCH=')) {
+            cpuArch = line.substring('CPU_ARCH='.length)
+        } else if (line.startsWith('CPU_ARCH_MODEL=')) {
+            cpuArchModel = line.substring('CPU_ARCH_MODEL='.length)
+        } else if (line.startsWith('CPU_HARDWARE=')) {
+            cpuHardware = line.substring('CPU_HARDWARE='.length)
+        } else if (line.startsWith('CPU_MHZ=')) {
+            cpuMHz = +line.substring('CPU_MHZ='.length)
+        } else if (line.startsWith('MEMORY=')) {
+            memTotal = parseMemTotal(line.substring('MEMORY='.length))
+        } else if (line.startsWith('NET=')) {
+            const items = line.substring('NET='.length).split(';')
+            if (items.length !== 4) {
+                console.warn('cannot parse network line:' + line)
+            } else {
+                networkInterfaces.push({
+                    iface: items[0],
+                    mac: items[1],
+                    ip: items[2],
+                    connection: items[3],
+                })
+            }
+        } else if (line.startsWith('DISK=')) {
+            const items = line.substring('DISK='.length).split(' ')
+            if (items.length !== 4) {
+                console.warn('cannot parse disk line:' + line)
+            } else {
+                disk = {
+                    total: items[0],
+                    used: items[1],
+                    avail: items[2],
+                    usedPercent: items[3],
+                }
+            }
+        }
+    }
+    if (!model || !modelType) {
+        return null
+    }
+    return {
+        model,
+        modelType,
+        networkInterfaces,
+        disk,
+        cpuCount,
+        cpuMHz,
+        cpuModel: cpuModel ?? '-',
+        cpuHardware: cpuHardware ?? '-',
+        cpuArch,
+        cpuArchModel,
+        memTotal: memTotal ?? '-',
+    }
 }
 
 export class HwClient {
@@ -213,6 +343,12 @@ export class HwClient {
     runWifiList = (): Observable<WifiAp[]> => {
         return this._runCmdWithOutput('sh /usr/local/bin/aimk-wifi-list.sh 3').pipe(
             map((lines) => parseWifiList(lines.join(''))),
+        )
+    }
+
+    runInspect = (): Observable<CodingpackInfo | null> => {
+        return this._runCmdWithOutput('sh /usr/local/bin/aimk-inspect.sh').pipe(
+            map((lines) => parseInspect(lines.join(''))),
         )
     }
 

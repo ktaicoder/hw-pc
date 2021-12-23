@@ -1,4 +1,5 @@
 export type CodingpackActionKindKey =
+    | 'inspect'
     | 'upgrade'
     | 'update'
     | 'audio'
@@ -9,6 +10,7 @@ export type CodingpackActionKindKey =
     | 'reboot'
     | 'rescue'
 export const CodingpackActionKind = {
+    inspect: '코딩팩 정보',
     upgrade: '시스템 초기화',
     update: '코딩팩 업데이트',
     audio: '오디오 테스트',

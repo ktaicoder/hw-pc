@@ -18,6 +18,7 @@ import { fixWebPath } from 'src/render/util/fixWebPath'
 import AutoRunView from './components/AutoRunView'
 import BluetoothSettingView from './components/BluetoothSettingView'
 import CheckAudioView from './components/CheckAudioView'
+import CodingpackInspectView from './components/CodingpackInspectView'
 import RebootView from './components/RebootView'
 import RescueView from './components/RescueView'
 import SystemResetView from './components/SystemResetView'
@@ -56,14 +57,14 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
             hwClient.connect()
 
             try {
-                console.log('웹소켓 연결을 기다리기')
+                // console.log('웹소켓 연결을 기다리기')
                 await hwClient.waitForConnected()
                 if (cancelTrigger$.value > 0) return
-                console.log('웹소켓 연결이 되었습니다. 이제 터미널을 엽니다')
+                // console.log('웹소켓 연결이 되었습니다. 이제 터미널을 엽니다')
 
                 await hwClient.sendOpenTerminalRequest()
                 if (cancelTrigger$.value > 0) return
-                console.log('터미널이 열렸습니다')
+                // console.log('터미널이 열렸습니다')
 
                 // 시작할때 컨트롤 d를 두번 누르고 시작한다.
                 /// hwClient.sendBinary(new Uint8Array(ControlKeys.d))
@@ -147,7 +148,7 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
             fullWidth
             sx={{
                 '& .MuiPaper-root': {
-                    background: '#FAFAFA',
+                    background: '#FFF',
                 },
                 '& .MuiDialog-paperScrollPaper': {
                     minHeight: 'calc(100vh - 70px)',
@@ -251,6 +252,14 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
                                 background: cmdRunning ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,1)',
                             }}
                         >
+                            {actionKind === 'inspect' && (
+                                <CodingpackInspectView
+                                    minimized={minimized}
+                                    toggleMinimize={() => setMinimized((p) => !p)}
+                                    onRunning={_onRunning}
+                                    hwClient={hwClient}
+                                />
+                            )}
                             {actionKind === 'audio' && (
                                 <CheckAudioView
                                     minimized={minimized}

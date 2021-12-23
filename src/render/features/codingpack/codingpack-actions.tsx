@@ -10,6 +10,17 @@ type CodingpackActionData = {
 
 export const CodingpackActions: CodingpackActionData[] = [
     {
+        kind: 'inspect',
+        docId: 'codingpack-how-to-system-reset',
+        title: '코딩팩 정보',
+        subtitle: (
+            <>
+                <em>코딩팩의 정보</em>를 조회합니다. <br />
+                모델, IP 주소, SD 카드 등을 조회합니다.
+            </>
+        ),
+    },
+    {
         kind: 'upgrade',
         docId: 'codingpack-how-to-system-reset',
         title: '시스템 초기화',

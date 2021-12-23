@@ -1,6 +1,7 @@
+import { RefreshOutlined } from '@mui/icons-material'
+import HighlightOffIcon from '@mui/icons-material/HighlightOff'
 import KeyboardDoubleArrowLeftRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowLeftRounded'
 import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowRightRounded'
-import HighlightOffIcon from '@mui/icons-material/HighlightOff'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import {
@@ -13,11 +14,6 @@ import {
     TextField,
     Tooltip,
     Typography,
-    FormControl,
-    FormLabel,
-    RadioGroup,
-    Radio,
-    FormControlLabel,
 } from '@mui/material'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
@@ -29,7 +25,6 @@ import { sleepAsync } from 'src/render/util/sleepAsync'
 import { useTimeoutText } from 'src/render/util/useTimeoutText'
 import { HwClient, WifiAp } from '../socket/HwClient'
 import WifiApList from './WifiApList'
-import { RefreshOutlined } from '@mui/icons-material'
 
 type RunningCallbackFn = (running: boolean) => void
 
@@ -52,7 +47,6 @@ export default function WifiSettingView(props: Props) {
     const runContextRef = useRef({ canceled: false })
     const actionData = useMemo(() => CodingpackActions.find((it) => it.kind === ACTION_KIND)!, [])
     const [ssid, setSsid] = useState<string>()
-    const [ssidSelectionMode, setSsidSelectionMode] = useState<'input' | 'scan'>('scan')
     const [password, setPassword] = useState<string>()
     const [resultMessage, setResultMessage] = useTimeoutText(2500)
     const [wifiApList, setWifiApList] = useState<WifiAp[]>([])
