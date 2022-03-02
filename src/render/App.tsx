@@ -4,7 +4,6 @@ import InspectSerialPage from './pages/inspect-serial/InspectSerialPage'
 import InspectHidPage from './pages/inspect-hid/InspectHidPage'
 import InfoPage from './pages/info/InfoPage'
 import SettingsPage from './pages/settings/SettingsPage'
-import BlockFactoryPage from './pages/block-factory/BlockFactoryPage'
 import CodingpackPage from './pages/codingpack/CodingpackPage'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -15,7 +14,6 @@ const DATA = [
     { path: '/codingpack', comp: CodingpackPage },
     { path: '/info', comp: InfoPage },
     { path: '/settings', comp: SettingsPage },
-    { path: '/block-factory', comp: BlockFactoryPage },
     { path: '/', comp: Home },
 ]
 

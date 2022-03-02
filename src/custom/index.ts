@@ -4,7 +4,7 @@ import wiseXboardPremium from './hw/wiseXboardPremium'
 import codingpack from './hw/codingpack'
 
 export const controls = {
-    [wiseXboard.hwId]: wiseXboard,
     [wiseXboardPremium.hwId]: wiseXboardPremium,
+    [wiseXboard.hwId]: wiseXboard,
     [codingpack.hwId]: codingpack,
 }

@@ -6,7 +6,7 @@ const HWID = 'wiseXboardPremium'
 const info: IHwInfo = {
     hwId: HWID,
     hwKind: HwKind.serial,
-    hwName: '와이즈 AI키트',
+    hwName: 'KT AI 코딩블록 AI키트',
     category: 'module',
     supportPlatforms: ['win32'],
     pcDrivers: [
