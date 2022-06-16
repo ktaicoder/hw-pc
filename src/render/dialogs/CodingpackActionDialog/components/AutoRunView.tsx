@@ -15,6 +15,8 @@ import { HwClient } from '../socket/HwClient'
 
 type RunningCallbackFn = (running: boolean) => void
 
+const AUTORUN_URL_PREFIX = ['https://aicodiny.com/', 'https://aimk.jjfive.net/']
+
 function isValidUrl(url: string): boolean {
     try {
         new URL(url)
@@ -133,7 +135,7 @@ export default function AutoRunView(props: Props) {
             return
         }
 
-        if (!url.startsWith('https://aicodingblock.kt.co.kr/') && !url.startsWith('https://aimk.jjfive.net/')) {
+        if (!AUTORUN_URL_PREFIX.some((prefix) => url.startsWith(prefix))) {
             toast.warn('코딩블록 사이트의 주소를 등록해주세요')
             return
         }

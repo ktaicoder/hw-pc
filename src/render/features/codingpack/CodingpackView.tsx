@@ -9,9 +9,7 @@ import { PortInfo } from 'serialport'
 import { IHwInfo, PcDriver } from 'src/custom-types/hw-types'
 import { CodingpackActionKindKey } from 'src/domain/codingpack'
 import Image from 'src/render/components/Image'
-import CodingpackActionDialog, {
-    CodingpackActionDialogProps,
-} from 'src/render/dialogs/codingpack-action/CodingpackActionDialog'
+import CodingpackActionDialog, { CodingpackActionDialogProps } from 'src/render/dialogs/CodingpackActionDialog'
 import { CustomEvents } from 'src/render/lib/CustomEvents'
 import { usePromiseValue } from 'src/render/util/useServiceValue'
 import { IContext } from 'src/services/context/interface'
@@ -90,8 +88,7 @@ function CodingpackInternalView(props: Props) {
     const [portInfo, setPortInfo] = useState<PortInfo>()
     const [refreshToken, setRefreshToken] = useState(0)
     const [dialogId, setDialogId] = useState<DialogId>()
-    const [codingpackActionDialogProps, setCodingpackActionDialogProps] =
-        useState<Omit<CodingpackActionDialogProps, 'open'>>()
+    const [codingpackActionDialogProps, setCodingpackActionDialogProps] = useState<CodingpackActionDialogProps>()
     const hwServerState = useHwServerState()
     const hwReady = !isNullish(portInfo) && hwServerState?.running === true
 
@@ -107,6 +104,7 @@ function CodingpackInternalView(props: Props) {
         }
         setDialogId('CodingpackActionDialog')
         setCodingpackActionDialogProps({
+            open: true,
             actionKind: kind,
             onClose: _closeDialog,
         })
@@ -186,7 +184,7 @@ function CodingpackInternalView(props: Props) {
 
     const _onClickChrome = () => {
         // window.service.hw.downloadDriver(driverPath)
-        window.service.native.openUrl('https://aicodingblock.kt.co.kr/maker')
+        window.service.native.openUrl('https://aicodiny.com/maker')
     }
 
     return (
@@ -398,7 +396,7 @@ function CodingpackInternalView(props: Props) {
                 </Box>
             </Box>
             {dialogId === 'CodingpackActionDialog' && codingpackActionDialogProps && (
-                <CodingpackActionDialog open={true} {...codingpackActionDialogProps} />
+                <CodingpackActionDialog {...codingpackActionDialogProps} />
             )}
         </Box>
     )

@@ -1,21 +1,19 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import {
-    Container,
-    Box,
     Alert,
+    Box,
     Button,
     ButtonBase,
+    Container,
     Grid,
     IconButton,
     Toolbar,
     Tooltip,
     Typography,
 } from '@mui/material'
-
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { PulseLoader } from 'react-spinners'
-import { useUnmount } from 'react-use'
-import { from, interval, mergeMapTo } from 'rxjs'
+import { interval } from 'rxjs'
 import { PortInfo } from 'serialport'
 import { IHwInfo, PcDriver } from 'src/custom-types/hw-types'
 import Image from 'src/render/components/Image'
@@ -125,7 +123,7 @@ export default function DeviceSelectionView(props: Props) {
 
     const _onClickChrome = () => {
         // window.service.hw.downloadDriver(driverPath)
-        window.service.native.openUrl('https://aicodingblock.kt.co.kr/maker')
+        window.service.native.openUrl('https://aicodiny.com/maker')
     }
 
     // const serialPortReadable = Boolean(readablePath && readablePath === portInfo?.path)
