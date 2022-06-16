@@ -32,7 +32,6 @@ jobs:
         node-version: 16
     - run: |
         yarn install
-        yarn rebuild
     - name: Make
       env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
