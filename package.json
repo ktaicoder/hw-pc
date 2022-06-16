@@ -24,11 +24,11 @@
     "@emotion/react": "^11.5.0"
   },
   "dependencies": {
-    "@emotion/react": "^11.5.0",
-    "@emotion/styled": "^11.3.0",
-    "@mui/icons-material": "^5.2.0",
-    "@mui/material": "^5.2.2",
-    "@mui/styles": "^5.2.2",
+    "@emotion/react": "^11.9.3",
+    "@emotion/styled": "^11.9.3",
+    "@mui/icons-material": "^5.8.4",
+    "@mui/material": "^5.8.4",
+    "@mui/styles": "^5.8.4",
     "beautiful-react-hooks": "^1.0.2",
     "bufferutil": "^4.0.4",
     "electron-is-dev": "^2.0.0",
