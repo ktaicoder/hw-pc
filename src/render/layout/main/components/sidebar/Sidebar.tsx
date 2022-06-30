@@ -1,9 +1,6 @@
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import { Box, Divider, IconButton, List, ListItem, ListItemText, useMediaQuery } from '@mui/material'
+import { Box, Divider, List, ListItem, ListItemText, useMediaQuery } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
-import { useHistory } from 'react-router'
 import { useLocation } from 'react-router-dom'
 import Image from 'src/render/components/Image'
 import hist from 'src/render/services/history'
@@ -21,14 +18,12 @@ function Sidebar() {
     const { pathname: pathkey } = useLocation()
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
     const { sidebarStore } = useStore()
-    const history = useHistory()
     const _onClickLink = () => {
         if (isMobile) {
             sidebarStore.setOpen(false)
         }
         // history.push("/inspect");
     }
-    const isOpen = sidebarStore.isOpen
 
     return (
         <Box
@@ -57,7 +52,7 @@ function Sidebar() {
                     component="img"
                     onClick={() => hist.push('/')}
                     sx={{ maxWidth: '80%', height: 22, objectFit: 'contain' }}
-                    src="static/images/logo1.png"
+                    src="static/images/logo.png"
                 />
             </DrawerHeader>
             <List disablePadding>

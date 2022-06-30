@@ -6,7 +6,7 @@ const HWID = 'codingpack'
 const info: IHwInfo = {
     hwId: HWID,
     hwKind: HwKind.terminal,
-    hwName: '코딩팩',
+    hwName: '코디니팩',
     category: 'module',
     supportPlatforms: ['win32'],
     pcDrivers: [

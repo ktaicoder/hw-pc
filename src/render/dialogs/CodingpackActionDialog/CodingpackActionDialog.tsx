@@ -394,7 +394,7 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
                                             variant="subtitle1"
                                             sx={{ fontSize: '1.1rem', textAlign: 'center' }}
                                         >
-                                            코딩팩과 연결이 안되는 것 같습니다.
+                                            코디니팩과 연결이 안되는 것 같습니다.
                                         </Typography>
                                     </Box>
                                     <Box px={4}>
@@ -426,19 +426,19 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
                                         }}
                                     >
                                         <Typography variant="body1" className="question" sx={{ mt: 2 }}>
-                                            1. 코딩팩의 OS 이미지를 업그래이드 하셨나요?
+                                            1. 코디니팩의 OS 이미지를 업그래이드 하셨나요?
                                         </Typography>
                                         <ul>
                                             <li>2021년 12월 6일 이후에 배포된 OS 이미지만 지원합니다.</li>
-                                            <li>코딩팩의 OS 이미지를 구워주세요.</li>
+                                            <li>코디니팩의 OS 이미지를 구워주세요.</li>
                                         </ul>
                                         <Typography variant="body1" className="question" sx={{ mt: 2 }}>
-                                            2. 코딩팩이 콘솔 모드인가요?
+                                            2. 코디니팩이 콘솔 모드인가요?
                                         </Typography>
                                         <ul>
-                                            <li>코딩팩이 콘솔 모드일 때 PC와 통신이 됩니다.</li>
+                                            <li>코디니팩이 콘솔 모드일 때 PC와 통신이 됩니다.</li>
                                             <li>
-                                                확인을 위해 코딩팩의 버튼을 누른 채로 4~5초 정도 기다리면 음성으로
+                                                확인을 위해 코디니팩의 버튼을 누른 채로 4~5초 정도 기다리면 음성으로
                                                 알려줍니다.
                                             </li>
                                         </ul>
@@ -455,7 +455,7 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
                                         </Typography>
                                         <ul>
                                             <li>케이블이 정상적으로 연결되었는지 확인해주세요.</li>
-                                            <li>케이블 연결이 정상이라면 코딩팩 전원선을 뺐다가 다시 꽂아주세요.</li>
+                                            <li>케이블 연결이 정상이라면 코디니팩 전원선을 뺐다가 다시 꽂아주세요.</li>
                                         </ul>
                                         <Typography variant="body1" className="question" sx={{ mt: 2 }}>
                                             5. PC용 드라이버 프로그램을 설치하셨나요?

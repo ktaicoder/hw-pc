@@ -9,7 +9,7 @@ const chr = (ch: string): number => ch.charCodeAt(0)
 
 /**
  * 하드웨어 제어
- * 코딩팩은 특수 동작을 하므로
+ * 코디니팩은 특수 동작을 하므로
  */
 export class CodingpackControl implements ICodingpackControl {
     private _context: IHwContext | null = null

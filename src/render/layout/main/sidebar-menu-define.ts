@@ -40,7 +40,7 @@ const menusTemp: (ILabel | IDivider | IMenu | ISection)[] = [
     {
         type: 'menu',
         icon: 'cable',
-        title: '코딩팩 설정',
+        title: '코디니팩 설정',
         href: '/codingpack',
     },
     {

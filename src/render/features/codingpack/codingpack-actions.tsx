@@ -12,10 +12,10 @@ export const CodingpackActions: CodingpackActionData[] = [
     {
         kind: 'inspect',
         docId: 'codingpack-how-to-system-reset',
-        title: '코딩팩 정보',
+        title: '코디니팩 정보',
         subtitle: (
             <>
-                <em>코딩팩의 정보</em>를 조회합니다. <br />
+                <em>코디니팩의 정보</em>를 조회합니다. <br />
                 모델, IP 주소, SD 카드 등을 조회합니다.
             </>
         ),
@@ -34,10 +34,10 @@ export const CodingpackActions: CodingpackActionData[] = [
     {
         kind: 'update',
         docId: 'codingpack-how-to-system-reset',
-        title: '코딩팩 업데이트',
+        title: '코디니팩 업데이트',
         subtitle: (
             <>
-                코딩팩의 <em>작은 SW 수정사항</em>을 적용합니다.
+                코디니팩의 <em>작은 SW 수정사항</em>을 적용합니다.
             </>
         ),
     },
@@ -47,7 +47,7 @@ export const CodingpackActions: CodingpackActionData[] = [
         title: '오디오 테스트',
         subtitle: (
             <>
-                코딩팩의 <em>스피커와 마이크</em>를 테스트합니다
+                코디니팩의 <em>스피커와 마이크</em>를 테스트합니다
             </>
         ),
     },
@@ -57,7 +57,7 @@ export const CodingpackActions: CodingpackActionData[] = [
         title: '오토런',
         subtitle: (
             <>
-                코딩팩의 <em>버튼을 눌러서 실행할 작품</em>을 등록합니다.
+                코디니팩의 <em>버튼을 눌러서 실행할 작품</em>을 등록합니다.
             </>
         ),
     },
@@ -67,7 +67,7 @@ export const CodingpackActions: CodingpackActionData[] = [
         title: 'WIFI 설정',
         subtitle: (
             <>
-                코딩팩의 <em>WIFI</em>를 설정합니다
+                코디니팩의 <em>WIFI</em>를 설정합니다
             </>
         ),
     },
@@ -87,7 +87,7 @@ export const CodingpackActions: CodingpackActionData[] = [
         title: '블루투스 이름 설정',
         subtitle: (
             <>
-                코딩팩의 <em>블루투스 이름</em>을 설정하세요
+                코디니팩의 <em>블루투스 이름</em>을 설정하세요
             </>
         ),
     },
@@ -97,7 +97,7 @@ export const CodingpackActions: CodingpackActionData[] = [
         title: '재부팅',
         subtitle: (
             <>
-                코딩팩을 <em>재부팅</em>합니다
+                코디니팩을 <em>재부팅</em>합니다
             </>
         ),
     },
@@ -107,7 +107,7 @@ export const CodingpackActions: CodingpackActionData[] = [
         title: '시스템 복구',
         subtitle: (
             <>
-                코딩팩이 정상동작 하지 않는 경우 <em>시스템을 복구</em>합니다. <br />
+                코디니팩이 정상동작 하지 않는 경우 <em>시스템을 복구</em>합니다. <br />
                 복구 후에는 자동으로 재부팅합니다.
             </>
         ),
