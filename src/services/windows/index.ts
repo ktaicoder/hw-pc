@@ -100,6 +100,7 @@ export class WindowService implements IWindowService {
             minimizable: true,
             fullscreenable: true,
             autoHideMenuBar: false,
+            title: 'AI Codiny',
             // titleBarStyle: titleBar ? 'default' : 'hidden',
             // titleBarStyle: titleBar ? 'default' : 'hidden',
             titleBarStyle: 'default',
@@ -131,7 +132,7 @@ export class WindowService implements IWindowService {
         }
 
         const newWindow = new BrowserWindow(windowConfig)
-
+        newWindow.setTitle('AI Codiny')
         this.windows[windowName] = newWindow
         if (isMainWindow) {
             mainWindowState?.manage(newWindow)

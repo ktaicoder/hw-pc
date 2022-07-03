@@ -2,10 +2,10 @@ const { utils: { fromBuildIdentifier } } = require('@electron-forge/core');
 
 module.exports = {
     packagerConfig: {
-        name: 'aicodingblock-hw',
-        executableName: 'aicodingblock-hw',
+        name: 'aicodiny-hw',
+        executableName: 'aicodiny-hw',
         icon: 'build-resources/icons/icon',
-        appBundleId: fromBuildIdentifier({ beta: 'kr.co.kt.aicodingblock.pc-hw-beta', prod: 'kr.co.kt.aicodingblock.pc-hw' }),
+        appBundleId: fromBuildIdentifier({ beta: 'com.aicodiny.pc-hw-beta', prod: 'com.aicodiny.pc-hw' }),
         protocols: [
             {
                 name: '',
@@ -17,7 +17,7 @@ module.exports = {
         {
             name: "@electron-forge/maker-squirrel",
             config: {
-                name: "aicodingblock-hw"
+                name: "aicodiny-hw"
             }
         },
         {

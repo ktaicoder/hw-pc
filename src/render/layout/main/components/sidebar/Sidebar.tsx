@@ -51,7 +51,7 @@ function Sidebar() {
                 <Image
                     component="img"
                     onClick={() => hist.push('/')}
-                    sx={{ maxWidth: '80%', height: 22, objectFit: 'contain' }}
+                    sx={{ maxWidth: '80%', height: 20, objectFit: 'contain' }}
                     src="static/images/logo.png"
                 />
             </DrawerHeader>

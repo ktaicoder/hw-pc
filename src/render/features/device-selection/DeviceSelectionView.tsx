@@ -302,7 +302,7 @@ export default function DeviceSelectionView(props: Props) {
                             >
                                 <ul>
                                     <li>장치에 연결되었습니다. </li>
-                                    <li>이제 코딩블록으로 장치를 제어할 수 있습니다.</li>
+                                    <li>이제 블록코딩으로 장치를 제어할 수 있습니다.</li>
                                 </ul>
                                 <ButtonBase
                                     component="div"
@@ -320,13 +320,13 @@ export default function DeviceSelectionView(props: Props) {
                                 >
                                     <Image sx={{ width: 20, height: 20, mr: 1 }} src="static/images/ic_chrome.png" />
                                     <Typography variant="body1" sx={{ fontSize: '0.9rem', color: '#01415E' }}>
-                                        코딩블록 실행
+                                        블록코딩 실행
                                     </Typography>
                                 </ButtonBase>
                                 <ul>
                                     <li>OS의 디폴트 브라우저가 크롬인 경우, 클릭시 크롬브라우저가 실행됩니다.</li>
                                     <li>크롬 브라우저 사용을 권장합니다. </li>
-                                    <li>직접 크롬 브라우저를 실행 후 코딩블록 사이트에 접속하셔도 됩니다.</li>
+                                    <li>직접 크롬 브라우저를 실행 후 AI Codiny 사이트에 접속하셔도 됩니다.</li>
                                 </ul>
                             </Alert>
                         ) : (

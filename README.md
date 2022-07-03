@@ -1,6 +1,6 @@
-# AI 코딩블록 PC 프로그램
+# AI Codiny PC 프로그램
 
-AI 코딩블록에서 하드웨어 제어를 위한 PC용 프로그램입니다. `electron` 기반으로 구현되었습니다.
+AI Codiny에서 하드웨어 제어를 위한 PC용 프로그램입니다. `electron` 기반으로 구현되었습니다.
 
 ## 사전 준비
 
@@ -50,6 +50,6 @@ $  npm install -g node-gyp
     - `index.ts`는 기타 부가적인 정보와 함께 인터페이스와 구현체를 `export`합니다.
 
 ### 개발자 가이드
-- 더 자세한 내용 `AI 코딩블록 개발자 가이드` 사이트를 참고해주세요.
+- 더 자세한 내용 `AI Codiny 개발자 가이드` 사이트를 참고해주세요.
     - https://ktaicoder.github.io
 

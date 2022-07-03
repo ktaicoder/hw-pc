@@ -136,7 +136,7 @@ export default function AutoRunView(props: Props) {
         }
 
         if (!AUTORUN_URL_PREFIX.some((prefix) => url.startsWith(prefix))) {
-            toast.warn('코딩블록 사이트의 주소를 등록해주세요')
+            toast.warn('Codiny 사이트의 주소를 등록해주세요')
             return
         }
 

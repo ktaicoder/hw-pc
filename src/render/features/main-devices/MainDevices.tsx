@@ -248,7 +248,7 @@ export default function MainDevices() {
                 <Box sx={{ color: 'error.main', fontSize: '0.75rem' }}>
                     ★ 하드웨어 작동시 발생하는 문제는 해당 업체에 문의해주세요.
                     <Box sx={{ color: 'text.primary', fontSize: '0.70rem' }}>
-                        ★ 등록된 하드웨어는 각 업체가 개발한 것이며, AI 코딩블록은 본 프로그램 외에는 책임지지 않습니다.
+                        ★ 등록된 하드웨어는 각 업체가 개발한 것이며, AI Codiny는 본 프로그램 외에는 책임지지 않습니다.
                     </Box>
                 </Box>
             </Box>
