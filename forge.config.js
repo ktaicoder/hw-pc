@@ -17,7 +17,8 @@ module.exports = {
         {
             name: "@electron-forge/maker-squirrel",
             config: {
-                name: "aicodiny-hw"
+                name: "aicodiny-hw",
+                iconUrl: "https://aicodiny.com/favicon.ico"
             }
         },
         {
