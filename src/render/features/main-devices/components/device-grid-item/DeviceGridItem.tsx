@@ -109,7 +109,7 @@ export default function DeviceGridItem(props: Props) {
                     <UsbIcon
                         sx={{
                             fontSize: '1.1rem',
-                            color: isUsb ? 'success.main' : 'text.disabled',
+                            color: isUsb ? '#1EAEFF' : 'text.disabled',
                             opacity: isUsb ? 1 : 0.3,
                         }}
                     />
@@ -123,6 +123,7 @@ export default function DeviceGridItem(props: Props) {
                         }}
                     />
                 )}
+
                 <Typography
                     variant="body2"
                     sx={{

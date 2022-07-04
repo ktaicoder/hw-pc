@@ -52,7 +52,7 @@ function Sidebar() {
                     component="img"
                     onClick={() => hist.push('/')}
                     sx={{ maxWidth: '80%', height: 20, objectFit: 'contain' }}
-                    src="static/images/logo.png"
+                    src="static/images/logo_white.png"
                 />
             </DrawerHeader>
             <List disablePadding>

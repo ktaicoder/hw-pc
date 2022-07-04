@@ -1,7 +1,9 @@
 import RefreshIcon from '@mui/icons-material/Refresh'
 import { Box, Grid, IconButton } from '@mui/material'
+import { alpha, styled } from '@mui/material/styles'
 import ToggleButton from '@mui/material/ToggleButton'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
+import Tooltip, { tooltipClasses, TooltipProps } from '@mui/material/Tooltip'
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useMeasure } from 'react-use'
 import { IHwInfo } from 'src/custom-types/hw-types'
@@ -9,8 +11,6 @@ import Image from 'src/render/components/Image'
 import MainLayoutContext from 'src/render/layout/main/MainLayoutContext'
 import DeviceGridItem from './components/device-grid-item/DeviceGridItem'
 import { useHwInfoList } from './useHwInfoList'
-import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip'
-import { styled } from '@mui/material/styles'
 
 const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
     <Tooltip {...props} classes={{ popper: className }} />
@@ -25,6 +25,7 @@ const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
     '& .MuiToggleButtonGroup-grouped': {
+        marginTop: 24,
         // margin: theme.spacing(0.5, 1),
         // border: 0,
         // '&.Mui-disabled': {
@@ -43,7 +44,7 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
         },
         '&.MuiToggleButton-root.Mui-selected': {
             color: theme.palette.primary.main,
-            borderColor: theme.palette.primary.main,
+            borderColor: alpha(theme.palette.primary.main, 0.3),
         },
         '&:not(:first-of-type)': {
             borderRadius: 0, //theme.shape.borderRadius,
@@ -211,7 +212,7 @@ export default function MainDevices() {
                     </Box>
                     <Tooltip title="새로고침">
                         <IconButton
-                            sx={{ width: 48, height: 48, position: 'absolute', top: 0, right: 0 }}
+                            sx={{ width: 48, height: 48, position: 'absolute', top: 0, right: 0, mt: 1.8 }}
                             onClick={() => refresh()}
                         >
                             <RefreshIcon fontSize="small" />
@@ -236,7 +237,7 @@ export default function MainDevices() {
             <Box
                 sx={{
                     position: 'absolute',
-                    background: 'rgba(0,0,0, 0.05)',
+                    background: 'rgba(0,0,0, 0.03)',
                     bottom: 0,
                     left: 0,
                     right: 0,
@@ -245,9 +246,9 @@ export default function MainDevices() {
                     pr: '120px',
                 }}
             >
-                <Box sx={{ color: 'error.main', fontSize: '0.75rem' }}>
+                <Box sx={{ color: '#FF7300', fontSize: '0.75rem' }}>
                     ★ 하드웨어 작동시 발생하는 문제는 해당 업체에 문의해주세요.
-                    <Box sx={{ color: 'text.primary', fontSize: '0.70rem' }}>
+                    <Box sx={{ color: '#666', fontSize: '0.70rem' }}>
                         ★ 등록된 하드웨어는 각 업체가 개발한 것이며, AI Codiny는 본 프로그램 외에는 책임지지 않습니다.
                     </Box>
                 </Box>
@@ -259,14 +260,14 @@ export default function MainDevices() {
                         position: 'absolute',
                         width: 80,
                         height: 80,
-                        bottom: 16,
-                        right: 32,
+                        bottom: 35,
+                        right: 215,
                     }}
                 >
                     <Image
                         sx={{
-                            width: '100%',
-                            height: '100%',
+                            width: '288px',
+                            height: '105px',
                         }}
                         src="static/images/robot_167.svg"
                     />

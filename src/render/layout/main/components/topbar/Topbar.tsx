@@ -1,8 +1,7 @@
 import { Menu as MenuIcon, MenuOpen as MenuOpenIcon } from '@mui/icons-material'
-import { IconButton, Toolbar, Typography, useTheme } from '@mui/material'
+import { IconButton, Toolbar, Typography, useTheme, Box } from '@mui/material'
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar'
 import { styled } from '@mui/material/styles'
-import { Box } from '@mui/system'
 import { SIDEMENU_WIDTH } from '../../main-layout-constants'
 
 interface AppBarProps extends MuiAppBarProps {
@@ -12,12 +11,13 @@ interface AppBarProps extends MuiAppBarProps {
 const AppBar = styled(MuiAppBar, {
     shouldForwardProp: (prop) => prop !== 'open',
 })<AppBarProps>(({ theme, open }) => ({
+    backgroundColor: '#fff',
     zIndex: theme.zIndex.drawer + 1,
     transition: theme.transitions.create(['margin', 'width'], {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
     }),
-    color: '#FFF',
+    color: '#005CA2',
     ...(open && {
         width: `calc(100% - ${SIDEMENU_WIDTH}px)`,
         marginLeft: SIDEMENU_WIDTH,
@@ -64,9 +64,9 @@ export default function Topbar(props: Props) {
                             marginRight: '16px',
                         }}
                     >
-                        {isSidebarOpen ? <MenuOpenIcon htmlColor="#fff" /> : <MenuIcon htmlColor="#f0f0f0" />}
+                        {isSidebarOpen ? <MenuOpenIcon htmlColor="#005CA2" /> : <MenuIcon htmlColor="#005CA2" />}
                     </IconButton>
-                    <Typography variant="subtitle1" noWrap component="div" sx={{ fontSize: '1.1rem' }}>
+                    <Typography variant="subtitle1" noWrap component="div" sx={{ fontSize: '1.0rem', fontWeight: 600 }}>
                         {title}
                     </Typography>
                 </Box>

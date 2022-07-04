@@ -7,41 +7,38 @@ import { IconButton, InputBase, Paper, ToggleButton, ToggleButtonGroup, Toolbar,
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar'
 import { alpha, styled } from '@mui/material/styles'
 import { Box } from '@mui/system'
-import React, { useContext, useState } from 'react'
+import React, { useContext } from 'react'
 import { useMeasure } from 'react-use'
 import { SIDEMENU_WIDTH } from '../../main-layout-constants'
 import MainLayoutContext from '../../MainLayoutContext'
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
     '& .MuiToggleButtonGroup-grouped': {
-        margin: theme.spacing(0, 0),
-
-        border: 0,
-        '&.Mui-disabled': {
-            border: 0,
-        },
+        fontSize: '0.9rem',
         '&.MuiToggleButton-root': {
-            paddingLeft: theme.spacing(3),
-            paddingRight: theme.spacing(3),
+            paddingTop: 1,
+            paddingBottom: 1,
+            paddingLeft: theme.spacing(2),
+            paddingRight: theme.spacing(2),
             whiteSpace: 'nowrap',
             [theme.breakpoints.down('sm')]: {
                 paddingLeft: theme.spacing(1),
                 paddingRight: theme.spacing(1),
             },
+            '& .MuiSvgIcon-root': {
+                marginRight: 4,
+                fontSize: '1rem',
+            },
         },
-        color: '#fff',
-        opacity: 0.5,
-
         '&.MuiToggleButton-root.Mui-selected': {
-            // color: theme.palette.primary.main,
-            color: '#FFF',
-            opacity: 1,
+            color: theme.palette.primary.main,
+            borderColor: alpha(theme.palette.primary.main, 0.3),
         },
         '&:not(:first-of-type)': {
-            borderRadius: theme.shape.borderRadius,
+            borderRadius: 0, //theme.shape.borderRadius,
         },
         '&:first-of-type': {
-            borderRadius: theme.shape.borderRadius,
+            borderRadius: 0, //theme.shape.borderRadius,
         },
     },
 }))
@@ -49,7 +46,9 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
 const Search = styled('div')(({ theme }) => ({
     position: 'relative',
     borderRadius: theme.shape.borderRadius,
-    backgroundColor: alpha(theme.palette.common.white, 0.15),
+    border: '1px solid #ccc',
+    color: '#aaa',
+    // backgroundColor: alpha(theme.palette.common.white, 0.15),
     '&:hover': {
         backgroundColor: alpha(theme.palette.common.white, 0.25),
     },
@@ -69,15 +68,16 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    color: '#ccc',
     '& .MuiSvgIcon-root': {
         fontSize: '1.1rem',
     },
 }))
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
-    color: 'inherit',
+    color: '#444',
     '& .MuiInputBase-input': {
-        padding: theme.spacing(1, 1, 1, 0),
+        padding: theme.spacing(0.5, 1, 0.5, 0),
         // vertical padding + font size from searchIcon
         paddingLeft: `calc(1em + ${theme.spacing(4)})`,
         transition: theme.transitions.create('width'),
@@ -98,12 +98,13 @@ interface AppBarProps extends MuiAppBarProps {
 const AppBar = styled(MuiAppBar, {
     shouldForwardProp: (prop) => prop !== 'open',
 })<AppBarProps>(({ theme, open }) => ({
+    backgroundColor: '#fff',
     zIndex: theme.zIndex.drawer + 1,
     transition: theme.transitions.create(['margin', 'width'], {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
     }),
-    color: '#FFF',
+    color: '#005CA2',
     ...(open && {
         width: `calc(100% - ${SIDEMENU_WIDTH}px)`,
         marginLeft: SIDEMENU_WIDTH,
@@ -176,14 +177,19 @@ export default function MainPageTopbar(props: Props) {
                                 marginRight: '16px',
                             }}
                         >
-                            {isSidebarOpen ? <MenuOpenIcon htmlColor="#fff" /> : <MenuIcon htmlColor="#f0f0f0" />}
+                            {isSidebarOpen ? <MenuOpenIcon htmlColor="#005CA2" /> : <MenuIcon htmlColor="#005CA2" />}
                         </IconButton>
-                        <Typography variant="subtitle1" noWrap component="div" sx={{ fontSize: '1.0rem' }}>
+                        <Typography
+                            variant="subtitle1"
+                            noWrap
+                            component="div"
+                            sx={{ fontSize: '1.0rem', fontWeight: 600 }}
+                        >
                             {title}
                         </Typography>
                     </Box>
 
-                    {!isVeryNarrow && (
+                    {false && !isVeryNarrow && (
                         <Box
                             sx={{
                                 display: 'flex',
@@ -199,7 +205,7 @@ export default function MainPageTopbar(props: Props) {
                                     my: 0,
                                     display: 'inline-flex',
                                     p: 0,
-                                    bgcolor: 'rgba(255,255,255,0.1)',
+                                    bgcolor: '#EAF5FF',
                                     border: (theme) => `1px solid ${theme.palette.divider}`,
                                     flexWrap: 'nowrap',
                                 }}
@@ -213,18 +219,53 @@ export default function MainPageTopbar(props: Props) {
                                     aria-label="text alignment"
                                 >
                                     <ToggleButton value="all" aria-label="all">
-                                        <RadioButtonCheckedIcon sx={{ fontSize: '1.1rem', mr: 1 }} /> 전체
+                                        <RadioButtonCheckedIcon sx={{ color: '#005CA2', fontSize: '0.9rem', mr: 1 }} />{' '}
+                                        전체
                                     </ToggleButton>
                                     <ToggleButton value="serial" aria-label="serial">
-                                        <UsbIcon sx={{ fontSize: '1.1rem', mr: 1 }} /> 시리얼
+                                        <UsbIcon sx={{ color: '#005CA2', fontSize: '0.9rem', mr: 1 }} /> 시리얼
                                     </ToggleButton>
                                     <ToggleButton value="bluetooth" aria-label="bluetooth">
-                                        <BluetoothIcon sx={{ fontSize: '1.1rem', mr: 1 }} /> 블루투스
+                                        <BluetoothIcon sx={{ color: '#005CA2', fontSize: '0.9rem', mr: 1 }} /> 블루투스
                                     </ToggleButton>
                                 </StyledToggleButtonGroup>
                             </Paper>
                         </Box>
                     )}
+                    <Box
+                        sx={{
+                            display: 'inline-flex',
+                            position: 'absolute',
+                            left: '50%',
+                            top: '50%',
+                            background: (theme) => theme.palette.background.paper,
+                            transform: 'translate(-50%, -50%)',
+                            border: (theme) => `0px solid ${theme.palette.divider}`,
+                            flexWrap: 'nowrap',
+                        }}
+                    >
+                        <StyledToggleButtonGroup
+                            size="small"
+                            value={hwKind}
+                            exclusive
+                            onChange={_onChangeHwKind}
+                            aria-label="text alignment"
+                            color="primary"
+                        >
+                            <ToggleButton value="all" aria-label="all">
+                                <RadioButtonCheckedIcon />
+                                전체
+                            </ToggleButton>
+                            <ToggleButton value="serial" aria-label="serial">
+                                <UsbIcon />
+                                시리얼
+                            </ToggleButton>
+                            <ToggleButton value="bluetooth" aria-label="bluetooth">
+                                <BluetoothIcon />
+                                블루투스
+                            </ToggleButton>
+                        </StyledToggleButtonGroup>
+                    </Box>
 
                     {!isNarrow && (
                         <Search>
@@ -233,6 +274,7 @@ export default function MainPageTopbar(props: Props) {
                             </SearchIconWrapper>
                             <StyledInputBase
                                 placeholder="Search"
+                                size="small"
                                 value={searchQuery ?? ''}
                                 onChange={_onChangeSearchQuery}
                                 inputProps={{ 'aria-label': 'search' }}

@@ -36,14 +36,17 @@ export default function MenuItem(props: Props) {
                 paddingLeft: `${active ? 20 : 24}px`,
                 pr: 1,
                 '&:hover': {
-                    backgroundColor: SIDEMENU_BG_COLOR_HOVER,
+                    backgroundColor: active ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.1)',
                 },
 
                 '& .MuiListItemIcon-root': {
                     color: active ? ICON_COLOR_ACTIVE : ICON_COLOR,
+
+                    ml: active ? '-16px' : 0,
                 },
                 '& .MuiListItemText-root': {
                     color: active ? SIDEMENU_FG_COLOR_ACTIVE : SIDEMENU_FG_COLOR,
+
                     fontWeight: active ? 700 : 500,
                     '& .MuiListItemText-primary': {
                         fontSize: '0.85rem',
@@ -51,10 +54,13 @@ export default function MenuItem(props: Props) {
                 },
 
                 ...(active && {
-                    backgroundColor: SIDEMENU_BG_COLOR_ACTIVE,
-                    borderLeft: `4px solid ${SIDEMENU_BORDER_COLOR_ACTIVE}`,
-                    borderTopLeftRadius: 0,
-                    borderBottomLeftRadius: 0,
+                    // backgroundColor: SIDEMENU_BG_COLOR_ACTIVE,
+                    backgroundColor: '#fff',
+                    ml: '4px',
+                    // borderLeft: `4px solid ${SIDEMENU_BORDER_COLOR_ACTIVE}`,
+                    borderLeft: `16px solid transparent`,
+                    borderTopLeftRadius: '24px',
+                    borderBottomLeftRadius: '24px',
                 }),
             }}
         >
