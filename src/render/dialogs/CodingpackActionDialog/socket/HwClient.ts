@@ -1,12 +1,12 @@
 import {
     concat,
-    concatMapTo,
+    concatMap,
     debounceTime,
     delay,
     filter,
     firstValueFrom,
     map,
-    mergeMapTo,
+    mergeMap,
     Observable,
     of,
     take,
@@ -18,6 +18,8 @@ import { OPEN_TERMINAL_REQUEST, TERMINAL_MESSAGE_REQUEST } from 'src/hw-server/H
 import { ControlKeys } from 'src/render/components/react-console/ReactConsole'
 import stripAnsi from 'strip-ansi'
 import { HwSocket, ResponseFrame } from './HwSocket'
+
+const DEBUG = false
 
 export type WifiAp = {
     ssid: string
@@ -62,7 +64,7 @@ const toBase64 = (u8: Uint8Array) => {
 }
 
 const isPrompt = (line: string): boolean => {
-    const yes = /^pi@raspberrypi:(~|\/)/.test(line)
+    const yes = /^\s+pi@raspberrypi:(~|\/)/.test(line)
     if (yes) {
         console.log('line is prompt:' + line)
     } else {
@@ -300,7 +302,7 @@ export class HwClient {
     }
 
     observeTerminalPrompt = (): Observable<boolean> => {
-        return this.socket.observeTerminalMessage().pipe(
+        return this.observeTerminalMessage().pipe(
             map(isPrompt),
             tap((ok) => {
                 // console.log('터미널 프롬프트인가?' + ok)
@@ -438,7 +440,7 @@ export class HwClient {
                 filter((it) => it === true),
                 take(1),
                 tap(() => this.sendTextLine(cmd)),
-                concatMapTo(this.observeTerminalPrompt()),
+                concatMap(() => this.observeTerminalPrompt()),
                 debounceTime(200),
                 filter((it) => it === true),
                 take(1),
@@ -448,11 +450,9 @@ export class HwClient {
 
     observeCmdResultCapture = (): Observable<string[]> => {
         const lines: string[] = []
-        // this.observeTerminalPrompt()
         return of(1).pipe(
-            // filter((it) => it === true),
-            mergeMapTo(
-                this.socket.observeTerminalMessage().pipe(
+            mergeMap(() =>
+                this.observeTerminalMessage().pipe(
                     filter((msg) => {
                         if (!isPrompt(msg)) {
                             lines.push(msg)
@@ -476,8 +476,8 @@ export class HwClient {
 
         return this._sendBinaryObservable(new Uint8Array(ControlKeys.d), 0)
             .pipe(
-                concatMapTo(this._sendBinaryObservable(new Uint8Array(ControlKeys.d))),
-                concatMapTo(
+                concatMap(() => this._sendBinaryObservable(new Uint8Array(ControlKeys.d))),
+                concatMap(() =>
                     this.observeTerminalPrompt().pipe(
                         debounceTime(200),
                         filter((it) => it === true),
@@ -485,10 +485,10 @@ export class HwClient {
                     ),
                 ),
                 tap(() => this.sendTextLine(cmd)),
-                concatMapTo(
-                    this.socket.observeTerminalMessage().pipe(
+                concatMap(() =>
+                    this.observeTerminalMessage().pipe(
                         filter((msg) => {
-                            console.log('check output = ' + msg)
+                            if (DEBUG) console.log('check output = ' + msg)
                             if (!isPrompt(msg)) {
                                 lines.push(msg)
                                 return false

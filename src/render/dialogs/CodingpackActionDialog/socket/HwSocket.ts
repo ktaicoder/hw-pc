@@ -1,18 +1,16 @@
 import {
-    tap,
     BehaviorSubject,
+    bufferTime,
+    EMPTY,
     filter,
+    from,
     map,
+    mergeMap,
     Observable,
+    of,
     Subject,
     Subscription,
-    mergeMap,
-    mergeAll,
-    merge,
-    bufferTime,
-    from,
-    of,
-    EMPTY,
+    tap,
 } from 'rxjs'
 import io, { Socket } from 'socket.io-client'
 import { TERMINAL_CMD_RESPONE, TERMINAL_MESSAGE_RESPONSE } from 'src/hw-server/HwClientHandler'
