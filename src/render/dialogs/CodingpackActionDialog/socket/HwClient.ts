@@ -64,7 +64,7 @@ const toBase64 = (u8: Uint8Array) => {
 }
 
 const isPrompt = (line: string): boolean => {
-    const yes = /^\s+pi@raspberrypi:(~|\/)/.test(line)
+    const yes = /^\s*pi@raspberrypi:(~|\/)/.test(line)
     if (yes) {
         console.log('line is prompt:' + line)
     } else {
@@ -384,7 +384,7 @@ export class HwClient {
 
     runPasswdChange = (newPassword: string): Observable<any> => {
         const str = _escapeQuote(`pi:${newPassword}`)
-        return this._runCmd(`echo ${str} | sudo chpasswd`)
+        return this._runCmd(`echo '${str}' | sudo chpasswd`)
     }
 
     runAutoRunCreate = (url: string): Observable<any> => {
