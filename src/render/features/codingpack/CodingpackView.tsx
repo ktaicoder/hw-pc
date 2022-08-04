@@ -198,11 +198,11 @@ function CodingpackInternalView(props: Props) {
             }}
         >
             <Box
-                sx={{ margin: '0 auto', border: '0px solid red', position: 'relative', width: '100%', maxWidth: 960 }}
+                sx={{ margin: '0 auto', position: 'relative', width: '100%', maxWidth: 960 }}
                 pt={10}
             >
-                <Grid container sx={{ border: '0px solid red', flex: 0 }}>
-                    <Grid item xs={4} sm={4} md={5} lg={5}>
+                <Grid container sx={{ flex: 0 }}>
+                    <Grid item xs={4} md={5} >
                         <Box sx={{ position: 'relative' }}>
                             <Image
                                 sx={{
@@ -226,7 +226,7 @@ function CodingpackInternalView(props: Props) {
                             </Box>
                         </Box>
                     </Grid>
-                    <Grid item xs={4} sm={4} md={2} lg={2}>
+                    <Grid item xs={4} md={2} >
                         <PortsView
                             portInfos={portInfos}
                             portPath={portInfo?.path}
@@ -234,7 +234,7 @@ function CodingpackInternalView(props: Props) {
                             onClickRefresh={() => setRefreshToken(Date.now())}
                         />
                     </Grid>
-                    <Grid item xs={4} sm={4} md={5} lg={5}>
+                    <Grid item xs={4} md={5} >
                         <Box sx={{ position: 'relative' }}>
                             <Image
                                 sx={{
@@ -258,7 +258,7 @@ function CodingpackInternalView(props: Props) {
                             </Box>
                         </Box>
                     </Grid>
-                    <Grid item xs={4} sm={4} md={5} lg={5}>
+                    <Grid item xs={4} md={5} >
                         <Box
                             sx={{
                                 mt: 3,
@@ -279,10 +279,10 @@ function CodingpackInternalView(props: Props) {
                             ))}
                         </Box>
                     </Grid>
-                    <Grid item xs={4} sm={4} md={2} lg={2}>
+                    <Grid item xs={4} md={2}  >
                         {/* dummy */}
                     </Grid>
-                    <Grid item xs={4} sm={4} md={5} lg={5}>
+                    <Grid item xs={4} md={5}  >
                         <Box
                             sx={{
                                 mt: 2,

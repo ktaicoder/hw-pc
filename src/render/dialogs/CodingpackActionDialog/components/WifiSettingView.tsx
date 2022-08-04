@@ -5,6 +5,7 @@ import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDou
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import {
+    Alert,
     Box,
     Button,
     CircularProgress,
@@ -235,8 +236,22 @@ export default function WifiSettingView(props: Props) {
                     <Box sx={{ fontSize: '0.85rem', mt: 1, textAlign: 'center', color: 'primary.main' }}>
                         {actionData.subtitle}
                     </Box>
-                    <Typography variant="body1" sx={{ mt: 2, textAlign: 'center', fontSize: '0.8rem' }}>
+                    <Typography variant="body1" sx={{ mt: 0.5, textAlign: 'center', fontSize: '0.8rem' }}>
                         WIFI SSID와 비밀번호를 입력해주세요
+                    </Typography>
+                    <Box sx={{ mt: 1, background: '#f0f0f0', borderRadius: 2, p: 2, width: '100%' }}  >
+                        <Box component="ul" sx={{
+                            fontSize: '0.85rem',
+                            m: 0,
+                            p: '0 0 0 16px',
+                        }}>
+                            <li>정상적인 코디니팩에서도 설정이 실패할 수 있습니다.</li>
+                            <li>여러 번 시도해도 잘 안되는 경우, </li>
+                            <li>코디니팩에서 직접 설정하시기 바랍니다.</li>
+                        </Box>
+                    </Box>
+                    <Typography variant="body2" sx={{ mt: 0.5, lineHeight: 1.4, fontSize: '0.8rem' }}>
+                        ☞ 이 기능은 잘 안되기도 해서, 공개하기에는 부족지만, 그래도 추가해달라는 사용자의 요청으로 공개하였으니 양해부탁드립니다.
                     </Typography>
                 </Box>
 

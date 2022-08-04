@@ -17,9 +17,9 @@ type Props = {
     toggleMinimize: () => void
 }
 
-const ACTION_KIND: CodingpackActionKindKey = 'upgrade'
+const ACTION_KIND: CodingpackActionKindKey = 'sdexpand'
 
-export default function SystemResetView(props: Props) {
+export default function SdcardExpandView(props: Props) {
     const { hwClient, minimized, toggleMinimize } = props
     const [cmdRunning, setCmdRunning] = useState(false)
     const [cmdCanceling, setCmdCanceling] = useState(false)
@@ -36,7 +36,7 @@ export default function SystemResetView(props: Props) {
         setCmdRunning(true)
         setErrorMessage(undefined)
         try {
-            await firstValueFrom(hwClient.runSystemReset())
+            await firstValueFrom(hwClient.runSdcardExpand())
         } catch (err) {
             setErrorMessage(err.message)
         } finally {
@@ -124,19 +124,15 @@ export default function SystemResetView(props: Props) {
                 <Box sx={{ fontSize: '0.85rem', mt: 1, textAlign: 'center', color: 'primary.main' }}>
                     {actionData.subtitle}
                 </Box>
-
                 <Box sx={{ fontSize: '0.85rem', mt: 2, textAlign: 'center' }}>
-                    재부팅 동안 연결은 끊어지고,
-                    <br /> 재부팅이 완료 후 자동으로 연결됩니다.
+                    2022년 8월 4일 이후에 배포된 OS 이미지에서만 동작합니다.<br />
                 </Box>
                 <Box sx={{ fontSize: '0.85rem', mt: 2, textAlign: 'center' }}>
-                    보통 <em>5 ~ 10분</em> 소요되는데, <br />
-                    네트워크 속도에 따라 시간이 더 걸릴 수 있습니다.
+                    보통 SD카드 확장은 <em>5초</em> 정도 소요됩니다.  <br />
+                    두 번 실행해도 문제가 되지는 않지만, <br />이미 실행한 적이 있다면 실행하지 않아도 됩니다.
                 </Box>
                 <Box sx={{ fontSize: '0.85rem', mt: 2, textAlign: 'center', color: 'primary.main' }}>
-                    초기화는 업그래이드 기능을 포함합니다.
-                    <br />
-                    추가적인 업데이트는 필요하지 않습니다.
+                    SD카드가 확장 된 후에는 자동으로 재부팅합니다.
                 </Box>
 
                 <Button

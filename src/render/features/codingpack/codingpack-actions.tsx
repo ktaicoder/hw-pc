@@ -21,6 +21,17 @@ export const CodingpackActions: CodingpackActionData[] = [
         ),
     },
     {
+        kind: 'sdexpand',
+        docId: 'codingpack-how-to-expand-sdcard',
+        title: 'SD카드 확장',
+        subtitle: (
+            <>
+                <em>코디니팩의 SD카드</em>를 확장합니다. <br />
+                이미지를 구운 직후 반드시 실행해야 합니다.
+            </>
+        ),
+    },
+    {
         kind: 'upgrade',
         docId: 'codingpack-how-to-system-reset',
         title: '시스템 초기화',

@@ -1,5 +1,6 @@
 export type CodingpackActionKindKey =
     | 'inspect'
+    | 'sdexpand'
     | 'upgrade'
     | 'update'
     | 'audio'
@@ -11,6 +12,7 @@ export type CodingpackActionKindKey =
     | 'rescue'
 export const CodingpackActionKind = {
     inspect: '코디니팩 정보',
+    sdexpand: 'SD 카드 확장',
     upgrade: '시스템 초기화',
     update: '코디니팩 업데이트',
     audio: '오디오 테스트',

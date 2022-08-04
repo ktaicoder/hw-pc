@@ -348,6 +348,10 @@ export class HwClient {
         )
     }
 
+    runSdcardExpand = (): Observable<any> => {
+        return this._runCmd('bash /usr/local/bin/aimk-sdcard-expand.sh')
+    }
+
     runInspect = (): Observable<CodingpackInfo | null> => {
         return this._runCmdWithOutput('sh /usr/local/bin/aimk-inspect.sh').pipe(
             map((lines) => parseInspect(lines.join(''))),

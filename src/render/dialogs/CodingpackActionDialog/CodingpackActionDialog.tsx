@@ -25,6 +25,7 @@ import SystemResetView from './components/SystemResetView'
 import UpdateView from './components/UpdateView'
 import UserPwView from './components/UserPwView'
 import WifiSettingView from './components/WifiSettingView'
+import SdcardExpandView from './components/SdcardExpandView'
 import { HwClient } from './socket/HwClient'
 
 export type CodingpackActionDialogProps = {
@@ -159,7 +160,7 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
                 },
             }}
         >
-            <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', p: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     {/* <IconButton size="small" onClick={() => setExpand(!expand)}>
                         <AspectRatioIcon />
@@ -184,7 +185,7 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
                 <IconButton size="small" onClick={onClose}>
                     <CloseIcon />
                 </IconButton>
-            </DialogTitle>
+            </Box>
             <DialogContent dividers ref={containerRef}>
                 <Box
                     component="div"
@@ -254,6 +255,14 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
                         >
                             {actionKind === 'inspect' && (
                                 <CodingpackInspectView
+                                    minimized={minimized}
+                                    toggleMinimize={() => setMinimized((p) => !p)}
+                                    onRunning={_onRunning}
+                                    hwClient={hwClient}
+                                />
+                            )}
+                            {actionKind === 'sdexpand' && (
+                                <SdcardExpandView
                                     minimized={minimized}
                                     toggleMinimize={() => setMinimized((p) => !p)}
                                     onRunning={_onRunning}
