@@ -4,7 +4,6 @@ import {
     filter,
     firstValueFrom,
     map,
-    mapTo,
     Observable,
     Subject,
     Subscription,
@@ -241,7 +240,7 @@ export class SerialPortHelper {
             return firstValueFrom(
                 this._state$.pipe(
                     filter((it) => it === 'opened'),
-                    mapTo(true),
+                    map(() => true),
                     timeout(timeoutMilli),
                 ),
             )
@@ -249,7 +248,7 @@ export class SerialPortHelper {
             return firstValueFrom(
                 this._state$.pipe(
                     filter((it) => it === 'opened'),
-                    mapTo(true),
+                    map(() => true),
                 ),
             )
         }

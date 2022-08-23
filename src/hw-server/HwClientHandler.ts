@@ -1,4 +1,4 @@
-import { bufferTime, EMPTY, from, map, of, mapTo, mergeMap, Observable, Subscription, takeUntil, filter } from 'rxjs'
+import { bufferTime, EMPTY, filter, from, map, mergeMap, Observable, of, Subscription, takeUntil } from 'rxjs'
 import { Socket } from 'socket.io'
 import { IHwControl } from 'src/custom-types'
 import { HwManager } from './HwManager'
