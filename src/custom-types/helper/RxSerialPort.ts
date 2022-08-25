@@ -5,7 +5,7 @@ import SerialPort from 'serialport'
 const DEBUG = false
 
 export class RxSerialPort {
-    static fromOpenEvent = (sp: SerialPort) => {
+    static fromOpenEvent = (sp: SerialPort): Observable<void> => {
         return new Observable((emitter) => {
             const handle = () => {
                 emitter.next()
@@ -29,7 +29,7 @@ export class RxSerialPort {
         })
     }
 
-    static fromEndEvent = (sp: SerialPort) => {
+    static fromEndEvent = (sp: SerialPort): Observable<void> => {
         return new Observable((emitter) => {
             const handle = () => {
                 emitter.next()
@@ -41,7 +41,7 @@ export class RxSerialPort {
         })
     }
 
-    static fromErrorEvent = (sp: SerialPort) => {
+    static fromErrorEvent = (sp: SerialPort): Observable<any> => {
         return new Observable((emitter) => {
             const handle = (err) => {
                 emitter.next(err)
@@ -53,7 +53,7 @@ export class RxSerialPort {
         })
     }
 
-    static fromDataEvent = (sp: SerialPort | Stream.Transform) => {
+    static fromDataEvent = (sp: SerialPort | Stream.Transform): Observable<Buffer> => {
         return new Observable((emitter) => {
             const handle = (data: Buffer) => {
                 emitter.next(data)

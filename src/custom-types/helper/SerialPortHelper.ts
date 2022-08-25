@@ -27,7 +27,7 @@ export class SerialPortHelper {
     private _state$ = new BehaviorSubject<SerialPortState>('first')
     private _subscription: Subscription | null = null
     private _path?: string | null = null
-    private _destroyed$ = new BehaviorSubject<boolean>(false)
+    private destroyed$ = new BehaviorSubject(false)
 
     constructor(serialPort: SerialPort, parser?: Stream.Transform | null) {
         this._path = serialPort.path
@@ -44,16 +44,20 @@ export class SerialPortHelper {
             }),
         )
         subscription.add(
-            RxSerialPort.fromEndEvent(this._sp).subscribe(() => {
-                if (DEBUG) console.log('SerialPortHelper.onEnd()')
-                this._state$.next('ended')
-            }),
+            RxSerialPort.fromEndEvent(this._sp)
+                .pipe(takeUntil(this.closeTrigger()))
+                .subscribe(() => {
+                    if (DEBUG) console.log('SerialPortHelper.onEnd()')
+                    this._state$.next('ended')
+                }),
         )
         subscription.add(
-            RxSerialPort.fromErrorEvent(this._sp).subscribe((err) => {
-                console.log('SerialPortHelper.onError()', err)
-                this._state$.next('error')
-            }),
+            RxSerialPort.fromErrorEvent(this._sp)
+                .pipe(takeUntil(this.closeTrigger()))
+                .subscribe((err) => {
+                    console.log('SerialPortHelper.onError()', err)
+                    this._state$.next('error')
+                }),
         )
 
         if (this._parser) {
@@ -62,10 +66,12 @@ export class SerialPortHelper {
 
         const source = this._parser ?? this._sp
         subscription.add(
-            RxSerialPort.fromDataEvent(source).subscribe((data: Buffer) => {
-                if (DEBUG) console.log('SerialPortHelper.onData', data)
-                this._data$.next({ timestamp: Date.now(), data })
-            }),
+            RxSerialPort.fromDataEvent(source)
+                .pipe(takeUntil(this.closeTrigger()))
+                .subscribe((data: Buffer) => {
+                    if (DEBUG) console.log('SerialPortHelper.onData', data)
+                    this._data$.next({ timestamp: Date.now(), data })
+                }),
         )
     }
 
@@ -82,7 +88,7 @@ export class SerialPortHelper {
     }
 
     private closeTrigger = () => {
-        return this._destroyed$.pipe(filter((it) => it === true))
+        return this.destroyed$.pipe(filter((it) => it === true))
     }
 
     isReadable = (): boolean => {
@@ -169,11 +175,11 @@ export class SerialPortHelper {
     }
 
     isDestroyed = (): boolean => {
-        return this._destroyed$.value
+        return this.destroyed$.value
     }
 
     open = () => {
-        if (this._destroyed$.value) {
+        if (this.destroyed$.value) {
             throw new Error('serialport helper destroyed, create new one')
         }
         if (DEBUG) console.log('SerialPortHelper.open()')
@@ -190,10 +196,10 @@ export class SerialPortHelper {
 
     close = () => {
         if (DEBUG) console.log('SerialPortHelper.close()')
-        if (this._destroyed$.value) {
+        if (this.destroyed$.value) {
             console.log('SerialPortHelper.destroy() already destroyed')
         } else {
-            this._destroyed$.next(true)
+            this.destroyed$.next(true)
         }
         try {
             // close 체크는 이걸로 해야 한다
