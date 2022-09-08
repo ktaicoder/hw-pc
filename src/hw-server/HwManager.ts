@@ -1,6 +1,6 @@
-import { BehaviorSubject, filter, map, Observable } from 'rxjs'
+import { BehaviorSubject, map, Observable } from 'rxjs'
 import { controls } from 'src/custom'
-import { SerialPortHelper, HwKind } from 'src/custom-types'
+import { SerialPortHelper } from 'src/custom-types'
 import { HwControlFactoryFn, IHwControl, IHwInfo, IHwOperator } from 'src/custom-types/hw-types'
 import { HwControlHolder } from './util/HwControlHolder'
 import { HwSerialPortHolder } from './util/HwSerialPortHolder'
@@ -12,62 +12,63 @@ type HwRegistryData = {
     controlFactoryFn: HwControlFactoryFn
 }
 
+export type HwSelection = {
+    hwId: string
+    info: IHwInfo
+    operator: IHwOperator
+    control: IHwControl
+}
+
+// 전체 하드웨어
+const registry: Record<string, HwRegistryData> = Object.values(controls).reduce((acc, cur) => {
+    acc[cur.hwId] = {
+        hwId: cur.hwId,
+        info: cur.info,
+        operator: cur.operator,
+        controlFactoryFn: cur.control,
+    }
+    return acc
+}, {})
+
 export class HwManager {
-    private _registry$ = new BehaviorSubject<Record<string, HwRegistryData>>({})
-    private _controlHolder = new HwControlHolder()
-    private _serialPortHolder = new HwSerialPortHolder()
+    private controlHolder_ = new HwControlHolder()
 
-    constructor() {
-        // 전체 하드웨어를 등록한다
-        Object.entries(controls).forEach(([hwId, hw]) => {
-            this.registerHw(hwId, hw.info, hw.operator, hw.control)
-        })
+    private serialPortHolder_ = new HwSerialPortHolder()
+
+    private selection$ = new BehaviorSubject<HwSelection | null>(null)
+
+    constructor() {}
+
+    observeSelection = (): Observable<HwSelection | null> => {
+        return this.selection$.asObservable()
     }
 
-    list = (): Array<HwRegistryData> => Object.values(this._registry$.value)
+    list = (): Array<HwRegistryData> => Object.values(registry)
 
-    findHw = (hwId: string): HwRegistryData | undefined => this._registry$.value[hwId]
+    hwIds = (): string[] => Object.keys(registry)
 
-    observeHwId = (hwId: string): Observable<boolean> => {
-        return this._registry$.asObservable().pipe(map((it) => (it[hwId] ? true : false)))
-    }
-
-    observeHwIds = (): Observable<string[]> => {
-        return this._registry$.asObservable().pipe(map((it) => Object.keys(it)))
-    }
-
-    registerHw = (hwId: string, info: IHwInfo, operator: IHwOperator, controlFactoryFn: HwControlFactoryFn) => {
-        console.log('registerHw()', { hwId, hwName: info.hwName })
-        const reg = { ...this._registry$.value }
-        reg[hwId] = {
-            hwId,
-            info: info,
-            operator,
-            controlFactoryFn,
-        }
-        this._registry$.next(reg)
-    }
+    findHw = (hwId: string): HwRegistryData | undefined => registry[hwId]
 
     findHwControl = (hwId: string): IHwControl | null => {
-        return this._controlHolder.getOrNull(hwId)
+        return this.controlHolder_.getOrNull(hwId)
     }
 
-    selectHw = (hwId: string): { info: IHwInfo; operator: IHwOperator; control: IHwControl } | null => {
-        const { info, operator, controlFactoryFn } = this.findHw(hwId) ?? {}
-        if (!info || !operator || !controlFactoryFn) {
-            return null
-        }
+    selectHw = (hwId: string): HwSelection | null => {
+        const hw = this.findHw(hwId)
+        if (!hw) return null
+        const { info, operator, controlFactoryFn } = hw
 
         // 컨트롤을 생성해 둔다
-        let control = this._controlHolder.getOrNull(hwId)
+        let control = this.controlHolder_.getOrNull(hwId)
         if (control == null) {
-            control = this._controlHolder.create(hwId, controlFactoryFn)
+            control = this.controlHolder_.create(hwId, controlFactoryFn)
             console.log('controlHolder create new hw control() for hwId=', hwId)
         } else {
             console.log('controlHolder already exists. hwId=', hwId)
         }
-
-        return { info, control, operator }
+        const selection = { hwId, info, control, operator }
+        this.selection$.next(selection)
+        return selection
     }
 
     /**
@@ -75,15 +76,16 @@ export class HwManager {
      * @param hwId 하드웨어ID
      */
     unselectHw = (hwId: string) => {
-        this._controlHolder.remove(hwId)
-        this._serialPortHolder.removeByHwId(hwId)
+        this.controlHolder_.remove(hwId)
+        this.serialPortHolder_.removeByHwId(hwId)
 
-        const remainHwIds = this._controlHolder.getHwIdList()
+        const remainHwIds = this.controlHolder_.getHwIdList()
         if (remainHwIds.length > 0) {
-            console.log('unselect after, remain hw controls = ', this._controlHolder.getHwIdList())
+            console.log('unselect after, remain hw controls = ', this.controlHolder_.getHwIdList())
         } else {
             console.log('unselect after, no hw controls selected ')
         }
+        this.selection$.next(null)
     }
 
     isRegisteredHw = (hwId: string): boolean => {
@@ -98,13 +100,13 @@ export class HwManager {
 
     getSerialPortHelperOrNull = (hwId: string) => {
         if (!this.isRegisteredHw(hwId)) return null
-        const helper = this._serialPortHolder.getOrNull(hwId)
+        const helper = this.serialPortHolder_.getOrNull(hwId)
         if (!helper) return null
         return helper
     }
 
     recreateSerialPortHelper = (hwId: string, serialPortPath: string) => {
-        this._serialPortHolder.removeAll()
+        this.serialPortHolder_.removeAll()
         this.selectSerialPort(hwId, serialPortPath)
     }
 
@@ -121,7 +123,7 @@ export class HwManager {
             return null
         }
 
-        let helper = this._serialPortHolder.getOrNull(hwId)
+        let helper = this.serialPortHolder_.getOrNull(hwId)
         if (helper && helper.serialPortPath !== serialPortPath) {
             helper.close()
             helper = null
@@ -135,7 +137,7 @@ export class HwManager {
         }
 
         if (!helper) {
-            helper = this._serialPortHolder.create(hwId, () => operator.createSerialPortHelper!(serialPortPath))
+            helper = this.serialPortHolder_.create(hwId, () => operator.createSerialPortHelper!(serialPortPath))
         }
 
         if (!helper) {

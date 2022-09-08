@@ -1,9 +1,9 @@
 import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs'
-import { Server, Socket } from 'socket.io'
+import { Server } from 'socket.io'
 import { WEBSOCKET_LISTEN_PORT } from 'src/constants/server'
-import { createSocketIoServer } from './util/createSocketIoServer'
 import { HwClientHandler } from './HwClientHandler'
 import { HwManager } from './HwManager'
+import { createSocketIoServer } from './util/createSocketIoServer'
 import { RxSocketIoServer } from './util/RxSocketIoServer'
 
 const DEFAULT_OPTIONS = {
@@ -11,58 +11,66 @@ const DEFAULT_OPTIONS = {
 }
 
 export class HwServer {
-    private _io?: Server | null = null
-    private _subscription?: Subscription | null = null
-    private _options: { listenPort: number }
-    private _running$ = new BehaviorSubject(false)
-    private readonly _hwManager: HwManager
-    private _destroyTrigger$ = new Subject<any>()
+    private io_?: Server | null = null
+    private subscription_?: Subscription | null = null
+    private options_: { listenPort: number }
+    private running$ = new BehaviorSubject(false)
+    private readonly hwManager_: HwManager
+    private destroyTrigger$ = new Subject<any>()
 
     constructor(hwManager: HwManager, opts?: { listenPort: number }) {
-        this._options = { ...(opts ?? DEFAULT_OPTIONS) }
-        this._hwManager = hwManager
+        this.options_ = { ...(opts ?? DEFAULT_OPTIONS) }
+        this.hwManager_ = hwManager
     }
 
     observeRunning = (): Observable<boolean> => {
-        return this._running$.asObservable()
+        return this.running$.asObservable()
     }
 
     get isRunning(): boolean {
-        return this._running$.value
+        return this.running$.value
     }
 
-    private updateRunning = (running: boolean) => {
-        if (this._running$.value !== running) {
-            this._running$.next(running)
+    private updateRunning_ = (running: boolean) => {
+        if (this.running$.value !== running) {
+            this.running$.next(running)
         }
     }
 
     start = () => {
-        if (this._io) {
+        console.log('XXX hwServer started')
+        if (this.io_) {
             console.log('already running')
-            this.updateRunning(true)
+            this.updateRunning_(true)
             return
         }
 
         const io = createSocketIoServer()
-        this._io = io
-        this._subscription = RxSocketIoServer.fromConnectionEvent(io).subscribe((socket) => {
-            HwClientHandler.start(socket, this._destroyTrigger$, this._hwManager)
+        this.io_ = io
+        this.subscription_ = RxSocketIoServer.fromConnectionEvent(io).subscribe((socket) => {
+            HwClientHandler.start(socket, this.destroyTrigger$, this.hwManager_)
         })
 
-        const listenPort = this._options.listenPort
+        const listenPort = this.options_.listenPort
         console.log('websocket server start listen:', listenPort)
         io.listen(listenPort)
-        this.updateRunning(true)
+        this.updateRunning_(true)
     }
 
     stop = async (): Promise<void> => {
         console.log('HwServer.stop()')
-        const io = this._io
-        if (!io) return
-        this._destroyTrigger$.next(Date.now())
-        this._subscription?.unsubscribe()
-        this._subscription = null
+        this.destroyTrigger$.next(Date.now())
+        if (this.subscription_) {
+            this.subscription_.unsubscribe()
+            this.subscription_ = null
+        }
+        const io = this.io_
+        this.io_ = undefined
+        if (!io) {
+            this.updateRunning_(false)
+            return
+        }
+
         io.disconnectSockets(true)
         io.removeAllListeners()
         return new Promise((resolve) => {
@@ -72,7 +80,7 @@ export class HwServer {
                 } else {
                     console.log('socket.io-server closed')
                 }
-                this.updateRunning(false)
+                this.updateRunning_(false)
                 resolve()
             })
         })

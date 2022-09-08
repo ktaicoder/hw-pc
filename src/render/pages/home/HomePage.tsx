@@ -1,3 +1,4 @@
+import { Box } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
 import { IHwInfo } from 'src/custom-types/hw-types'
 import DeviceSelectionView from 'src/render/features/device-selection/DeviceSelectionView'
@@ -11,11 +12,6 @@ export default function Home() {
 
     const loadHwInfo = useCallback(async (hwId: string) => {
         const hw = await window.service.hw.findInfoById(hwId)
-        if (hw) {
-            console.log('loadHwInfo = ', hw)
-        } else {
-            console.warn('cannot find loadHwInfo = ', hwId)
-        }
         setHwInfo(hw ?? undefined)
     }, [])
 
@@ -28,7 +24,7 @@ export default function Home() {
         }
     }, [hwServerState?.hwId])
 
-    console.log('HOME Component Render', { hwInfo })
+    // console.log('HOME Component Render', { hwInfo })
     // if (true) {
     //     return (
     //         <MainLayout title="장치 연결" isMainPage={true}>
@@ -43,6 +39,10 @@ export default function Home() {
             </MainLayout>
         )
     } else {
-        return <DeviceSelectionView hwInfo={hwInfo} />
+        return (
+            <Box>
+                <DeviceSelectionView hwInfo={hwInfo} />
+            </Box>
+        )
     }
 }

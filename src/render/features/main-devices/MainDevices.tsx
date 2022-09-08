@@ -87,12 +87,16 @@ export default function MainDevices() {
     const { hwKind, searchQuery } = useContext(MainLayoutContext)!
     const [deviceList, setDeviceList] = useState<IHwInfo[]>([])
 
-    const _onChangeDeviceType = (event: React.MouseEvent<HTMLElement>, deviceType: string) => {
+    useEffect(() => {
+        window.service.hw.stopServer()
+    }, [])
+
+    const handleChangeDeviceType = (event: React.MouseEvent<HTMLElement>, deviceType: string) => {
         const newValue = deviceType as SearchOption['category']
         setOption((p) => ({ ...p, category: newValue }))
     }
 
-    const _onClickFavor = (hwId: string) => {
+    const handleClickFavor = (hwId: string) => {
         toggleFavor(hwId)
     }
 
@@ -137,7 +141,7 @@ export default function MainDevices() {
         window.service.hw.selectHw(hwId)
     }, [])
 
-    const _onClickHw = (info: IHwInfo) => {
+    const handleClickHw = (info: IHwInfo) => {
         updateHwSelection(info)
     }
 
@@ -192,7 +196,7 @@ export default function MainDevices() {
                             size="small"
                             value={option.category}
                             color="primary"
-                            onChange={_onChangeDeviceType}
+                            onChange={handleChangeDeviceType}
                             exclusive
                             aria-label="hardware type"
                         >
@@ -227,8 +231,8 @@ export default function MainDevices() {
                             <DeviceGridItem
                                 info={device}
                                 star={favorHwIds.has(device.hwId)}
-                                onClick={_onClickHw}
-                                onClickFavor={_onClickFavor}
+                                onClick={handleClickHw}
+                                onClickFavor={handleClickFavor}
                             />
                         </Grid>
                     ))}

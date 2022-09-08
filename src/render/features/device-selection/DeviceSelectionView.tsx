@@ -103,25 +103,25 @@ export default function DeviceSelectionView(props: Props) {
         loadPorts(info.hwId)
     }, [refreshToken, loadPorts, info.hwId])
 
-    const _onClickPort = (port: PortInfo) => {
+    const handleClickPort = (port: PortInfo) => {
         setPortInfo(port)
     }
 
-    const _onClickBack = () => {
+    const handleClickBack = () => {
         window.service.hw.unselectHw(info.hwId)
     }
 
-    const _onClickFirmwareDownload = () => {
+    const handleClickFirmwareDownload = () => {
         const firmwareFile = info.firmwareFile
         if (!firmwareFile) return
         window.service.hw.downloadDriver(firmwareFile)
     }
 
-    const _onClickDriver = (driverPath: string) => {
+    const handleClickDriver = (driverPath: string) => {
         window.service.hw.downloadDriver(driverPath)
     }
 
-    const _onClickChrome = () => {
+    const handleClickChrome = () => {
         // window.service.hw.downloadDriver(driverPath)
         window.service.native.openUrl('https://aicodiny.com/maker')
     }
@@ -150,7 +150,7 @@ export default function DeviceSelectionView(props: Props) {
             >
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <IconButton
-                        onClick={_onClickBack}
+                        onClick={handleClickBack}
                         color="inherit"
                         aria-label="open drawer"
                         edge="start"
@@ -166,7 +166,7 @@ export default function DeviceSelectionView(props: Props) {
                 </Box>
                 <Tooltip title="브라우저 열기">
                     <IconButton
-                        onClick={_onClickChrome}
+                        onClick={handleClickChrome}
                         color="inherit"
                         aria-label="open drawer"
                         edge="start"
@@ -209,7 +209,7 @@ export default function DeviceSelectionView(props: Props) {
                         <PortsView
                             portInfos={portInfos}
                             portPath={portInfo?.path}
-                            onClickPort={_onClickPort}
+                            onClickPort={handleClickPort}
                             onClickRefresh={() => setRefreshToken(Date.now())}
                         />
                     </Grid>
@@ -251,7 +251,7 @@ export default function DeviceSelectionView(props: Props) {
                                     key={driver.uri}
                                     variant="contained"
                                     sx={{ width: 180, height: 40 }}
-                                    onClick={() => _onClickDriver(driver.uri)}
+                                    onClick={() => handleClickDriver(driver.uri)}
                                 >
                                     {driver.name}
                                 </Button>
@@ -274,7 +274,7 @@ export default function DeviceSelectionView(props: Props) {
                                 <Button
                                     variant="contained"
                                     sx={{ width: 180, height: 40 }}
-                                    onClick={() => _onClickFirmwareDownload()}
+                                    onClick={() => handleClickFirmwareDownload()}
                                 >
                                     펌웨어 설치
                                 </Button>
@@ -306,7 +306,7 @@ export default function DeviceSelectionView(props: Props) {
                                 </ul>
                                 <ButtonBase
                                     component="div"
-                                    onClick={_onClickChrome}
+                                    onClick={handleClickChrome}
                                     sx={{
                                         ml: 4,
                                         display: 'inline-flex',
