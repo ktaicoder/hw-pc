@@ -8,20 +8,20 @@ import { logger } from './log'
  * @param originalUrl might be `"http://0.0.0.0:5212/"`
  */
 export function getLocalHostUrlWithActualIP(originalUrl: string): string {
-    const localHostUrlWithActualIP = originalUrl.replace(
-        /((?:\d{1,3}\.){3}\d{1,3}|localhost)/,
-        address('public') ?? defaultServerIP,
-    )
-    logger.debug(
-        `Current available address: address() returns ${address('public') ?? 'undefined'}
+  const localHostUrlWithActualIP = originalUrl.replace(
+    /((?:\d{1,3}\.){3}\d{1,3}|localhost)/,
+    address('public') ?? defaultServerIP,
+  )
+  logger.debug(
+    `Current available address: address() returns ${address('public') ?? 'undefined'}
     originalUrl: ${originalUrl} , localHostUrlWithActualIP ${localHostUrlWithActualIP}`,
-    )
-    return localHostUrlWithActualIP
+  )
+  return localHostUrlWithActualIP
 }
 
 /** Sometimes workspace port is corrupted, we want it be fixed to what user set in the workspace setting. */
 export function replaceUrlPortWithSettingPort(originalUrl: string, newPort: number): string {
-    const parsedUrl = new URL(originalUrl)
-    parsedUrl.port = String(newPort)
-    return parsedUrl.toString()
+  const parsedUrl = new URL(originalUrl)
+  parsedUrl.port = String(newPort)
+  return parsedUrl.toString()
 }

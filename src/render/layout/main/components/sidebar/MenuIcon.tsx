@@ -18,46 +18,46 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import CableIcon from '@mui/icons-material/Cable'
 
 type Props = {
-    iconName: string
+  iconName: string
 }
 
 export default function MenuIcon(props: Props) {
-    const { iconName } = props
-    switch (iconName) {
-        case 'adb':
-            return <AdbIcon />
-        case 'science':
-            return <ScienceIcon />
-        case 'grade':
-            return <GradeIcon />
-        case 'github':
-            return <GitHubIcon />
-        case 'construction':
-            return <ConstructionIcon />
-        case 'build':
-            return <BuildIcon />
-        case 'bug_report':
-            return <BugReportIcon />
-        case 'dashboard':
-            return <DashboardIcon />
-        case 'settings':
-            return <SettingsIcon />
-        case 'settings_input_hdmi':
-            return <SettingsInputHdmiIcon />
-        case 'exit_to_app':
-            return <ExitToAppIcon />
-        case 'logout':
-            return <LogoutIcon />
-        case 'usb':
-            return <UsbIcon />
-        case 'bluetooth':
-            return <BluetoothIcon />
-        case 'info':
-            return <InfoOutlinedIcon />
-        case 'cable':
-            return <CableIcon />
-        case 'mosaic':
-            return <AutoAwesomeMosaicIcon />
-    }
-    return <HardwareIcon />
+  const { iconName } = props
+  switch (iconName) {
+    case 'adb':
+      return <AdbIcon />
+    case 'science':
+      return <ScienceIcon />
+    case 'grade':
+      return <GradeIcon />
+    case 'github':
+      return <GitHubIcon />
+    case 'construction':
+      return <ConstructionIcon />
+    case 'build':
+      return <BuildIcon />
+    case 'bug_report':
+      return <BugReportIcon />
+    case 'dashboard':
+      return <DashboardIcon />
+    case 'settings':
+      return <SettingsIcon />
+    case 'settings_input_hdmi':
+      return <SettingsInputHdmiIcon />
+    case 'exit_to_app':
+      return <ExitToAppIcon />
+    case 'logout':
+      return <LogoutIcon />
+    case 'usb':
+      return <UsbIcon />
+    case 'bluetooth':
+      return <BluetoothIcon />
+    case 'info':
+      return <InfoOutlinedIcon />
+    case 'cable':
+      return <CableIcon />
+    case 'mosaic':
+      return <AutoAwesomeMosaicIcon />
+  }
+  return <HardwareIcon />
 }

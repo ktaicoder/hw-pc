@@ -1,75 +1,75 @@
 import { ListItem, ListItemIcon, ListItemText } from '@mui/material'
 import React from 'react'
 import {
-    ICON_COLOR,
-    ICON_COLOR_ACTIVE,
-    SIDEMENU_BG_COLOR_ACTIVE,
-    SIDEMENU_BG_COLOR_HOVER,
-    SIDEMENU_BORDER_COLOR_ACTIVE,
-    SIDEMENU_FG_COLOR,
-    SIDEMENU_FG_COLOR_ACTIVE,
+  ICON_COLOR,
+  ICON_COLOR_ACTIVE,
+  SIDEMENU_BG_COLOR_ACTIVE,
+  SIDEMENU_BG_COLOR_HOVER,
+  SIDEMENU_BORDER_COLOR_ACTIVE,
+  SIDEMENU_FG_COLOR,
+  SIDEMENU_FG_COLOR_ACTIVE,
 } from '../../main-layout-constants'
 import { IMenu } from '../../sidebar-menu-define'
 import Link, { LinkProps } from './Link'
 import MenuIcon from './MenuIcon'
 type Props = {
-    menu: IMenu
-    active: boolean
-    onLinkClick?: (href: string) => void
+  menu: IMenu
+  active: boolean
+  onLinkClick?: (href: string) => void
 }
 
 const MyLink = React.forwardRef<HTMLAnchorElement, LinkProps>((props, ref) => <Link {...props} />)
 
 export default function MenuItem(props: Props) {
-    const { menu, active, onLinkClick } = props
-    const { icon, title, href } = menu
+  const { menu, active, onLinkClick } = props
+  const { icon, title, href } = menu
 
-    return (
-        <ListItem
-            component={MyLink}
-            href={href}
-            to={href}
-            replace
-            onClick={() => onLinkClick?.(href)}
-            sx={{
-                display: 'flex',
-                paddingLeft: `${active ? 20 : 24}px`,
-                pr: 1,
-                '&:hover': {
-                    backgroundColor: active ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.1)',
-                },
+  return (
+    <ListItem
+      component={MyLink}
+      href={href}
+      to={href}
+      replace
+      onClick={() => onLinkClick?.(href)}
+      sx={{
+        display: 'flex',
+        paddingLeft: `${active ? 20 : 24}px`,
+        pr: 1,
+        '&:hover': {
+          backgroundColor: active ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.1)',
+        },
 
-                '& .MuiListItemIcon-root': {
-                    color: active ? ICON_COLOR_ACTIVE : ICON_COLOR,
+        '& .MuiListItemIcon-root': {
+          color: active ? ICON_COLOR_ACTIVE : ICON_COLOR,
 
-                    ml: active ? '-16px' : 0,
-                },
-                '& .MuiListItemText-root': {
-                    color: active ? SIDEMENU_FG_COLOR_ACTIVE : SIDEMENU_FG_COLOR,
+          ml: active ? '-16px' : 0,
+        },
+        '& .MuiListItemText-root': {
+          color: active ? SIDEMENU_FG_COLOR_ACTIVE : SIDEMENU_FG_COLOR,
 
-                    fontWeight: active ? 700 : 500,
-                    '& .MuiListItemText-primary': {
-                        fontSize: '0.85rem',
-                    },
-                },
+          fontWeight: active ? 700 : 500,
+          '& .MuiListItemText-primary': {
+            fontSize: '0.85rem',
+          },
+        },
 
-                ...(active && {
-                    // backgroundColor: SIDEMENU_BG_COLOR_ACTIVE,
-                    backgroundColor: '#fff',
-                    ml: '4px',
-                    // borderLeft: `4px solid ${SIDEMENU_BORDER_COLOR_ACTIVE}`,
-                    borderLeft: `16px solid transparent`,
-                    borderTopLeftRadius: '24px',
-                    borderBottomLeftRadius: '24px',
-                }),
-            }}
-        >
-            {icon && (
-                <ListItemIcon>
-                    <MenuIcon iconName={icon} />
-                </ListItemIcon>
-            )}
-            <ListItemText primary={title} />
-        </ListItem>
-    )
+        ...(active && {
+          // backgroundColor: SIDEMENU_BG_COLOR_ACTIVE,
+          backgroundColor: '#fff',
+          ml: '4px',
+          // borderLeft: `4px solid ${SIDEMENU_BORDER_COLOR_ACTIVE}`,
+          borderLeft: `16px solid transparent`,
+          borderTopLeftRadius: '24px',
+          borderBottomLeftRadius: '24px',
+        }),
+      }}
+    >
+      {icon && (
+        <ListItemIcon>
+          <MenuIcon iconName={icon} />
+        </ListItemIcon>
+      )}
+      <ListItemText primary={title} />
+    </ListItem>
+  )
 }

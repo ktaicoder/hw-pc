@@ -8,13 +8,13 @@ import { Channels } from 'src/constants/channels'
  * @param viewToGetData
  */
 export default async function getFromRenderer<T>(
-    channel: Channels,
-    viewToGetData: BrowserView | BrowserWindow,
+  channel: Channels,
+  viewToGetData: BrowserView | BrowserWindow,
 ): Promise<T> {
-    // prevent several ipc happened together, and later return too early so first get the result that is for later one
-    const ipcToken = uuid()
-    viewToGetData.webContents.send(channel, { ipcToken })
-    return new Promise((resolve) => {
-        ipcMain.once(`${channel}-${ipcToken}`, (_event, data: T) => resolve(data))
-    })
+  // prevent several ipc happened together, and later return too early so first get the result that is for later one
+  const ipcToken = uuid()
+  viewToGetData.webContents.send(channel, { ipcToken })
+  return new Promise((resolve) => {
+    ipcMain.once(`${channel}-${ipcToken}`, (_event, data: T) => resolve(data))
+  })
 }

@@ -8,7 +8,7 @@ import { SystemStyleObject } from '@mui/system'
 export type SimpleSxProps = SystemStyleObject<Theme> | ((theme: Theme) => SystemStyleObject<Theme>)
 
 export function arraySx(
-    sx?: SxProps,
+  sx?: SxProps,
 ): Array<boolean | SystemStyleObject<Theme> | ((theme: Theme) => SystemStyleObject<Theme>)> {
-    return Array.isArray(sx) ? sx : [sx ?? false]
+  return Array.isArray(sx) ? sx : [sx ?? false]
 }

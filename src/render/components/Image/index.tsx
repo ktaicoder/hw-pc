@@ -3,8 +3,8 @@ import { useMemo } from 'react'
 import { fixWebPath } from 'src/render/util/fixWebPath'
 
 export default function Image(props: BoxProps<'img'>) {
-    const { src, alt = '', ...restProps } = props
-    const fixedSrc = useMemo(() => fixWebPath(src), [src])
+  const { src, alt = '', ...restProps } = props
+  const fixedSrc = useMemo(() => fixWebPath(src), [src])
 
-    return <Box {...restProps} component="img" src={fixedSrc} alt={alt} />
+  return <Box {...restProps} component="img" src={fixedSrc} alt={alt} />
 }

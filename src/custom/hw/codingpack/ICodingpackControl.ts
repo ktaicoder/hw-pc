@@ -11,5 +11,5 @@ export interface ICodingpackControl extends IHwControl {}
  * 변수이름을 hwId인 codingpack로 해야 함
  */
 export const codingpack: HardwareDescriptor = {
-    commands: [],
+  commands: [],
 }

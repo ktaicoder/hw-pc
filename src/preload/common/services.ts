@@ -18,12 +18,12 @@ export const hw = createProxy<IHwService>(HwServiceIPCDescriptor)
 export const native = createProxy<INativeService>(NativeServiceIPCDescriptor)
 
 export const descriptors = {
-    preferences: PreferenceServiceIPCDescriptor,
-    context: ContextServiceIPCDescriptor,
-    serialPort: SerialPortServiceIPCDescriptor,
-    hid: HidServiceIPCDescriptor,
-    window: WindowServiceIPCDescriptor,
-    menu: MenuServiceIPCDescriptor,
-    hw: HwServiceIPCDescriptor,
-    native: NativeServiceIPCDescriptor,
+  preferences: PreferenceServiceIPCDescriptor,
+  context: ContextServiceIPCDescriptor,
+  serialPort: SerialPortServiceIPCDescriptor,
+  hid: HidServiceIPCDescriptor,
+  window: WindowServiceIPCDescriptor,
+  menu: MenuServiceIPCDescriptor,
+  hw: HwServiceIPCDescriptor,
+  native: NativeServiceIPCDescriptor,
 }

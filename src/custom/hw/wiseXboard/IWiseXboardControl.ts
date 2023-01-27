@@ -5,17 +5,17 @@ import { HardwareDescriptor, IHwControl } from 'src/custom-types'
  * 클라이언트는 이 인터페이스를 Proxy 하여 RPC 처럼 호출
  */
 export interface IWiseXboardControl extends IHwControl {
-    analogRead(): Promise<number[]>
-    digitalRead(): Promise<number[]>
-    digitalWrite(pin: number, value: number): Promise<void>
-    setHumanoidMotion(index: number): Promise<void>
-    stopDCMotor(): Promise<void>
-    setDCMotorSpeed(l1: number, r1: number, l2: number, r2: number): Promise<void>
-    setServoMotorAngle(pinNum: number, angle: number): Promise<void>
+  analogRead(): Promise<number[]>
+  digitalRead(): Promise<number[]>
+  digitalWrite(pin: number, value: number): Promise<void>
+  setHumanoidMotion(index: number): Promise<void>
+  stopDCMotor(): Promise<void>
+  setDCMotorSpeed(l1: number, r1: number, l2: number, r2: number): Promise<void>
+  setServoMotorAngle(pinNum: number, angle: number): Promise<void>
 
-    // 자동 호출 함수
-    onAfterOpen(): Promise<void>
-    onBeforeClose(): Promise<void>
+  // 자동 호출 함수
+  onAfterOpen(): Promise<void>
+  onBeforeClose(): Promise<void>
 }
 
 /**
@@ -23,17 +23,17 @@ export interface IWiseXboardControl extends IHwControl {
  * 변수이름을 hwId인 wiseXboard로 해야 함
  */
 export const wiseXboard: HardwareDescriptor = {
-    commands: [
-        'analogRead', //
-        'digitalRead',
-        'digitalWrite',
-        'setHumanoidMotion',
-        'stopDCMotor',
-        'setDCMotorSpeed',
-        'setServoMotorAngle',
+  commands: [
+    'analogRead', //
+    'digitalRead',
+    'digitalWrite',
+    'setHumanoidMotion',
+    'stopDCMotor',
+    'setDCMotorSpeed',
+    'setServoMotorAngle',
 
-        // 자동 호출 함수
-        'onAfterOpen',
-        'onBeforeClose',
-    ],
+    // 자동 호출 함수
+    'onAfterOpen',
+    'onBeforeClose',
+  ],
 }

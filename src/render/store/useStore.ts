@@ -6,11 +6,10 @@ import RootStore from './RootStore'
  * Mobx store hook
  */
 export default function useStore(): RootStore {
-    const context = useContext(MobXProviderContext)
-    if (context === undefined) {
-        throw new Error('useStore must be used within StoreProvider')
-    }
+  const context = useContext(MobXProviderContext)
+  if (context === undefined) {
+    throw new Error('useStore must be used within StoreProvider')
+  }
 
-    return context as RootStore
+  return context as RootStore
 }
-

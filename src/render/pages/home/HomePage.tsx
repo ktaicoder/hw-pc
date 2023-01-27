@@ -7,42 +7,42 @@ import MainLayout from 'src/render/layout/main'
 import { useHwServerState } from 'src/services/hw/hook'
 
 export default function Home() {
-    const [hwInfo, setHwInfo] = useState<IHwInfo>()
-    const hwServerState = useHwServerState()
+  const [hwInfo, setHwInfo] = useState<IHwInfo>()
+  const hwServerState = useHwServerState()
 
-    const loadHwInfo = useCallback(async (hwId: string) => {
-        const hw = await window.service.hw.findInfoById(hwId)
-        setHwInfo(hw ?? undefined)
-    }, [])
+  const loadHwInfo = useCallback(async (hwId: string) => {
+    const hw = await window.service.hw.findInfoById(hwId)
+    setHwInfo(hw ?? undefined)
+  }, [])
 
-    useEffect(() => {
-        const hwId = hwServerState?.hwId
-        if (hwId) {
-            loadHwInfo(hwId)
-        } else {
-            setHwInfo(undefined)
-        }
-    }, [hwServerState?.hwId])
-
-    // console.log('HOME Component Render', { hwInfo })
-    // if (true) {
-    //     return (
-    //         <MainLayout title="장치 연결" isMainPage={true}>
-    //             <MainDevices />
-    //         </MainLayout>
-    //     )
-    // }
-    if (!hwInfo) {
-        return (
-            <MainLayout title="장치 연결" isMainPage={true}>
-                <MainDevices />
-            </MainLayout>
-        )
+  useEffect(() => {
+    const hwId = hwServerState?.hwId
+    if (hwId) {
+      loadHwInfo(hwId)
     } else {
-        return (
-            <Box>
-                <DeviceSelectionView hwInfo={hwInfo} />
-            </Box>
-        )
+      setHwInfo(undefined)
     }
+  }, [hwServerState?.hwId])
+
+  // console.log('HOME Component Render', { hwInfo })
+  // if (true) {
+  //     return (
+  //         <MainLayout title="장치 연결" isMainPage={true}>
+  //             <MainDevices />
+  //         </MainLayout>
+  //     )
+  // }
+  if (!hwInfo) {
+    return (
+      <MainLayout title="장치 연결" isMainPage={true}>
+        <MainDevices />
+      </MainLayout>
+    )
+  } else {
+    return (
+      <Box>
+        <DeviceSelectionView hwInfo={hwInfo} />
+      </Box>
+    )
+  }
 }

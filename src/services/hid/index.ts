@@ -5,10 +5,10 @@ import { IHidService } from './interface'
 
 @injectable()
 export class HidService implements IHidService {
-    constructor() {}
+  constructor() {}
 
-    public async devices(): Promise<Device[]> {
-        const devs = HID.devices()
-        return devs
-    }
+  public async devices(): Promise<Device[]> {
+    const devs = HID.devices()
+    return devs
+  }
 }

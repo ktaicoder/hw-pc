@@ -9,55 +9,55 @@ import useDebouncedCallback from 'beautiful-react-hooks/useDebouncedCallback'
  * @param defaultValue empty array or undefined, as initial value
  */
 export function usePromiseValue<T, DefaultValueType = T | undefined>(
-    asyncValue: () => Promise<T>,
-    defaultValue?: AsyncReturnType<typeof asyncValue>,
-    dependency: unknown[] = [],
+  asyncValue: () => Promise<T>,
+  defaultValue?: AsyncReturnType<typeof asyncValue>,
+  dependency: unknown[] = [],
 ): T | DefaultValueType {
-    const [value, valueSetter] = useState<T | DefaultValueType>(defaultValue as T | DefaultValueType)
-    // use initial value
-    useEffect(() => {
-        void (async () => {
-            valueSetter(await asyncValue())
-        })()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, dependency)
+  const [value, valueSetter] = useState<T | DefaultValueType>(defaultValue as T | DefaultValueType)
+  // use initial value
+  useEffect(() => {
+    void (async () => {
+      valueSetter(await asyncValue())
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, dependency)
 
-    return value
+  return value
 }
 
 export function usePromiseValueAndSetter<T, DefaultValueType = T | undefined>(
-    asyncValue: () => Promise<T>,
-    asyncSetter: (newValue: T | DefaultValueType) => Promise<unknown>,
-    defaultValue?: AsyncReturnType<typeof asyncValue>,
+  asyncValue: () => Promise<T>,
+  asyncSetter: (newValue: T | DefaultValueType) => Promise<unknown>,
+  defaultValue?: AsyncReturnType<typeof asyncValue>,
 ): [T | DefaultValueType, (newValue: T | DefaultValueType) => void] {
-    const [value, valueSetter] = useState<T | DefaultValueType>(defaultValue as T | DefaultValueType)
+  const [value, valueSetter] = useState<T | DefaultValueType>(defaultValue as T | DefaultValueType)
 
-    // use initial value
-    useEffect(() => {
-        void (async () => {
-            valueSetter(await asyncValue())
-        })()
-    }, [asyncValue])
+  // use initial value
+  useEffect(() => {
+    void (async () => {
+      valueSetter(await asyncValue())
+    })()
+  }, [asyncValue])
 
-    // update remote value on change
-    const updateRemoteValue = useDebouncedCallback(
-        async (newValue: T | DefaultValueType) => {
-            const previousValue = await asyncValue()
-            if (value !== previousValue) {
-                void asyncSetter(value)
-            }
-        },
-        [asyncValue, asyncSetter],
-        300,
-    )
+  // update remote value on change
+  const updateRemoteValue = useDebouncedCallback(
+    async (newValue: T | DefaultValueType) => {
+      const previousValue = await asyncValue()
+      if (value !== previousValue) {
+        void asyncSetter(value)
+      }
+    },
+    [asyncValue, asyncSetter],
+    300,
+  )
 
-    const setter = useCallback(
-        async (newValue: T | DefaultValueType) => {
-            valueSetter(newValue)
-            await updateRemoteValue(newValue)
-        },
-        [valueSetter, updateRemoteValue],
-    )
+  const setter = useCallback(
+    async (newValue: T | DefaultValueType) => {
+      valueSetter(newValue)
+      await updateRemoteValue(newValue)
+    },
+    [valueSetter, updateRemoteValue],
+  )
 
-    return [value, setter]
+  return [value, setter]
 }

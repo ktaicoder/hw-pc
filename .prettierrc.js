@@ -1,16 +1,15 @@
 module.exports = {
     parser: 'typescript',
     printWidth: 120,
-    tabWidth: 4,
+    tabWidth: 2,
     trailingComma: 'all',
     singleQuote: true,
     bracketSpacing: true,
     semi: false,
     useTabs: false,
     arrowParens: 'always',
-    endOfLine: 'auto',
+    endOfLine: 'lf',
     proseWrap: 'preserve',
-    jsxBracketSameLine: false,
     overrides: [
         {
             files: '*.json',

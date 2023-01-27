@@ -1,18 +1,18 @@
-import Errio from 'errio';
+import Errio from 'errio'
 
 /* Custom Error */
 export class IpcProxyError extends Error {
   constructor(message?: string | undefined) {
-    super(message);
-    this.name = this.constructor.name;
+    super(message)
+    this.name = this.constructor.name
   }
 }
-Errio.register(IpcProxyError as ErrorConstructor);
+Errio.register(IpcProxyError as ErrorConstructor)
 
 /* Utils */
 // eslint-disable-next-line @typescript-eslint/ban-types
 export function isFunction(value: unknown): value is Function {
-  return value !== undefined && typeof value === 'function';
+  return value !== undefined && typeof value === 'function'
 }
 
 /**
@@ -21,5 +21,5 @@ export function isFunction(value: unknown): value is Function {
  * @returns
  */
 export function getSubscriptionKey(key: string): string {
-  return `${key}Subscribe`;
+  return `${key}Subscribe`
 }

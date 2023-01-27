@@ -25,290 +25,287 @@ const SLICE_TRIGGER_LINES = Math.round(MAX_LINES * 0.2)
 // }
 
 const ControlChars = {
-    ctrl_c: [ASCII.ETX],
-    QUIT: [ASCII.FS],
-    EOF: [ASCII.EOT],
-    NL: [ASCII.LF],
-    STOP: [ASCII.DC3],
-    START: [ASCII.DC1],
+  ctrl_c: [ASCII.ETX],
+  QUIT: [ASCII.FS],
+  EOF: [ASCII.EOT],
+  NL: [ASCII.LF],
+  STOP: [ASCII.DC3],
+  START: [ASCII.DC1],
 }
 
 export const ControlKeys = {
-    c: ControlChars.ctrl_c,
-    d: ControlChars.EOF,
-    s: ControlChars.STOP,
-    q: ControlChars.START,
-    '\\': ControlChars.QUIT,
+  c: ControlChars.ctrl_c,
+  d: ControlChars.EOF,
+  s: ControlChars.STOP,
+  q: ControlChars.START,
+  '\\': ControlChars.QUIT,
 }
 
 export interface ReactConsoleProps {
-    // general props
-    sx: SxProps
-    autoFocus?: boolean
-    readonly?: boolean
-    hide?: boolean
-    prompt?: string
-    welcomeMessage?: string | undefined
-    // history props
-    history?: string[]
-    onSubmitBinary: (cmd: Uint8Array) => void
-    onSubmitText: (cmd: string) => void
-    consoleRef?: (console: ReactConsoleControl | null) => void
+  // general props
+  sx: SxProps
+  autoFocus?: boolean
+  readonly?: boolean
+  hide?: boolean
+  prompt?: string
+  welcomeMessage?: string | undefined
+  // history props
+  history?: string[]
+  onSubmitBinary: (cmd: Uint8Array) => void
+  onSubmitText: (cmd: string) => void
+  consoleRef?: (console: ReactConsoleControl | null) => void
 }
 
 type ConsoleText = {
-    text: string
+  text: string
 }
 
 type ReactConsoleState = {
-    output: ConsoleText[]
-    input: string
+  output: ConsoleText[]
+  input: string
 }
 
 export interface ReactConsoleControl {
-    print: (msg: string[]) => void
-    getLineCount: () => number
-    clear: () => void
-    scrollToBottom: () => void
+  print: (msg: string[]) => void
+  getLineCount: () => number
+  clear: () => void
+  scrollToBottom: () => void
 }
 type Props = ReactConsoleProps
 
 class ReactConsole extends React.Component<Props, ReactConsoleState> implements ReactConsoleControl {
-    inputRef: any = null
-    wrapperRef: any = null
-    static defaultProps = {
-        prompt: '$',
-        autoFocus: false,
-        readonly: false,
+  inputRef: any = null
+  wrapperRef: any = null
+  static defaultProps = {
+    prompt: '$',
+    autoFocus: false,
+    readonly: false,
+  }
+
+  state = {
+    input: '',
+    output: [],
+  }
+
+  componentDidMount() {
+    const { welcomeMessage } = this.props
+    if (welcomeMessage) {
+      this.setState({
+        output: [{ text: welcomeMessage }],
+      })
+    }
+    this.props.consoleRef?.(this)
+  }
+
+  public clear = () => {
+    this.setState({ output: [], input: '' })
+  }
+
+  public scrollToBottom = () => {
+    setTimeout(() => {
+      const wrapper = this.wrapperRef
+      if (wrapper && typeof wrapper.scrollHeight !== 'undefined') {
+        wrapper.scrollTop = wrapper.scrollHeight
+      }
+    }, 0)
+  }
+
+  shouldComponentUpdate(nextProps: Props) {
+    if (nextProps.hide !== this.props.hide) {
+      this.scrollToBottom()
+    }
+    return true
+  }
+
+  private appendOutput = (newMessage: string, input?: string | null) => {
+    input = input ?? this.state.input
+    if (this.state.output.length > MAX_LINES) {
+      this.setState({
+        input,
+        output: [...this.state.output.slice(SLICE_TRIGGER_LINES), { text: newMessage }],
+      })
+    } else {
+      this.setState({
+        input,
+        output: [...this.state.output, { text: newMessage }],
+      })
+    }
+  }
+
+  public getLineCount = (): number => {
+    return this.state.output.length
+  }
+  public print = async (msgLines: string[]) => {
+    // console.log('print:' + inputString)
+    if (msgLines.length === 0) {
+      return
+    }
+    this.appendOutput(msgLines.join(''))
+    if (this.inputRef) {
+      this.inputRef.focus()
+      this.scrollToBottom()
+    }
+  }
+
+  /**
+   * Takes current text of a main input and generates a string that will be outputted as a log.
+   */
+  private getCurrentTextSnapshot = (): string => {
+    const { prompt } = this.props
+    const inputString: string = this.state.input
+    return `${prompt} ${inputString}`
+  }
+
+  private onSubmit = (e: any) => {
+    e.preventDefault()
+    this._onSubmit()
+  }
+
+  private _onSubmit = async () => {
+    const inputString = this.state.input
+    if (!inputString) {
+      return
     }
 
-    state = {
-        input: '',
-        output: [],
+    const log = this.getCurrentTextSnapshot()
+    if (inputString === '') {
+      this.appendOutput(log, '')
+      this.scrollToBottom()
+      return
     }
 
-    componentDidMount() {
-        const { welcomeMessage } = this.props
-        if (welcomeMessage) {
-            this.setState({
-                output: [{ text: welcomeMessage }],
-            })
-        }
-        this.props.consoleRef?.(this)
+    const [cmd, ...args] = inputString.split(' ')
+    if (cmd === 'clear') {
+      this.clear()
+      return
     }
 
-    public clear = () => {
-        this.setState({ output: [], input: '' })
+    this.props.onSubmitText(inputString)
+    this.appendOutput(log, '')
+    if (this.inputRef) {
+      this.inputRef.focus()
+      this.scrollToBottom()
     }
+  }
 
-    public scrollToBottom = () => {
-        setTimeout(() => {
-            const wrapper = this.wrapperRef
-            if (wrapper && typeof wrapper.scrollHeight !== 'undefined') {
-                wrapper.scrollTop = wrapper.scrollHeight
-            }
-        }, 0)
-    }
+  /**
+   * Main input change handler.
+   * @param event
+   */
+  private onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({
+      input: event.target.value,
+    })
+  }
 
-    shouldComponentUpdate(nextProps: Props) {
-        if (nextProps.hide !== this.props.hide) {
-            this.scrollToBottom()
-        }
-        return true
-    }
-
-    private appendOutput = (newMessage: string, input?: string | null) => {
-        input = input ?? this.state.input
-        if (this.state.output.length > MAX_LINES) {
-            this.setState({
-                input,
-                output: [...this.state.output.slice(SLICE_TRIGGER_LINES), { text: newMessage }],
-            })
-        } else {
-            this.setState({
-                input,
-                output: [...this.state.output, { text: newMessage }],
-            })
-        }
-    }
-
-    public getLineCount = (): number => {
-        return this.state.output.length
-    }
-    public print = async (msgLines: string[]) => {
-        // console.log('print:' + inputString)
-        if (msgLines.length === 0) {
-            return
-        }
-        this.appendOutput(msgLines.join(''))
-        if (this.inputRef) {
-            this.inputRef.focus()
-            this.scrollToBottom()
-        }
-    }
-
-    /**
-     * Takes current text of a main input and generates a string that will be outputted as a log.
-     */
-    private getCurrentTextSnapshot = (): string => {
-        const { prompt } = this.props
-        const inputString: string = this.state.input
-        return `${prompt} ${inputString}`
-    }
-
-    private onSubmit = (e: any) => {
-        e.preventDefault()
+  /**
+   * onKeyDown implementation of a main input.
+   * @param event
+   */
+  private onKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      const input = this.state.input ?? ''
+      if (input.length === 0) {
+        this.props.onSubmitText('')
+        this.scrollToBottom()
+      } else {
         this._onSubmit()
+      }
+    } else if (event.ctrlKey) {
+      let values = ControlKeys[event.key]
+      if (values) {
+        event.preventDefault()
+        this.appendOutput(`${this.props.prompt} ^${event.key}`, '')
+        this.props.onSubmitBinary(new Uint8Array(values))
+        this.scrollToBottom()
+      }
     }
+  }
 
-    private _onSubmit = async () => {
-        const inputString = this.state.input
-        if (!inputString) {
-            return
-        }
-
-        const log = this.getCurrentTextSnapshot()
-        if (inputString === '') {
-            this.appendOutput(log, '')
-            this.scrollToBottom()
-            return
-        }
-
-        const [cmd, ...args] = inputString.split(' ')
-        if (cmd === 'clear') {
-            this.clear()
-            return
-        }
-
-        this.props.onSubmitText(inputString)
-        this.appendOutput(log, '')
-        if (this.inputRef) {
-            this.inputRef.focus()
-            this.scrollToBottom()
-        }
+  /**
+   * Focuses console input.
+   * Whenever an user clicks on a terminal, we want to focus an actual input where he/she can type.
+   */
+  public focusConsole = () => {
+    if (this.inputRef) {
+      if (document.getSelection()!.isCollapsed) {
+        this.inputRef.focus()
+      }
     }
+  }
 
-    /**
-     * Main input change handler.
-     * @param event
-     */
-    private onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        this.setState({
-            input: event.target.value,
-        })
-    }
+  render() {
+    const { hide = false, prompt, autoFocus, readonly } = this.props
+    if (hide) return <div />
 
-    /**
-     * onKeyDown implementation of a main input.
-     * @param event
-     */
-    private onKeyDown = (event: React.KeyboardEvent) => {
-        if (event.key === 'Enter') {
-            event.preventDefault()
-            const input = this.state.input ?? ''
-            if (input.length === 0) {
-                this.props.onSubmitText('')
-                this.scrollToBottom()
-            } else {
-                this._onSubmit()
-            }
-        } else if (event.ctrlKey) {
-            let values = ControlKeys[event.key]
-            if (values) {
-                event.preventDefault()
-                this.appendOutput(`${this.props.prompt} ^${event.key}`, '')
-                this.props.onSubmitBinary(new Uint8Array(values))
-                this.scrollToBottom()
-            }
-        }
-    }
-
-    /**
-     * Focuses console input.
-     * Whenever an user clicks on a terminal, we want to focus an actual input where he/she can type.
-     */
-    public focusConsole = () => {
-        if (this.inputRef) {
-            if (document.getSelection()!.isCollapsed) {
-                this.inputRef.focus()
-            }
-        }
-    }
-
-    render() {
-        const { hide = false, prompt, autoFocus, readonly } = this.props
-        if (hide) return <div />
-
-        return (
-            <Box
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          color: 'white',
+          flex: 1,
+          fontFamily: '"Nanum Gothic Coding",monospace',
+          fontSize: '0.85rem',
+          padding: 2,
+          overflowY: 'auto',
+          ...this.props.sx,
+        }}
+        onClick={this.focusConsole}
+        ref={(ref) => (this.wrapperRef = ref)}
+      >
+        <div>
+          {this.state.output
+            .map(({ text, level }) => ({ level, text }))
+            .map(({ text, level = 'debug' }, key) => (
+              <Box
+                component="pre"
+                key={key}
                 sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    color: 'white',
-                    flex: 1,
-                    fontFamily: '"Nanum Gothic Coding",monospace',
-                    fontSize: '0.85rem',
-                    padding: 2,
-                    overflowY: 'auto',
-                    ...this.props.sx,
+                  lineHeight: 1.2,
+                  fontFamily: '"Nanum Gothic Coding",monospace',
+                  fontSize: '0.85rem',
+                  padding: 0,
+                  color: 'white',
                 }}
-                onClick={this.focusConsole}
-                ref={(ref) => (this.wrapperRef = ref)}
-            >
-                <div>
-                    {this.state.output
-                        .map(({ text, level }) => ({ level, text }))
-                        .map(({ text, level = 'debug' }, key) => (
-                            <Box
-                                component="pre"
-                                key={key}
-                                sx={{
-                                    lineHeight: 1.2,
-                                    fontFamily: '"Nanum Gothic Coding",monospace',
-                                    fontSize: '0.85rem',
-                                    padding: 0,
-                                    color: 'white',
-                                }}
-                                dangerouslySetInnerHTML={{ __html: text }}
-                            />
-                        ))}
-                </div>
-                <form onSubmit={this.onSubmit} style={{ display: readonly ? 'none' : 'inherit' }}>
-                    <Box sx={{ display: 'flex' }}>
-                        <Box
-                            component="span"
-                            sx={{ display: 'flex', alignItems: 'center', color: readonly ? '#bbb' : 'green' }}
-                        >
-                            {prompt}&nbsp;
-                        </Box>
-                        <Box
-                            component="input"
-                            sx={{
-                                flex: 1,
-                                background: 'transparent!important',
-                                border: 'none',
-                                outline: 'none',
-                                // background: 'rgba(255,0,0,0.3)',
-                                color: 'white',
-                                fontFamily: '"Nanum Gothic Coding",monospace',
-                                fontSize: '0.85rem',
-                            }}
-                            disabled={readonly}
-                            ref={(ref) => (this.inputRef = ref)}
-                            autoFocus={autoFocus}
-                            value={this.state.input}
-                            onChange={this.onInputChange}
-                            onKeyDown={this.onKeyDown}
-                            autoComplete="off"
-                            spellCheck={false}
-                            autoCapitalize="false"
-                            name="input"
-                        />
-                    </Box>
-                </form>
+                dangerouslySetInnerHTML={{ __html: text }}
+              />
+            ))}
+        </div>
+        <form onSubmit={this.onSubmit} style={{ display: readonly ? 'none' : 'inherit' }}>
+          <Box sx={{ display: 'flex' }}>
+            <Box component="span" sx={{ display: 'flex', alignItems: 'center', color: readonly ? '#bbb' : 'green' }}>
+              {prompt}&nbsp;
             </Box>
-        )
-    }
+            <Box
+              component="input"
+              sx={{
+                flex: 1,
+                background: 'transparent!important',
+                border: 'none',
+                outline: 'none',
+                // background: 'rgba(255,0,0,0.3)',
+                color: 'white',
+                fontFamily: '"Nanum Gothic Coding",monospace',
+                fontSize: '0.85rem',
+              }}
+              disabled={readonly}
+              ref={(ref) => (this.inputRef = ref)}
+              autoFocus={autoFocus}
+              value={this.state.input}
+              onChange={this.onInputChange}
+              onKeyDown={this.onKeyDown}
+              autoComplete="off"
+              spellCheck={false}
+              autoCapitalize="false"
+              name="input"
+            />
+          </Box>
+        </form>
+      </Box>
+    )
+  }
 }
 
 export default ReactConsole

@@ -7,13 +7,13 @@ const DEBUG = false
 
 @injectable()
 export class SerialPortService implements ISerialPortService {
-    constructor() {}
+  constructor() {}
 
-    async list(): Promise<SerialPort.PortInfo[]> {
-        const ports = await SerialPort.list()
-        if (DEBUG) {
-            logger.debug('SerialPort.list() = ', ports)
-        }
-        return ports
+  async list(): Promise<SerialPort.PortInfo[]> {
+    const ports = await SerialPort.list()
+    if (DEBUG) {
+      logger.debug('SerialPort.list() = ', ports)
     }
+    return ports
+  }
 }

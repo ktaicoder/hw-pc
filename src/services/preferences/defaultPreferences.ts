@@ -3,14 +3,14 @@ import path from 'path'
 import { IPreferencesData } from './interface'
 
 export const defaultPreferences: IPreferencesData = {
-    downloadPath: getDefaultDownloadsPath(),
-    language: 'ko',
-    windowSize: undefined,
-    useHardwareAcceleration: true,
-    ignoreCertificateErrors: false,
-    favorHwIdList: [],
+  downloadPath: getDefaultDownloadsPath(),
+  language: 'ko',
+  windowSize: undefined,
+  useHardwareAcceleration: true,
+  ignoreCertificateErrors: false,
+  favorHwIdList: [],
 }
 
 function getDefaultDownloadsPath(): string {
-    return path.join(app.getPath('home'), 'Downloads')
+  return path.join(app.getPath('home'), 'Downloads')
 }

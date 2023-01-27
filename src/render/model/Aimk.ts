@@ -1,5 +1,5 @@
 export interface Aimk {
-    //
-    os: string
-    nodeEnv: string
+  //
+  os: string
+  nodeEnv: string
 }

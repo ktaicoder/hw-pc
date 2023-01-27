@@ -1,4 +1,4 @@
 export interface Device {
-    hwId: string
-    hwName: string
+  hwId: string
+  hwName: string
 }

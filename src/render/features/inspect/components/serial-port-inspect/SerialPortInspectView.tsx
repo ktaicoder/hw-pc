@@ -19,44 +19,41 @@ import PortletLabel from 'src/render/components/PortletLabel'
 // }
 
 export default function SerialPortInspectView() {
-    const serialportList = usePromiseValue<SerialPort.PortInfo[]>(
-        async () => await window.service.serialPort.list(),
-        [],
-    )
+  const serialportList = usePromiseValue<SerialPort.PortInfo[]>(async () => await window.service.serialPort.list(), [])
 
-    return (
-        <Portlet>
-            <PortletHeader>
-                <PortletLabel title="시리얼포트" icon={<HardwareIcon />} />
-            </PortletHeader>
-            <PortletContent>
-                <TableContainer>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Vecdor Id</TableCell>
-                                <TableCell>Product Id</TableCell>
-                                <TableCell>Path</TableCell>
-                                <TableCell>제조사</TableCell>
-                                <TableCell>Location Id</TableCell>
-                                <TableCell>PnP Id</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {serialportList?.map((serial) => (
-                                <TableRow key={serial.path}>
-                                    <TableCell>{serial.productId}</TableCell>
-                                    <TableCell>{serial.vendorId}</TableCell>
-                                    <TableCell>{serial.path}</TableCell>
-                                    <TableCell>{serial.manufacturer}</TableCell>
-                                    <TableCell>{serial.locationId}</TableCell>
-                                    <TableCell>{serial.pnpId}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </PortletContent>
-        </Portlet>
-    )
+  return (
+    <Portlet>
+      <PortletHeader>
+        <PortletLabel title="시리얼포트" icon={<HardwareIcon />} />
+      </PortletHeader>
+      <PortletContent>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Vecdor Id</TableCell>
+                <TableCell>Product Id</TableCell>
+                <TableCell>Path</TableCell>
+                <TableCell>제조사</TableCell>
+                <TableCell>Location Id</TableCell>
+                <TableCell>PnP Id</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {serialportList?.map((serial) => (
+                <TableRow key={serial.path}>
+                  <TableCell>{serial.productId}</TableCell>
+                  <TableCell>{serial.vendorId}</TableCell>
+                  <TableCell>{serial.path}</TableCell>
+                  <TableCell>{serial.manufacturer}</TableCell>
+                  <TableCell>{serial.locationId}</TableCell>
+                  <TableCell>{serial.pnpId}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </PortletContent>
+    </Portlet>
+  )
 }

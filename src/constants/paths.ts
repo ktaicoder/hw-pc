@@ -21,18 +21,18 @@ export const developmentImageFolderPath = path.resolve(rootFolder, 'images')
 
 const menuBarIconFileName = process.platform === 'darwin' ? 'menubarTemplate@2x.png' : 'menubar@2x.png'
 export const MENUBAR_ICON_PATH = path.resolve(
-    isDevelopmentOrTest ? buildResFolder : process.resourcesPath,
-    menuBarIconFileName,
+  isDevelopmentOrTest ? buildResFolder : process.resourcesPath,
+  menuBarIconFileName,
 )
 
 export const CHROME_ERROR_PATH = 'chrome-error://chromewebdata/'
 export const LOGIN_REDIRECT_PATH = 'http://localhost:3000/?code='
 export const DESKTOP_PATH = path.join(os.homedir(), 'Desktop')
 export const LOG_FOLDER = isDevelopmentOrTest
-    ? path.resolve(rootFolder, '..', 'logs')
-    : isMac
-    ? path.resolve(process.resourcesPath, '..', 'logs')
-    : path.resolve(os.homedir(), '.aicodingblock', 'hw', 'logs')
+  ? path.resolve(rootFolder, '..', 'logs')
+  : isMac
+  ? path.resolve(process.resourcesPath, '..', 'logs')
+  : path.resolve(os.homedir(), '.aicodingblock', 'hw', 'logs')
 
 export const DRIVER_FOLDER = path.resolve(staticFolder, 'drivers')
 export const FIRMWARE_FOLDER = path.resolve(staticFolder, 'firmwares')

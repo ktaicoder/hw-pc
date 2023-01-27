@@ -1,1 +1,1 @@
-export * from "./Aimk";
+export * from './Aimk'
