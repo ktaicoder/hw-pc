@@ -210,9 +210,9 @@ export interface IExMarsCubeControl extends IHwControl {
 
 /**
  * 하드웨어 디스크립터: commands
- * 변수이름을 hwId인 codingpack로 해야 함
+ * 변수이름을 hwId인 exMarsCube로 해야 함
  */
-export const codingpack: HardwareDescriptor = {
+export const exMarsCube: HardwareDescriptor = {
   commands: [
     'getCellColor',
     'getFaceColor',
