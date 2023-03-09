@@ -4,7 +4,6 @@ import { TerminalOutputTranslator } from 'src/custom-types/helper/TerminalOutput
 import { IExMarsCubeControl } from './IExMarsCubeControl'
 
 const DEBUG = true
-
 /**
  * 하드웨어 제어
  */
@@ -171,25 +170,25 @@ export class ExMarsCubeControl implements IExMarsCubeControl {
     return this.getSerialPortHelper()!
   }
 
-  async getCellColor(face: number, cell: number): Promise<string> {
+  async getCellColor(face: string, cell: string): Promise<string> {
     this.decodingPacket(await this.readPacket())
-    const color: string = this.translationCellColorToString(this.faceCell[face][cell])
+    const color: string = this.translationCellColorToString(this.faceCell[parseInt(face)][parseInt(cell)])
     return color
   }
 
-  async getFaceColor(face: number): Promise<string[]> {
+  async getFaceColor(face: string): Promise<string[]> {
     this.decodingPacket(await this.readPacket())
     const colors: Array<string> = new Array<string>(9)
 
     for (let cell = 0; cell < 9; cell++) {
-      colors[cell] = this.translationCellColorToString(this.faceCell[face][cell])
+      colors[cell] = this.translationCellColorToString(this.faceCell[parseInt(face)][cell])
     }
     return colors
   }
 
-  async getFaceRotationValue(face: number): Promise<string> {
+  async getFaceRotationValue(face: string): Promise<string> {
     this.decodingPacket(await this.readPacket())
-    switch (this.faceRotDir[face]) {
+    switch (this.faceRotDir[parseInt(face)]) {
       case 3:
         return 'CW'
       case 11:
@@ -199,14 +198,14 @@ export class ExMarsCubeControl implements IExMarsCubeControl {
     }
   }
 
-  async getModeRecord(mode: number, record: number): Promise<number> {
+  async getModeRecord(mode: string, record: string): Promise<number> {
     this.decodingPacket(await this.readPacket())
-    return this.record[mode][record] / 10 / 100
+    return this.record[parseInt(mode)][parseInt(record)] / 10 / 100
   }
 
-  async getDiceNumberRecord(record: number): Promise<number> {
+  async getDiceNumberRecord(record: string): Promise<number> {
     this.decodingPacket(await this.readPacket())
-    return this.record[7][record] / 10 / 100
+    return this.record[7][parseInt(record)] / 10 / 100
   }
 
   async getModeStatus(): Promise<string> {
@@ -216,33 +215,34 @@ export class ExMarsCubeControl implements IExMarsCubeControl {
   }
 
   async setMenuInit(): Promise<void> {
+    console.log(`setMenuInit`)
     const helper: SerialPortHelper = this.checkSerialPort()
     const buffer: Array<number> = this.makePacketMenuSetting(10, 10)
     await helper.write(buffer)
   }
 
-  async setModeSetting(main: number, sub: number): Promise<void> {
+  async setModeSetting(main: string, sub: string): Promise<void> {
     const helper: SerialPortHelper = this.checkSerialPort()
-    const buffer: Array<number> = this.makePacketMenuSetting(main, sub)
+    const buffer: Array<number> = this.makePacketMenuSetting(parseInt(main), parseInt(sub))
     await helper.write(buffer)
   }
 
-  async setPlayMode(scale: number): Promise<void> {
+  async setPlayMode(scale: string): Promise<void> {
     const helper: SerialPortHelper = this.checkSerialPort()
-    const buffer: Array<number> = this.makePacketModeSetting(3, scale)
+    const buffer: Array<number> = this.makePacketModeSetting(3, parseInt(scale))
     await helper.write(buffer)
   }
 
-  async setUserMode(user: number): Promise<void> {
+  async setUserMode(user: string): Promise<void> {
     const helper: SerialPortHelper = this.checkSerialPort()
-    const buffer: Array<number> = this.makePacketModeSetting(1, user)
+    const buffer: Array<number> = this.makePacketModeSetting(1, parseInt(user))
     await helper.write(buffer)
   }
 
-  async setNonBrake(flag: number): Promise<void> {
+  async setNonBrake(flag: string): Promise<void> {
     const helper: SerialPortHelper = this.checkSerialPort()
     let buffer: Array<number> = new Array<number>(11)
-    switch (flag) {
+    switch (parseInt(flag)) {
       case 0:
         buffer = this.makePacketMenuSetting(13, 4)
         break
@@ -259,88 +259,101 @@ export class ExMarsCubeControl implements IExMarsCubeControl {
     await helper.write(buffer)
   }
 
-  async setCenterColorChange(face: number, color: number): Promise<void> {
+  async setCenterColorChange(face: string, color: string): Promise<void> {
     const helper: SerialPortHelper = this.checkSerialPort()
-    const buffer: Array<number> = this.makePacketSetCenterColor(face, color)
+    const buffer: Array<number> = this.makePacketSetCenterColor(parseInt(face), parseInt(color))
     await helper.write(buffer)
   }
 
   async setCellColorChange(
-    face: number,
-    colorCell1: number,
-    colorCell2: number,
-    colorCell3: number,
-    colorCell4: number,
-    colorCell5: number,
-    colorCell6: number,
-    colorCell7: number,
-    colorCell8: number,
+    face: string,
+    colorCell1: string,
+    colorCell2: string,
+    colorCell3: string,
+    colorCell4: string,
+    colorCell5: string,
+    colorCell6: string,
+    colorCell7: string,
+    colorCell8: string,
   ): Promise<void> {
     const helper: SerialPortHelper = this.checkSerialPort()
     const buffer: Array<number> = this.makePacketSetCellColor(
-      face,
-      colorCell1,
-      colorCell2,
-      colorCell3,
-      colorCell4,
-      colorCell5,
-      colorCell6,
-      colorCell7,
-      colorCell8,
+      parseInt(face),
+      parseInt(colorCell1),
+      parseInt(colorCell2),
+      parseInt(colorCell3),
+      parseInt(colorCell4),
+      parseInt(colorCell5),
+      parseInt(colorCell6),
+      parseInt(colorCell7),
+      parseInt(colorCell8),
     )
     await helper.write(buffer)
   }
 
   async setPositionDirectionTorqueChange(
-    face: number,
-    position: number,
-    rotationDirection: number,
-    torque: number,
+    face: string,
+    position: string,
+    rotationDirection: string,
+    torque: string,
   ): Promise<void> {
     const helper: SerialPortHelper = this.checkSerialPort()
-    const buffer: Array<number> = this.makePacketSetPosDirTor(face, position, rotationDirection, torque)
-    await helper.write(buffer)
-  }
-
-  async setFaceRotationOnlyColor(face: number, rotationDirection: number, angle: number): Promise<void> {
-    const helper: SerialPortHelper = this.checkSerialPort()
-    const buffer: Array<number> = this.makePacketMoveFace(face, this.calculrateAngle(rotationDirection, angle))
-    await helper.write(buffer)
-  }
-
-  async setFaceRotation(face: number, rotationDirection: number, angle: number): Promise<void> {
-    const helper: SerialPortHelper = this.checkSerialPort()
-    const buffer: Array<number> = this.makePacketFaceMoveWithMotor(face, this.calculrateAngle(rotationDirection, angle))
-    await helper.write(buffer)
-  }
-
-  async setFacesRotation(
-    face1: number,
-    rotationDirection1: number,
-    angle1: number,
-    face2: number,
-    rotationDirection2: number,
-    angle2: number,
-  ): Promise<void> {
-    const helper: SerialPortHelper = this.checkSerialPort()
-    const buffer: Array<number> = this.makePacketFacesMoveWithMotor(
-      face1,
-      this.calculrateAngle(rotationDirection1, angle1),
-      face2,
-      this.calculrateAngle(rotationDirection2, angle2),
+    const buffer: Array<number> = this.makePacketSetPosDirTor(
+      parseInt(face),
+      parseInt(position),
+      parseInt(rotationDirection),
+      parseInt(torque),
     )
     await helper.write(buffer)
   }
 
-  async setSolveCube(faceColor: number, faceLocation: number, seconds: number): Promise<void> {
+  async setFaceRotationOnlyColor(face: string, rotationDirection: string, angle: string): Promise<void> {
     const helper: SerialPortHelper = this.checkSerialPort()
+    const buffer: Array<number> = this.makePacketMoveFace(
+      parseInt(face),
+      this.calculrateAngle(parseInt(rotationDirection), parseInt(angle)),
+    )
+    await helper.write(buffer)
+  }
+
+  async setFaceRotation(face: string, rotationDirection: string, angle: string): Promise<void> {
+    const helper: SerialPortHelper = this.checkSerialPort()
+    const buffer: Array<number> = this.makePacketFaceMoveWithMotor(
+      parseInt(face),
+      this.calculrateAngle(parseInt(rotationDirection), parseInt(angle)),
+    )
+    await helper.write(buffer)
+  }
+
+  async setFacesRotation(
+    face1: string,
+    rotationDirection1: string,
+    angle1: string,
+    face2: string,
+    rotationDirection2: string,
+    angle2: string,
+  ): Promise<void> {
+    const helper: SerialPortHelper = this.checkSerialPort()
+    const buffer: Array<number> = this.makePacketFacesMoveWithMotor(
+      parseInt(face1),
+      this.calculrateAngle(parseInt(rotationDirection1), parseInt(angle1)),
+      parseInt(face2),
+      this.calculrateAngle(parseInt(rotationDirection2), parseInt(angle2)),
+    )
+    await helper.write(buffer)
+  }
+
+  async setSolveCube(faceColor: string, faceLocation: string, seconds: string): Promise<void> {
+    const helper: SerialPortHelper = this.checkSerialPort()
+    const fc = parseInt(faceColor)
+    const fl = parseInt(faceLocation)
     let face: number = this.protocols.faceColor.yellow
     let angle: number = this.protocols.angle.ninety
-    if (faceLocation % 2 == 1) {
+    if (fl % 2 == 1) {
       angle += 8
     }
-    if (faceColor == this.protocols.faceColor.green) {
-      switch (faceLocation) {
+    if (fc == this.protocols.faceColor.green) {
+      switch (fl) {
         case this.protocols.direction.f_cw:
         case this.protocols.direction.f_ccw:
           face = this.protocols.faceColor.green
@@ -366,8 +379,8 @@ export class ExMarsCubeControl implements IExMarsCubeControl {
           face = this.protocols.faceColor.blue
           break
       }
-    } else if (faceColor == this.protocols.faceColor.purple) {
-      switch (faceLocation) {
+    } else if (fc == this.protocols.faceColor.purple) {
+      switch (fl) {
         case this.protocols.direction.f_cw:
         case this.protocols.direction.f_ccw:
           face = this.protocols.faceColor.purple
@@ -393,8 +406,8 @@ export class ExMarsCubeControl implements IExMarsCubeControl {
           face = this.protocols.faceColor.red
           break
       }
-    } else if (faceColor == this.protocols.faceColor.blue) {
-      switch (faceLocation) {
+    } else if (fc == this.protocols.faceColor.blue) {
+      switch (fl) {
         case this.protocols.direction.f_cw:
         case this.protocols.direction.f_ccw:
           face = this.protocols.faceColor.blue
@@ -420,8 +433,8 @@ export class ExMarsCubeControl implements IExMarsCubeControl {
           face = this.protocols.faceColor.green
           break
       }
-    } else if (faceColor == this.protocols.faceColor.red) {
-      switch (faceLocation) {
+    } else if (fc == this.protocols.faceColor.red) {
+      switch (fl) {
         case this.protocols.direction.f_cw:
         case this.protocols.direction.f_ccw:
           face = this.protocols.faceColor.red
@@ -452,16 +465,16 @@ export class ExMarsCubeControl implements IExMarsCubeControl {
     await helper.write(buffer)
   }
 
-  async setPlayNote(pitchName: number, seconds: number): Promise<void> {
+  async setPlayNote(pitchName: string, seconds: string): Promise<void> {
     const helper: SerialPortHelper = this.checkSerialPort()
     let face: number = this.protocols.faceColor.white
     let angle: number = 3
 
-    if (pitchName !== 12) {
-      if (pitchName % 2 == 1) {
+    if (parseInt(pitchName) !== 12) {
+      if (parseInt(pitchName) % 2 == 1) {
         angle += 8
       }
-      switch (pitchName) {
+      switch (parseInt(pitchName)) {
         case 0:
         case 1:
           face = this.protocols.faceColor.white
@@ -492,10 +505,9 @@ export class ExMarsCubeControl implements IExMarsCubeControl {
       await helper.write(buffer)
     }
   }
-
-  async setReturnModeRecord(mode: number): Promise<void> {
+  async setReturnModeRecord(mode: string): Promise<void> {
     const helper: SerialPortHelper = this.checkSerialPort()
-    const buffer: Array<number> = this.makePacketRecord(mode)
+    const buffer: Array<number> = this.makePacketRecord(parseInt(mode))
     await helper.write(buffer)
   }
 
@@ -724,7 +736,6 @@ export class ExMarsCubeControl implements IExMarsCubeControl {
 
   private makePacketSensingRequest(face: number): Array<number> {
     const index: number = (face << 5) | this.protocols.index.sensingRequest
-
     return this.makePacket(index, 255, 255, 255, 255)
   }
 
@@ -738,7 +749,7 @@ export class ExMarsCubeControl implements IExMarsCubeControl {
   }
 
   private decodingPacket(packet: Buffer): void {
-    let face: number
+    let face: number = 0
     var index: number = packet[1] & 31
 
     if (index === this.protocols.index.menu) {
@@ -989,6 +1000,7 @@ export class ExMarsCubeControl implements IExMarsCubeControl {
     for (let i = 0; i < this.faceCell.length; i++) {
       this.faceCell[i] = new Array<number>(9)
     }
+
     this.faceCell[this.protocols.faceColor.white][8] = this.protocols.cellColor.white
     this.faceCell[this.protocols.faceColor.yellow][8] = this.protocols.cellColor.yellow
     this.faceCell[this.protocols.faceColor.green][8] = this.protocols.cellColor.green
@@ -1000,7 +1012,8 @@ export class ExMarsCubeControl implements IExMarsCubeControl {
       this.record[i] = new Array<number>(6)
     }
 
-    this.makePacketSensingRequest(this.protocols.faceColor.yellow)
+    const data = this.makePacketSensingRequest(this.protocols.faceColor.yellow)
+    if (DEBUG) console.log(`exMars-Cube SerialTest: ${data}`)
   }
 
   /**

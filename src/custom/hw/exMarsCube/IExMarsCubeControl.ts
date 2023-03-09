@@ -69,27 +69,27 @@ export interface IExMarsCubeControl extends IHwControl {
   /**
    * face 면의 cell번 셀의 색상값
    */
-  getCellColor(face: number, cell: number): Promise<string>
+  getCellColor(face: string, cell: string): Promise<string>
 
   /**
    * face 면의 셀 색상값
    */
-  getFaceColor(face: number): Promise<string[]>
+  getFaceColor(face: string): Promise<string[]>
 
   /**
    * face 면의 회전 방향
    */
-  getFaceRotationValue(face: number): Promise<string>
+  getFaceRotationValue(face: string): Promise<string>
 
   /**
    * mode 의 record 기록
    */
-  getModeRecord(mode: number, record: number): Promise<number>
+  getModeRecord(mode: string, record: string): Promise<number>
 
   /**
    * diceNumber 기록
    */
-  getDiceNumberRecord(record: number): Promise<number>
+  getDiceNumberRecord(record: string): Promise<number>
 
   /**
    * 모드 상태
@@ -104,22 +104,22 @@ export interface IExMarsCubeControl extends IHwControl {
   /**
    * 모드를 main sub로 설정하기
    */
-  setModeSetting(main: number, sub: number): Promise<void>
+  setModeSetting(main: string, sub: string): Promise<void>
 
   /**
    * scale 연주 모드로 바꾸기
    */
-  setPlayMode(scale: number): Promise<void>
+  setPlayMode(scale: string): Promise<void>
 
   /**
    * user 펌웨어로 바꾸기
    */
-  setUserMode(user: number): Promise<void>
+  setUserMode(user: string): Promise<void>
 
   /**
    * 브레이크 기능을 flag
    */
-  setNonBrake(flag: number): Promise<void>
+  setNonBrake(flag: string): Promise<void>
 
   /**
    * 모든 색상을 초기화하기
@@ -129,69 +129,69 @@ export interface IExMarsCubeControl extends IHwControl {
   /**
    * face 면의 가운데 셀 LED 색상을 color 으로 바꾸기
    */
-  setCenterColorChange(face: number, color: number): Promise<void>
+  setCenterColorChange(face: string, color: string): Promise<void>
 
   /**
    * face 면의 셀 색상을 color 으로 바꾸기
    */
   setCellColorChange(
-    face: number,
-    colorCell1: number,
-    colorCell2: number,
-    colorCell3: number,
-    colorCell4: number,
-    colorCell5: number,
-    colorCell6: number,
-    colorCell7: number,
-    colorCell8: number,
+    face: string,
+    colorCell1: string,
+    colorCell2: string,
+    colorCell3: string,
+    colorCell4: string,
+    colorCell5: string,
+    colorCell6: string,
+    colorCell7: string,
+    colorCell8: string,
   ): Promise<void>
 
   /**
    * faceIndex 면을 postion 포지션, rotationDirection 방향, torque 토크로 바꾸기
    */
   setPositionDirectionTorqueChange(
-    face: number,
-    position: number,
-    rotationDirection: number,
-    torque: number,
+    face: string,
+    position: string,
+    rotationDirection: string,
+    torque: string,
   ): Promise<void>
 
   /**
    * faceIndex 면의 LED 색상을 rotationDirection 방향으로 angle º 만큼 회전하기
    */
-  setFaceRotationOnlyColor(face: number, rotationDirection: number, angle: number): Promise<void>
+  setFaceRotationOnlyColor(face: string, rotationDirection: string, angle: string): Promise<void>
 
   /**
    * face 면을 rotationDirection 방향으로 angle º 만큼 회전하기
    */
-  setFaceRotation(face: number, rotationDirection: number, angle: number): Promise<void>
+  setFaceRotation(face: string, rotationDirection: string, angle: string): Promise<void>
 
   /**
    * face1 면을 rotationDirection 방향으로 angle1 º 만큼, face2 면을 rotationDirection2 방향으로 angle2 º 만큼 회전하기
    */
   setFacesRotation(
-    face1: number,
-    rotationDirection1: number,
-    angle1: number,
-    face2: number,
-    rotationDirection2: number,
-    angle2: number,
+    face1: string,
+    rotationDirection1: string,
+    angle1: string,
+    face2: string,
+    rotationDirection2: string,
+    angle2: string,
   ): Promise<void>
 
   /**
    * faceColor 을 앞면으로 faceLocation 를 seconds 초 동안 풀기
    */
-  setSolveCube(faceColor: number, faceLocation: number, seconds: number): Promise<void>
+  setSolveCube(faceColor: string, faceLocation: string, seconds: string): Promise<void>
 
   /**
    * pitchName 을 seconds 초 연주하기
    */
-  setPlayNote(pitchName: number, seconds: number): Promise<void>
+  setPlayNote(pitchName: string, seconds: string): Promise<void>
 
   /**
    * mode 기록 가져오기
    */
-  setReturnModeRecord(mode: number): Promise<void>
+  setReturnModeRecord(mode: string): Promise<void>
 
   /**
    * 주사위 숫자 기록 가져오기
@@ -210,9 +210,9 @@ export interface IExMarsCubeControl extends IHwControl {
 
 /**
  * 하드웨어 디스크립터: commands
- * 변수이름을 hwId인 exMarsCube로 해야 함
+ * 변수이름을 hwId인 codingpack로 해야 함
  */
-export const exMarsCube: HardwareDescriptor = {
+export const codingpack: HardwareDescriptor = {
   commands: [
     'getCellColor',
     'getFaceColor',
@@ -227,13 +227,17 @@ export const exMarsCube: HardwareDescriptor = {
     'setNonBrake',
     'setResetAllFace',
     'setCenterColorChange',
+    'setCellColorChange',
+    'setPositionDirectionTorqueChange',
     'setFaceRotationOnlyColor',
     'setFaceRotation',
+    'setFacesRotation',
     'setSolveCube',
     'setPlayNote',
     'setReturnModeRecord',
     'setReturnDiceNumberRecord',
     'setAutoSolveCube',
+    // 자동 호출 함수
     'onAfterOpen',
     'onBeforeClose',
   ],
