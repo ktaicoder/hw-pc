@@ -31,7 +31,7 @@ jobs:
       with:
         node-version: 18
     - run: |
-        yarn install
+        npm install
         npm run rebuild
     - name: Make
       env:
