@@ -49,30 +49,12 @@ const menusTemp: (ILabel | IDivider | IMenu | ISection)[] = [
     title: 'SERIAL 장치',
     href: '/inspect-serial',
   },
-  // {
-  //     type: 'menu',
-  //     icon: 'bluetooth',
-  //     title: 'BLUETOOTH 장치',
-  //     href: '/inspect-hid',
-  // },
-  // {
-  //     type: 'menu',
-  //     icon: 'usb',
-  //     title: 'HID 장치',
-  //     href: '/inspect-hid',
-  // },
   {
     type: 'menu',
     icon: 'info',
     title: '정보',
     href: '/info',
   },
-  // {
-  //     type: 'menu',
-  //     icon: 'mosaic',
-  //     title: '블록',
-  //     href: '/block-factory',
-  // },
   {
     type: 'menu',
     icon: 'settings',

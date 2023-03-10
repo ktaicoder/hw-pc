@@ -15,10 +15,10 @@ const plugins = [
                 from: path.resolve(__dirname, 'build-resources'),
                 to: path.resolve(__dirname, '.webpack/build-resources')
             },
-            {
-                from: path.resolve(__dirname, 'public/blockfactory'),
-                to: path.resolve(__dirname, '.webpack/renderer/main_window/blockfactory')
-            },
+            // {
+            //     from: path.resolve(__dirname, 'public/blockfactory'),
+            //     to: path.resolve(__dirname, '.webpack/renderer/main_window/blockfactory')
+            // },
         ]
     })
 ]
