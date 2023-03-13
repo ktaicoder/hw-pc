@@ -29,15 +29,17 @@ AI Codiny에서 하드웨어 제어를 위한 PC용 프로그램입니다. `elec
 ## Technical stacks
 
 - 패키지 매니저 npm 8.x
-- React 18
-- Electron 23.x
-- Electron-forge 6.x
-- Serialport 10.x
-- Mobx 6.x
-- RxJS 7.x
+- react 18
+- electron 23.x
+- electron-forge 6.x
+- serialport 10.x
+- nobx 6.x
+- rxjs 7.x
 - xterm 5.x
 - socket.io 4.6
 - mui 5.x
+- webosocket 8.x
+
 
 
 ## Quick Start
