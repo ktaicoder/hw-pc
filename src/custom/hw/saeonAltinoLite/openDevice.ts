@@ -31,7 +31,7 @@ export function isPortMatch(portInfo: ISerialPortInfo): boolean {
 }
 
 /**
- * saeonAltinoLite, serial device open
+ * saeonAltinoLite, 시리얼 디바이스 오픈
  * open 중인 상태의 SerialDevice를 리턴합니다.
  *
  * 연결이 되기를 기다리려면

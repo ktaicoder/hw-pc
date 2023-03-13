@@ -1,9 +1,7 @@
-import { IHwControl } from 'src/custom-types'
-
 /**
  * 컨트롤 인터페이스
  */
-export interface IWiseXboardPremiumControl extends IHwControl {
+export interface IWiseXboardPremiumControl {
   /**
    * DC 모터1,2 속도 설정
    */

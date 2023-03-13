@@ -2,26 +2,18 @@ import {
   BehaviorSubject,
   EMPTY,
   filter,
-  firstValueFrom,
   interval,
   map,
   Observable,
-  sample,
   Subscription,
   switchMap,
   take,
   takeUntil,
 } from 'rxjs'
-import { IUiLogger } from 'src/custom-types'
-import { SerialDevice } from 'src/hw-server/serialport/SerialDevice'
+import { AbstractHwConrtol } from '../AbstractHwControl'
 import { ISaeonAltinoLiteControl } from './ISaeonAltinoLiteControl'
 
-const DEBUG = true
 const TRACE = false
-
-//const DELIMITER = Buffer.from([0x52, 0x58, 0x3d, 0x0, 0x0e])
-
-//const chr = (ch: string): number => ch.charCodeAt(0)
 
 const sensors = {
   CDS: 0,
@@ -51,7 +43,7 @@ const output = {
   DM8: 0,
 }
 
-export class SaeonAltinoLiteControl implements ISaeonAltinoLiteControl {
+export class SaeonAltinoLiteControl extends AbstractHwConrtol implements ISaeonAltinoLiteControl {
   private tx_d: Array<number> = [0x02, 16, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x03]
   private rx_d: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
@@ -60,45 +52,6 @@ export class SaeonAltinoLiteControl implements ISaeonAltinoLiteControl {
   private txSubscription_: Subscription | undefined
 
   private stopped$ = new BehaviorSubject(false)
-
-  /**
-   * 연결된 디바이스(serial)
-   */
-  private device_ = (ctx: any): SerialDevice => {
-    const { device } = ctx
-    return device as SerialDevice
-  }
-
-  /**
-   * PC 프로그램의 콘솔 로거
-   */
-  private log = (ctx: any): IUiLogger => {
-    const { uiLogger } = ctx
-    return uiLogger as IUiLogger
-  }
-
-  /**
-   * 디바이스(serial)에 write
-   */
-  private write_ = async (ctx: any, values: Buffer | number[]): Promise<void> => {
-    const device = this.device_(ctx)
-    await device.write(values)
-  }
-
-  /**
-   * 디바이스(serial)로부터 읽기
-   */
-  private readNext_ = (ctx: any): Promise<Buffer> => {
-    const device = this.device_(ctx)
-    const now = Date.now()
-    return firstValueFrom(
-      device.observeReceivedData().pipe(
-        filter((it) => it.timestamp > now),
-        take(1),
-        map((it) => it.dataBuffer),
-      ),
-    )
-  }
 
   private closeTrigger = (): Observable<any> => {
     return this.stopped$.pipe(

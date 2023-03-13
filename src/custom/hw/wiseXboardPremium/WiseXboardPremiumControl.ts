@@ -1,6 +1,4 @@
-import { filter, firstValueFrom, map, take } from 'rxjs'
-import { IUiLogger } from 'src/custom-types'
-import { SerialDevice } from 'src/hw-server/serialport/SerialDevice'
+import { AbstractHwConrtol } from '../AbstractHwControl'
 import { IWiseXboardPremiumControl } from './IWiseXboardPremiumControl'
 
 const DEBUG = false
@@ -8,35 +6,7 @@ const DEBUG = false
 /**
  * 하드웨어 서비스
  */
-export class WiseXboardPremiumControl implements IWiseXboardPremiumControl {
-  private device_ = (ctx: any): SerialDevice => {
-    const { device } = ctx
-    return device as SerialDevice
-  }
-
-  // PC 프로그램의 콘솔 로그
-  private log = (ctx: any): IUiLogger => {
-    const { uiLogger } = ctx
-    return uiLogger as IUiLogger
-  }
-
-  private write_ = async (ctx: any, values: Buffer | number[]): Promise<void> => {
-    const device = this.device_(ctx)
-    await device.write(values)
-  }
-
-  private readNext_ = (ctx: any): Promise<Buffer> => {
-    const device = this.device_(ctx)
-    const now = Date.now()
-    return firstValueFrom(
-      device.observeReceivedData().pipe(
-        filter((it) => it.timestamp > now),
-        take(1),
-        map((it) => it.dataBuffer),
-      ),
-    )
-  }
-
+export class WiseXboardPremiumControl extends AbstractHwConrtol implements IWiseXboardPremiumControl {
   /**
    * 일곱개의 핀값을 읽는다
    */

@@ -6,6 +6,12 @@ const DEBUG_TAG = 'wiseXboard'
 
 const DELIMITER = Buffer.from([0x52, 0x58, 0x3d, 0x0, 0x0e])
 
+/**
+ * 지원하는 시리얼포트 여부 체크
+ *
+ * @param portInfo 포트 정보
+ * @returns 지원하는 포트라면 true를 리턴
+ */
 export function isPortMatch(port: ISerialPortInfo): boolean {
   // const { manufacturer, productId, vendorId } = port
   const { manufacturer = '' } = port
@@ -17,7 +23,7 @@ export function isPortMatch(port: ISerialPortInfo): boolean {
 }
 
 /**
- * wiseXboard, serial device open
+ * wiseXboard, 시리얼 디바이스 오픈
  * open 중인 상태의 SerialDevice를 리턴합니다.
  *
  * 연결이 되기를 기다리려면

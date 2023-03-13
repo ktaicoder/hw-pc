@@ -1,6 +1,4 @@
-import { IHwControl } from 'src/custom-types'
-
-export interface IWiseXboardControl extends IHwControl {
+export interface IWiseXboardControl {
   analogRead(ctx: any, pin: number): Promise<number>
   digitalRead(ctx: any, pin: number): Promise<number>
   digitalWrite(ctx: any, pin: number, value: number): Promise<void>

@@ -1,55 +1,12 @@
-import { IUiLogger } from 'src/custom-types'
-import { filter, firstValueFrom, map, take } from 'rxjs'
-import { SerialDevice } from 'src/hw-server/serialport/SerialDevice'
+import { AbstractHwConrtol } from '../AbstractHwControl'
 import { IWiseXboardControl } from './IWiseXboardControl'
-
-const DEBUG = false
 
 const chr = (ch: string): number => ch.charCodeAt(0)
 
 /**
  * 하드웨어 제어
  */
-export class WiseXboardControl implements IWiseXboardControl {
-  /**
-   * 연결된 디바이스(serial)
-   */
-  private device_ = (ctx: any): SerialDevice => {
-    const { device } = ctx
-    return device as SerialDevice
-  }
-
-  /**
-   * PC 프로그램의 콘솔 로거
-   */
-  private log = (ctx: any): IUiLogger => {
-    const { uiLogger } = ctx
-    return uiLogger as IUiLogger
-  }
-
-  /**
-   * 디바이스(serial)에 write
-   */
-  private write_ = async (ctx: any, values: Buffer | number[]): Promise<void> => {
-    const device = this.device_(ctx)
-    await device.write(values)
-  }
-
-  /**
-   * 디바이스(serial)로부터 읽기
-   */
-  private readNext_ = (ctx: any): Promise<Buffer> => {
-    const device = this.device_(ctx)
-    const now = Date.now()
-    return firstValueFrom(
-      device.observeReceivedData().pipe(
-        filter((it) => it.timestamp > now),
-        take(1),
-        map((it) => it.dataBuffer),
-      ),
-    )
-  }
-
+export class WiseXboardControl extends AbstractHwConrtol implements IWiseXboardControl {
   private sendPacketMRTEXE = async (ctx: any, exeIndex: number): Promise<void> => {
     const pkt = [0xff, 0xff, 0x4c, 0x53, 0, 0, 0, 0, 0x30, 0x0c, 0x03, exeIndex, 0, 100, 0]
     for (let i = 6; i < 14; i++) {

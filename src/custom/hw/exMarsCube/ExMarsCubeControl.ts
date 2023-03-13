@@ -1,13 +1,11 @@
-import { filter, firstValueFrom, map, take } from 'rxjs'
-import { IUiLogger } from 'src/custom-types'
-import { SerialDevice } from 'src/hw-server/serialport/SerialDevice'
+import { AbstractHwConrtol } from '../AbstractHwControl'
 import { IExMarsCubeControl } from './IExMarsCubeControl'
 
 const DEBUG = true
 /**
  * 하드웨어 제어
  */
-export class ExMarsCubeControl implements IExMarsCubeControl {
+export class ExMarsCubeControl extends AbstractHwConrtol implements IExMarsCubeControl {
   private faceCell: Array<Array<number>> = new Array(6)
   private faceRotDir: Array<number> = new Array(6)
   private record: Array<Array<number>> = new Array(8)
@@ -108,45 +106,6 @@ export class ExMarsCubeControl implements IExMarsCubeControl {
     White: 'W',
     Skip: 'S',
   } as const
-
-  /**
-   * 연결된 디바이스(serial)
-   */
-  private device_ = (ctx: any): SerialDevice => {
-    const { device } = ctx
-    return device as SerialDevice
-  }
-
-  /**
-   * PC 프로그램의 콘솔 로거
-   */
-  private log = (ctx: any): IUiLogger => {
-    const { uiLogger } = ctx
-    return uiLogger as IUiLogger
-  }
-
-  /**
-   * 디바이스(serial)에 write
-   */
-  private write_ = async (ctx: any, values: Buffer | number[]): Promise<void> => {
-    const device = this.device_(ctx)
-    await device.write(values)
-  }
-
-  /**
-   * 디바이스(serial)로부터 읽기
-   */
-  private readNext_ = (ctx: any): Promise<Buffer> => {
-    const device = this.device_(ctx)
-    const now = Date.now()
-    return firstValueFrom(
-      device.observeReceivedData().pipe(
-        filter((it) => it.timestamp > now),
-        take(1),
-        map((it) => it.dataBuffer),
-      ),
-    )
-  }
 
   async getCellColor(ctx: any, face: string, cell: string): Promise<string> {
     this.decodingPacket(await this.readPacket(ctx))
