@@ -14,12 +14,14 @@ import {
   tap,
   timeout,
 } from 'rxjs'
-import { OPEN_TERMINAL_REQUEST, TERMINAL_MESSAGE_REQUEST } from 'src/hw-server/HwClientHandler'
 import { ControlKeys } from 'src/render/components/react-console/ReactConsole'
 import stripAnsi from 'strip-ansi'
 import { HwSocket, ResponseFrame } from './HwSocket'
+import { codingpackCommands } from 'src/domain/codingpack'
 
-const DEBUG = false
+const DEBUG = true
+
+const { OPEN_TERMINAL_REQUEST, TERMINAL_MESSAGE_REQUEST } = codingpackCommands
 
 export type WifiAp = {
   ssid: string
@@ -149,17 +151,17 @@ function parseInspect(output: string): CodingpackInfo | null {
 
   let model: string | undefined = undefined
   let modelType: string | undefined = undefined
-  let networkInterfaces: NetworkInterface[] = []
+  const networkInterfaces: NetworkInterface[] = []
   let disk: Disk | undefined = undefined
   let cpuCount = 0
   let cpuModel: string | undefined = undefined
   let cpuHardware: string | undefined = undefined
   let memTotal: string | undefined = undefined
-  let cpuArch: string = ''
-  let cpuArchModel: string = ''
-  let cpuMHz: number = 0
+  let cpuArch = ''
+  let cpuArchModel = ''
+  let cpuMHz = 0
 
-  for (let line of lines) {
+  for (const line of lines) {
     if (line.startsWith('MODEL=')) {
       model = line.substring('MODEL='.length)
     } else if (line.startsWith('MODEL_TYPE=')) {
@@ -396,7 +398,7 @@ export class HwClient {
   }
 
   runAutoRunRemove = (): Observable<any> => {
-    return this._runCmd(`aimk-auto-run-file.sh remove`)
+    return this._runCmd('aimk-auto-run-file.sh remove')
   }
 
   private _sendTextObservable = (text: string, afterDelayMs = 200): Observable<any> => {

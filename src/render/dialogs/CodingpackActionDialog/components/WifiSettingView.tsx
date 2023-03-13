@@ -5,7 +5,6 @@ import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDou
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import {
-  Alert,
   Box,
   Button,
   CircularProgress,
@@ -101,7 +100,7 @@ export default function WifiSettingView(props: Props) {
         setCmdRunning(false)
       }
     },
-    [hwClient],
+    [hwClient, setResultMessage],
   )
 
   const doCancel = useCallback(async () => {
@@ -133,14 +132,14 @@ export default function WifiSettingView(props: Props) {
     }
 
     // 두 종류의 따옴표가 둘다 포함되어 있으면 처리할 수 없음
-    if (pw.includes(`'`) && pw.includes(`"`)) {
+    if (pw.includes("'") && pw.includes('"')) {
       toast.warn('비밀번호에 따옴표를 포함할 수 없습니다')
       return
     }
 
     // 두 종류의 따옴표가 둘다 포함되어 있으면 처리할 수 없음
     const wifiSsid = ssid?.trim() ?? ''
-    if (wifiSsid.includes(`'`) && wifiSsid.includes(`"`)) {
+    if (wifiSsid.includes("'") && wifiSsid.includes('"')) {
       toast.warn('SSID에 따옴표를 포함할 수 없습니다')
       return
     }

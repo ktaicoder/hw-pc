@@ -15,7 +15,7 @@ export class RxSocketIoClient {
     })
   }
 
-  static fromDisonnectEvent = (socket: Socket): Observable<string> => {
+  static fromDisconnectEvent = (socket: Socket): Observable<string> => {
     return new Observable((emit) => {
       const handle = (reason) => {
         emit.next(reason)

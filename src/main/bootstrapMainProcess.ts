@@ -27,9 +27,9 @@ if (process.defaultApp) {
 // require('update-electron-app')()
 
 const CSP = [
-  `'self'`,
-  `'unsafe-eval'`,
-  `'unsafe-inline'`,
+  "'self'",
+  "'unsafe-eval'",
+  "'unsafe-inline'",
   'data:',
   'mediastream:',
   'blob:',
@@ -96,7 +96,7 @@ async function customInit() {
   // because if the `mainWindow` is maximized or minimized
   // before the workspaces's BrowserView fully loaded error will occur
   // see https://github.com/atomery/webcatalog/issues/637
-  // eslint-disable-next-line promise/always-return
+
   const mainWindow = windowService.get(WindowNames.main)
   if (process.platform === 'linux') {
     if (mainWindow !== undefined) {

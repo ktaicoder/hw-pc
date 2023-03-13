@@ -79,7 +79,7 @@ export default function AutoRunView(props: Props) {
         setCmdRunning(false)
       }
     },
-    [hwClient],
+    [hwClient, setResultMessage],
   )
 
   const doAutoRunRemove = useCallback(async () => {
@@ -106,7 +106,7 @@ export default function AutoRunView(props: Props) {
     } finally {
       setCmdRunning(false)
     }
-  }, [hwClient])
+  }, [hwClient, setResultMessage])
 
   const doCancel = useCallback(async () => {
     setCmdCanceling(true)

@@ -10,6 +10,7 @@ export type CodingpackActionKindKey =
   | 'bluetooth'
   | 'reboot'
   | 'rescue'
+
 export const CodingpackActionKind = {
   inspect: '코디니팩 정보',
   sdexpand: 'SD 카드 확장',
@@ -23,3 +24,11 @@ export const CodingpackActionKind = {
   reboot: '재부팅',
   rescue: '시스템 복구',
 } as Record<CodingpackActionKindKey, string>
+
+export const codingpackCommands = {
+  OPEN_TERMINAL_REQUEST: 'openTerminal:request',
+  CLOSE_TERMINAL_REQUEST: 'closeTerminal:request',
+  TERMINAL_CMD_RESPONE: 'terminalCmd:response',
+  TERMINAL_MESSAGE_RESPONSE: 'terminalMessage:response',
+  TERMINAL_MESSAGE_REQUEST: 'terminalMessage:request',
+}

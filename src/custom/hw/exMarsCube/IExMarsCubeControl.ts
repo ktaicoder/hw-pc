@@ -1,4 +1,4 @@
-import { HardwareDescriptor, IHwControl } from 'src/custom-types'
+import { IHwControl } from 'src/custom-types'
 
 export enum Index {
   menu = 0,
@@ -69,72 +69,73 @@ export interface IExMarsCubeControl extends IHwControl {
   /**
    * face 면의 cell번 셀의 색상값
    */
-  getCellColor(face: string, cell: string): Promise<string>
+  getCellColor(ctx: any, face: string, cell: string): Promise<string>
 
   /**
    * face 면의 셀 색상값
    */
-  getFaceColor(face: string): Promise<string[]>
+  getFaceColor(ctx: any, face: string): Promise<string[]>
 
   /**
    * face 면의 회전 방향
    */
-  getFaceRotationValue(face: string): Promise<string>
+  getFaceRotationValue(ctx: any, face: string): Promise<string>
 
   /**
    * mode 의 record 기록
    */
-  getModeRecord(mode: string, record: string): Promise<number>
+  getModeRecord(ctx: any, mode: string, record: string): Promise<number>
 
   /**
    * diceNumber 기록
    */
-  getDiceNumberRecord(record: string): Promise<number>
+  getDiceNumberRecord(ctx: any, record: string): Promise<number>
 
   /**
    * 모드 상태
    */
-  getModeStatus(): Promise<string>
+  getModeStatus(ctx: any): Promise<string>
 
   /**
    * 모드 빠져나오기
    */
-  setMenuInit(): Promise<void>
+  setMenuInit(ctx: any): Promise<void>
 
   /**
    * 모드를 main sub로 설정하기
    */
-  setModeSetting(main: string, sub: string): Promise<void>
+  setModeSetting(ctx: any, main: string, sub: string): Promise<void>
 
   /**
    * scale 연주 모드로 바꾸기
    */
-  setPlayMode(scale: string): Promise<void>
+  setPlayMode(ctx: any, scale: string): Promise<void>
 
   /**
    * user 펌웨어로 바꾸기
    */
-  setUserMode(user: string): Promise<void>
+  setUserMode(ctx: any, user: string): Promise<void>
 
   /**
    * 브레이크 기능을 flag
    */
-  setNonBrake(flag: string): Promise<void>
+  setNonBrake(ctx: any, flag: string): Promise<void>
 
   /**
    * 모든 색상을 초기화하기
    */
-  setResetAllFace(): Promise<void>
+  setResetAllFace(ctx: any): Promise<void>
 
   /**
    * face 면의 가운데 셀 LED 색상을 color 으로 바꾸기
    */
-  setCenterColorChange(face: string, color: string): Promise<void>
+  setCenterColorChange(ctx: any, face: string, color: string): Promise<void>
 
   /**
    * face 면의 셀 색상을 color 으로 바꾸기
    */
   setCellColorChange(
+    ctx: any,
     face: string,
     colorCell1: string,
     colorCell2: string,
@@ -150,6 +151,7 @@ export interface IExMarsCubeControl extends IHwControl {
    * faceIndex 면을 postion 포지션, rotationDirection 방향, torque 토크로 바꾸기
    */
   setPositionDirectionTorqueChange(
+    ctx: any,
     face: string,
     position: string,
     rotationDirection: string,
@@ -159,17 +161,18 @@ export interface IExMarsCubeControl extends IHwControl {
   /**
    * faceIndex 면의 LED 색상을 rotationDirection 방향으로 angle º 만큼 회전하기
    */
-  setFaceRotationOnlyColor(face: string, rotationDirection: string, angle: string): Promise<void>
+  setFaceRotationOnlyColor(ctx: any, face: string, rotationDirection: string, angle: string): Promise<void>
 
   /**
    * face 면을 rotationDirection 방향으로 angle º 만큼 회전하기
    */
-  setFaceRotation(face: string, rotationDirection: string, angle: string): Promise<void>
+  setFaceRotation(ctx: any, face: string, rotationDirection: string, angle: string): Promise<void>
 
   /**
    * face1 면을 rotationDirection 방향으로 angle1 º 만큼, face2 면을 rotationDirection2 방향으로 angle2 º 만큼 회전하기
    */
   setFacesRotation(
+    ctx: any,
     face1: string,
     rotationDirection1: string,
     angle1: string,
@@ -181,64 +184,25 @@ export interface IExMarsCubeControl extends IHwControl {
   /**
    * faceColor 을 앞면으로 faceLocation 를 seconds 초 동안 풀기
    */
-  setSolveCube(faceColor: string, faceLocation: string, seconds: string): Promise<void>
+  setSolveCube(ctx: any, faceColor: string, faceLocation: string, seconds: string): Promise<void>
 
   /**
    * pitchName 을 seconds 초 연주하기
    */
-  setPlayNote(pitchName: string, seconds: string): Promise<void>
+  setPlayNote(ctx: any, pitchName: string, seconds: string): Promise<void>
 
   /**
    * mode 기록 가져오기
    */
-  setReturnModeRecord(mode: string): Promise<void>
+  setReturnModeRecord(ctx: any, mode: string): Promise<void>
 
   /**
    * 주사위 숫자 기록 가져오기
    */
-  setReturnDiceNumberRecord(): Promise<void>
+  setReturnDiceNumberRecord(ctx: any): Promise<void>
 
   /**
    * 자동 솔빙 시작
    */
-  setAutoSolveCube(): Promise<void>
-
-  // 자동 호출 함수
-  onAfterOpen(): Promise<void>
-  onBeforeClose(): Promise<void>
-}
-
-/**
- * 하드웨어 디스크립터: commands
- * 변수이름을 hwId인 exMarsCube로 해야 함
- */
-export const exMarsCube: HardwareDescriptor = {
-  commands: [
-    'getCellColor',
-    'getFaceColor',
-    'getFaceRotationValue',
-    'getModeRecord',
-    'getDiceNumberRecord',
-    'getModeStatus',
-    'setMenuInit',
-    'setModeSetting',
-    'setPlayMode',
-    'setUserMode',
-    'setNonBrake',
-    'setResetAllFace',
-    'setCenterColorChange',
-    'setCellColorChange',
-    'setPositionDirectionTorqueChange',
-    'setFaceRotationOnlyColor',
-    'setFaceRotation',
-    'setFacesRotation',
-    'setSolveCube',
-    'setPlayNote',
-    'setReturnModeRecord',
-    'setReturnDiceNumberRecord',
-    'setAutoSolveCube',
-    // 자동 호출 함수
-    'onAfterOpen',
-    'onBeforeClose',
-  ],
+  setAutoSolveCube(ctx: any): Promise<void>
 }

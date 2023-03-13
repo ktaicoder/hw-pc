@@ -17,6 +17,14 @@ interface IWindow {
   service: IServicesWithoutObservables<any>
 }
 
+function castIWindow(win: any): IWindow {
+  return win as unknown as IWindow
+}
+
+function castIWindowObservable(win: any): any {
+  return win.observables
+}
+
 /**
  * Create `(window as IWindow).observables.xxx` from `(window as IWindow).service.xxx`
  * @param name service name
@@ -28,8 +36,8 @@ export function ipcProxyFixContextIsolation<T extends Record<string, any>>(
   service: T,
   descriptor: ProxyDescriptor,
 ): void {
-  if ((window as unknown as IWindow).observables === undefined) {
-    ;(window as unknown as IWindow).observables = {} as IWindow['observables']
+  if (castIWindow(window).observables === undefined) {
+    castIWindow(window).observables = {} as IWindow['observables']
   }
 
   for (const key in descriptor.properties) {
@@ -43,12 +51,12 @@ export function ipcProxyFixContextIsolation<T extends Record<string, any>>(
         service[getSubscriptionKey(key)]((value: any) => observer.next(value))
       }) as T[keyof T]
       // store newly created Observable to `(window as IWindow).observables.xxx.yyy`
-      if ((window as unknown as IWindow).observables[name as string] === undefined) {
-        ;((window as unknown as IWindow).observables as any)[name] = {
+      if (castIWindow(window).observables[name as string] === undefined) {
+        castIWindowObservable(window)[name] = {
           [key]: subscribedObservable,
         }
       } else {
-        ;((window as unknown as IWindow).observables as any)[name][key] = subscribedObservable
+        castIWindowObservable(window)[name][key] = subscribedObservable
       }
     }
     // create (id: string) => Observable
@@ -63,11 +71,11 @@ export function ipcProxyFixContextIsolation<T extends Record<string, any>>(
         }) as T[keyof T]
       // store newly created Observable to `(window as IWindow).observables.xxx.yyy`
       if ((window as unknown as IWindow).observables[name as string] === undefined) {
-        ;((window as unknown as IWindow).observables as any)[name] = {
+        castIWindowObservable(window)[name] = {
           [key]: subscribingObservable,
         }
       } else {
-        ;((window as unknown as IWindow).observables as any)[name][key] = subscribingObservable
+        castIWindowObservable(window)[name][key] = subscribingObservable
       }
     }
   }

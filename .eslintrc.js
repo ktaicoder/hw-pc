@@ -18,10 +18,16 @@ module.exports = {
             pragma: 'React',
             version: 'detect',
         },
+        "import/parsers": {
+            "@typescript-eslint/parser": [".ts", ".tsx"]
+        },
+        "import/resolver": {
+            "typescript": {}
+        }
     },
     plugins: ["react", "react-hooks", "prettier"],
     extends: [
-        "react-app",
+        // "react-app",
         "eslint:recommended",
         "plugin:@typescript-eslint/eslint-recommended",
         "plugin:@typescript-eslint/recommended",
@@ -31,6 +37,9 @@ module.exports = {
     ],
     parser: "@typescript-eslint/parser",
     rules: {
+        'no-unused-vars': [0],
+        'import/no-named-as-default': [0],
+        'import/no-named-as-default-member': [0],
         "@typescript-eslint/explicit-function-return-type": "off",
         'react/react-in-jsx-scope': 'off',
         'no-useless-constructor': 'off',
@@ -39,6 +48,7 @@ module.exports = {
         '@typescript-eslint/explicit-module-boundary-types': 'off',
         '@typescript-eslint/ban-ts-comment': 'off',
         '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/no-empty-function': 'off',
         '@typescript-eslint/ban-types': 'off',
@@ -55,7 +65,6 @@ module.exports = {
         ],
         'react/display-name': [0],
         'react/prop-types': [1],
-        'no-unused-vars': [1],
         'no-console': 'off',
         'no-empty': [0],
         quotes: [1, 'single', { avoidEscape: true, allowTemplateLiterals: false }],
@@ -76,7 +85,7 @@ module.exports = {
             'warn',
             {
                 selector: 'SequenceExpression',
-                message: 'The comma operator is confusing and a common mistake. Don’t use it!',
+                message: 'The comma operator is confusing and a common mistake. Dont use it!',
             },
         ],
     }

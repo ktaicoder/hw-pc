@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { IHwInfo, HwKind } from 'src/custom-types'
+import { IHwInfo } from 'src/custom-types'
 import { usePreference } from 'src/services/preferences/hooks'
 
 type RefreshFn = () => void
@@ -51,7 +51,7 @@ export function useHwInfoList(params: { withTerminal: boolean }): [IHwInfo[], Se
       if (withTerminal) {
         setOriginalHwMetaList(metaList)
       } else {
-        setOriginalHwMetaList(metaList.filter((it) => it.hwKind !== HwKind.terminal))
+        setOriginalHwMetaList(metaList.filter((it) => it.hwKind !== 'terminal'))
       }
     } catch (err) {
       console.warn(err)
@@ -91,7 +91,7 @@ export function useHwInfoList(params: { withTerminal: boolean }): [IHwInfo[], Se
     if (originalHwMetaList.length > 0) {
       sort(originalHwMetaList, favorHwIdsRef.current)
     }
-  }, [refreshToken, originalHwMetaList.length > 0, sort])
+  }, [refreshToken, originalHwMetaList, sort])
 
   return [infoList, favorHwIdsRef.current, refresh, toggleFavorFn.current]
 }

@@ -1,10 +1,9 @@
-import SerialPort, { parsers } from 'serialport'
-import { IHwContext, ISerialPortInfo, SerialPortHelper } from 'src/custom-types'
+import { IUiLogger } from 'src/custom-types'
+import { filter, firstValueFrom, map, take } from 'rxjs'
+import { SerialDevice } from 'src/hw-server/serialport/SerialDevice'
 import { IWiseXboardControl } from './IWiseXboardControl'
 
 const DEBUG = false
-
-const DELIMITER = Buffer.from([0x52, 0x58, 0x3d, 0x0, 0x0e])
 
 const chr = (ch: string): number => ch.charCodeAt(0)
 
@@ -12,113 +11,88 @@ const chr = (ch: string): number => ch.charCodeAt(0)
  * 하드웨어 제어
  */
 export class WiseXboardControl implements IWiseXboardControl {
-  private _context: IHwContext | null = null
-
   /**
-   * 하드웨어 컨텍스트
-   * 프레임워크에서 Injection 해준다.
-   * @param context
+   * 연결된 디바이스(serial)
    */
-  setContext = (context: IHwContext | undefined | null) => {
-    this._context = context ?? null
+  private device_ = (ctx: any): SerialDevice => {
+    const { device } = ctx
+    return device as SerialDevice
   }
 
   /**
-   * 시리얼포트 헬퍼 생성
-   * 프레임워크에서 호출한다.
-   * @param path 시리얼포트 패스(ex: COM1, /dev/ttyUSB0, ...)
-   * @returns SerialPortHelper
+   * PC 프로그램의 콘솔 로거
    */
-  static createSerialPortHelper = (path: string): SerialPortHelper => {
-    const sp = new SerialPort(path, {
-      autoOpen: false,
-      baudRate: 38400,
-      lock: false,
-    })
-
-    const parser = new parsers.Delimiter({ delimiter: DELIMITER, includeDelimiter: false })
-    return SerialPortHelper.create(sp, parser)
+  private log = (ctx: any): IUiLogger => {
+    const { uiLogger } = ctx
+    return uiLogger as IUiLogger
   }
 
   /**
-   * 시리얼포트를 처리할 수 있는지 체크
-   * @param portInfo
-   * @returns
+   * 디바이스(serial)에 write
    */
-  static isMatch = (portInfo: ISerialPortInfo): boolean => {
-    if (portInfo.manufacturer) {
-      return portInfo.manufacturer.includes('Silicon Labs')
-    }
-    return false
-  }
-
-  private getSerialPortHelper(): SerialPortHelper | undefined {
-    return this._context?.provideSerialPortHelper?.()
+  private write_ = async (ctx: any, values: Buffer | number[]): Promise<void> => {
+    const device = this.device_(ctx)
+    await device.write(values)
   }
 
   /**
-   * @override IHwControl
-   * @returns 읽기 가능 여부
+   * 디바이스(serial)로부터 읽기
    */
-  isReadable = (): boolean => {
-    const sp = this.getSerialPortHelper()
-    return sp?.isReadable() === true
+  private readNext_ = (ctx: any): Promise<Buffer> => {
+    const device = this.device_(ctx)
+    const now = Date.now()
+    return firstValueFrom(
+      device.observeReceivedData().pipe(
+        filter((it) => it.timestamp > now),
+        take(1),
+        map((it) => it.dataBuffer),
+      ),
+    )
   }
 
-  private checkSerialPort(): SerialPortHelper {
-    if (!this.isReadable()) {
-      throw new Error('hw not open')
-    }
-    return this.getSerialPortHelper()!
-  }
-
-  private async sendPacketMRTEXE(exeIndex: number) {
-    const helper = this.checkSerialPort()
+  private sendPacketMRTEXE = async (ctx: any, exeIndex: number): Promise<void> => {
     const pkt = [0xff, 0xff, 0x4c, 0x53, 0, 0, 0, 0, 0x30, 0x0c, 0x03, exeIndex, 0, 100, 0]
     for (let i = 6; i < 14; i++) {
       pkt[14] += pkt[i]
     }
-    await helper.write(pkt)
+    await this.write_(ctx, pkt)
   }
 
-  async analogRead(): Promise<number[]> {
-    const helper = this.checkSerialPort()
-    const values = await helper.readNext()
-
+  analogRead = async (ctx: any, pin: 1 | 2 | 3 | 4 | 5): Promise<number> => {
+    const values = await this.readNext_(ctx)
     // [pin1 ~ pin5]
-    return new Array(5).fill(0).map((_, i) => values[i] ?? 0)
+    // return Array.prototype.slice.call(values, 0, 5)
+    const v = values[pin - 1]
+    return v ?? 0
   }
 
-  async digitalRead(): Promise<number[]> {
-    const values = await this.analogRead()
+  digitalRead = async (ctx: any, pin: 1 | 2 | 3 | 4 | 5): Promise<number> => {
+    const values = await this.readNext_(ctx)
     // [pin1 ~ pin5]
-    return values.map((v) => (v > 100 ? 1 : 0))
+    const v = values[pin - 1]
+    return v > 100 ? 1 : 0
   }
 
-  async digitalWrite(pin: 1 | 2 | 3 | 4 | 5, value: number): Promise<void> {
-    const helper = this.checkSerialPort()
+  digitalWrite = async (ctx: any, pin: 1 | 2 | 3 | 4 | 5, value: number): Promise<void> => {
     value = value > 0 ? 1 : 0
 
     const pkt = [chr('X'), chr('R'), 2, 0, 0, 0, 0, 0, chr('S')]
     pkt[2 + pin] = value
-    if (DEBUG) console.log(`digitalWrite: pin=${pin}, value=${value}`)
-    await helper.write(pkt)
+    await this.write_(ctx, pkt)
   }
 
-  async setHumanoidMotion(index: number): Promise<void> {
-    const helper = this.checkSerialPort()
+  setHumanoidMotion = async (ctx: any, index: number): Promise<void> => {
     const pkt = [0xff, 0xff, 0x4c, 0x53, 0, 0, 0, 0, 0x30, 0x0c, 0x03, index, 0, 100, 0]
     for (let i = 6; i < 14; i++) {
       pkt[14] += pkt[i]
     }
-    await helper.write(pkt)
+    await this.write_(ctx, pkt)
   }
 
-  async stopDCMotor(): Promise<void> {
-    const helper = this.checkSerialPort()
+  stopDCMotor = async (ctx: any): Promise<void> => {
     const pkt = [chr('X'), chr('R'), 0, 0, 0, 0, 0, 0, chr('S')]
-    await helper.write(pkt)
-    await this.sendPacketMRTEXE(2)
+    await this.write_(ctx, pkt)
+    await this.sendPacketMRTEXE(ctx, 2)
   }
 
   /**
@@ -128,9 +102,7 @@ export class WiseXboardControl implements IWiseXboardControl {
    * @param l2
    * @param r2
    */
-  async setDCMotorSpeed(l1: number, r1: number, l2: number, r2: number): Promise<void> {
-    if (DEBUG) console.log(`setDCMotorSpeed : l1: ${l1}, r1:${r1}, l2:${l2}, r2: ${r2}`)
-    const helper = this.checkSerialPort()
+  setDCMotorSpeed = async (ctx: any, l1: number, r1: number, l2: number, r2: number): Promise<void> => {
     if (l1 < -10) l1 = -10
     if (r1 < -10) r1 = -10
     if (l2 > 10) l2 = 10
@@ -141,15 +113,12 @@ export class WiseXboardControl implements IWiseXboardControl {
     if (r1 < 0) r1 = 256 + r1
     if (r2 < 0) r2 = 256 + r2
 
-    await helper.write([chr('X'), chr('R'), 0, l1, r1, l2, r2, 0, chr('S')])
-    await this.sendPacketMRTEXE(2)
+    await this.write_(ctx, [chr('X'), chr('R'), 0, l1, r1, l2, r2, 0, chr('S')])
+    await this.sendPacketMRTEXE(ctx, 2)
   }
 
   // pinNo = [1,5]
-  async setServoMotorAngle(pinNum: number, angle: number): Promise<void> {
-    if (DEBUG) console.log(`setServoMotorAngle : pinNo: ${pinNum}, angle:${angle}`)
-    const helper = this.checkSerialPort()
-
+  setServoMotorAngle = async (ctx: any, pinNum: number, angle: number): Promise<void> => {
     if (angle < -90) angle = -90
     if (angle > 90) angle = 90
     if (angle < 0) angle = 255 + angle
@@ -157,36 +126,46 @@ export class WiseXboardControl implements IWiseXboardControl {
     if (pinNum < 1) pinNum = 1
     if (pinNum > 5) pinNum = 5
 
-    await helper.write([chr('X'), chr('R'), 3, pinNum, angle, 0, 0, 0, chr('S')])
-    await this.sendPacketMRTEXE(2)
+    await this.write_(ctx, [chr('X'), chr('R'), 3, pinNum, angle, 0, 0, 0, chr('S')])
+    await this.sendPacketMRTEXE(ctx, 2)
+  }
+
+  onDeviceOpened = async (ctx: any): Promise<void> => {
+    const logTag = 'WiseXboardControl.onDeviceOpened()'
+    this.log(ctx).i(logTag, 'called')
+  }
+
+  onDeviceWillClose = async (ctx: any): Promise<void> => {
+    const logTag = 'WiseXboardControl.onDeviceWillClose()'
+    this.log(ctx).i(logTag, 'called')
   }
 
   /**
-   * 하드웨어를 연결했을때 자동으로 호출합니다
+   * 웹소켓 클라이언트가 연결되었고,
+   * 시리얼 장치가 OPEN 된 후에 한번 호출됩니다
    */
-  async onAfterOpen(): Promise<void> {
-    if (DEBUG) console.log('XXX onAfterOpen()')
+  onWebSocketConnected = async (ctx: any): Promise<void> => {
+    const logTag = 'WiseXboardControl.onWebSocketConnected()'
+    this.log(ctx).i(logTag, 'called')
   }
 
   /**
-   * 연결 종료합니다
    * 클라이언트의 연결이 종료되었을 때,
-   * 프레임워크가 자동으로 호출해준다.
-   * 이름은 onBeforeClose(), 함수인자는 없어야 한다.
+   * 자동으로 호출해준다.
    */
-  async onBeforeClose(): Promise<void> {
-    if (DEBUG) console.log('XXX onBeforeClose()')
-    const helper = this.checkSerialPort()
+  onWebSocketDisconnected = async (ctx: any): Promise<void> => {
+    const logTag = 'WiseXboardControl.onWebSocketDisconnected()'
+    this.log(ctx).i(logTag, 'called')
 
     // 모터 중지
     try {
-      await this.stopDCMotor()
+      await this.stopDCMotor(ctx)
     } catch (err) {}
 
-    // 모든 LED OFF
     try {
+      // 모든 LED OFF
       // 아무핀에나 0을 쓰면 모두 0이 된다.
-      await this.digitalWrite(1, 0)
+      await this.digitalWrite(ctx, 1, 0)
     } catch (ignore) {}
   }
 }

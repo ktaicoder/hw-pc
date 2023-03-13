@@ -1,4 +1,4 @@
-import React from 'react'
+import * as React from 'react'
 import { CodingpackActionKindKey } from 'src/domain/codingpack'
 
 type CodingpackActionData = {

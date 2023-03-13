@@ -1,20 +1,29 @@
-import SerialPort, { parsers } from 'serialport'
-import { IHwContext, ISerialPortInfo, SerialPortHelper } from 'src/custom-types'
+import {
+  BehaviorSubject,
+  EMPTY,
+  filter,
+  firstValueFrom,
+  interval,
+  map,
+  Observable,
+  sample,
+  Subscription,
+  switchMap,
+  take,
+  takeUntil,
+} from 'rxjs'
+import { IUiLogger } from 'src/custom-types'
+import { SerialDevice } from 'src/hw-server/serialport/SerialDevice'
 import { ISaeonAltinoLiteControl } from './ISaeonAltinoLiteControl'
 
-//const DEBUG = false
+const DEBUG = true
+const TRACE = false
 
 //const DELIMITER = Buffer.from([0x52, 0x58, 0x3d, 0x0, 0x0e])
 
 //const chr = (ch: string): number => ch.charCodeAt(0)
 
-/**
- * 하드웨어 제어
- */
-
-var module
-
-var sensors = {
+const sensors = {
   CDS: 0,
   IR1: 0,
   IR2: 0,
@@ -25,7 +34,7 @@ var sensors = {
   BAT: 0,
 }
 
-var output = {
+const output = {
   RM: 0,
   LM: 0,
   STR: 0,
@@ -46,120 +55,170 @@ export class SaeonAltinoLiteControl implements ISaeonAltinoLiteControl {
   private tx_d: Array<number> = [0x02, 16, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x03]
   private rx_d: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-  constructor() {
-    module = this
-    var txInterval = setInterval(async function () {
-      if (module.getSerialPortHelper()?.isOpened()) {
-        module.tx_d[5] = output.STR
-        module.tx_d[6] = (output.RM & 0xff00) >> 8
-        module.tx_d[7] = output.RM & 0xff
-        module.tx_d[8] = (output.LM & 0xff00) >> 8
-        module.tx_d[9] = output.LM & 0xff
-        module.tx_d[10] = output.CHAR
-        module.tx_d[11] = output.DM1
-        module.tx_d[12] = output.DM2
-        module.tx_d[13] = output.DM3
-        module.tx_d[14] = output.DM4
-        module.tx_d[15] = output.DM5
-        module.tx_d[16] = output.DM6
-        module.tx_d[17] = output.DM7
-        module.tx_d[18] = output.DM8
-        module.tx_d[19] = output.NOTE
-        module.tx_d[20] = output.LED
+  private rxSubscription_: Subscription | undefined
 
-        var checksum = 0
-        for (var i = 3; i < 21; i++) {
-          checksum += module.tx_d[i]
-        }
-        module.tx_d[2] = checksum & 0xff
-        //console.log('request');
-        await module.getSerialPortHelper().write(module.tx_d)
-      }
-      if (module.getSerialPortHelper()?.isDestroyed()) clearInterval(txInterval)
-    }, 50)
+  private txSubscription_: Subscription | undefined
 
-    var rxInterval = setInterval(async function () {
-      if (module.getSerialPortHelper()?.isOpened()) {
-        try {
-          var buf = await module.getSerialPortHelper()?.readNext()
-          //console.log(buf);
-          if (buf?.byteLength >= 22) {
-            if (buf[0] == 0x02 && buf[21] == 0x03) {
-              sensors.IR1 = buf[5] * 256 + buf[6]
-              sensors.IR2 = buf[7] * 256 + buf[8]
-              sensors.IR3 = buf[9] * 256 + buf[10]
-              sensors.IR4 = buf[11] * 256 + buf[12]
-              sensors.IR5 = buf[13] * 256 + buf[14]
-              sensors.IR6 = buf[15] * 256 + buf[16]
-              sensors.CDS = buf[17] * 256 + buf[18]
-              sensors.BAT = buf[19] * 256 + buf[20]
-              console.log(sensors)
-            }
-          }
-        } catch (err) {
-          console.log(err)
-        }
-      }
-      if (module.getSerialPortHelper()?.isDestroyed()) clearInterval(rxInterval)
-    }, 50)
+  private stopped$ = new BehaviorSubject(false)
 
-    // var displayFlowInterval = setInterval(async function() {
-    //     if(module.getSerialPortHelper()?.isOpened()){
-    //         if(module.display_flow_speed != 0){
-
-    //         }
-    //     }
-    //     if(module.getSerialPortHelper()?.isDestroyed()) clearInterval(displayFlowInterval);
-    // }, 50);
-
-    // var step = 0;
-    // var testInterval = setInterval(async function() {
-    //     if(module.getSerialPortHelper()?.isOpened()){
-
-    //         step++;
-    //     }
-    //     if(module.getSerialPortHelper()?.isDestroyed()) clearInterval(testInterval);
-    // }, 1000);
-  }
-
-  private _context: IHwContext | null = null
-
-  setContext(context: IHwContext | null | undefined) {
-    this._context = context ?? null
-  }
-
-  static createSerialPortHelper = (path: string): SerialPortHelper => {
-    const sp = new SerialPort(path, {
-      autoOpen: false,
-      baudRate: 115200,
-      lock: false,
-    })
-    //const parser = new parsers.Delimiter({ delimiter: DELIMITER, includeDelimiter: false })
-    return SerialPortHelper.create(sp, null)
-  }
-
-  static isMatch = (portInfo: ISerialPortInfo): boolean => {
-    return true
-    // if (portInfo.manufacturer) {
-    //     return portInfo.manufacturer.includes('Silicon Labs')
-    // }
-    // return false
-  }
-
-  private getSerialPortHelper(): SerialPortHelper | undefined {
-    return this._context?.provideSerialPortHelper?.()
+  /**
+   * 연결된 디바이스(serial)
+   */
+  private device_ = (ctx: any): SerialDevice => {
+    const { device } = ctx
+    return device as SerialDevice
   }
 
   /**
-   * @override IHwControl
-   * @returns 읽기 가능 여부
+   * PC 프로그램의 콘솔 로거
    */
-  isReadable = (): boolean => {
-    const sp = this.getSerialPortHelper()
-    return sp?.isReadable() === true
+  private log = (ctx: any): IUiLogger => {
+    const { uiLogger } = ctx
+    return uiLogger as IUiLogger
   }
 
-  async stop(option: string): Promise<void> {
+  /**
+   * 디바이스(serial)에 write
+   */
+  private write_ = async (ctx: any, values: Buffer | number[]): Promise<void> => {
+    const device = this.device_(ctx)
+    await device.write(values)
+  }
+
+  /**
+   * 디바이스(serial)로부터 읽기
+   */
+  private readNext_ = (ctx: any): Promise<Buffer> => {
+    const device = this.device_(ctx)
+    const now = Date.now()
+    return firstValueFrom(
+      device.observeReceivedData().pipe(
+        filter((it) => it.timestamp > now),
+        take(1),
+        map((it) => it.dataBuffer),
+      ),
+    )
+  }
+
+  private closeTrigger = (): Observable<any> => {
+    return this.stopped$.pipe(
+      filter((it) => it === true),
+      take(1),
+    )
+  }
+
+  private txLoop_ = (ctx: any) => {
+    const logTag = 'SaeonAltinoLiteControl.txLoop_()'
+    this.log(ctx).i(logTag, 'start')
+
+    const device = this.device_(ctx)
+
+    const stateHolder = {
+      writing: false,
+    }
+
+    this.txSubscription_ = device
+      .observeOpenedOrNot()
+      .pipe(
+        switchMap((opened) => {
+          if (opened) {
+            return interval(50)
+          } else {
+            return EMPTY
+          }
+        }),
+        // sample(interval(50)), // 50ms 샘플링
+        takeUntil(this.closeTrigger()),
+      )
+      .subscribe(() => {
+        if (stateHolder.writing) {
+          this.log(ctx).i(logTag, 'already writing')
+          return
+        }
+        if (!device.isOpened()) {
+          this.log(ctx).i(logTag, 'not opened')
+          return
+        }
+        stateHolder.writing = true
+        this.tx_d[5] = output.STR
+        this.tx_d[6] = (output.RM & 0xff00) >> 8
+        this.tx_d[7] = output.RM & 0xff
+        this.tx_d[8] = (output.LM & 0xff00) >> 8
+        this.tx_d[9] = output.LM & 0xff
+        this.tx_d[10] = output.CHAR
+        this.tx_d[11] = output.DM1
+        this.tx_d[12] = output.DM2
+        this.tx_d[13] = output.DM3
+        this.tx_d[14] = output.DM4
+        this.tx_d[15] = output.DM5
+        this.tx_d[16] = output.DM6
+        this.tx_d[17] = output.DM7
+        this.tx_d[18] = output.DM8
+        this.tx_d[19] = output.NOTE
+        this.tx_d[20] = output.LED
+
+        let checksum = 0
+        for (let i = 3; i < 21; i++) {
+          checksum += this.tx_d[i]
+        }
+        this.tx_d[2] = checksum & 0xff
+        if (TRACE) this.log(ctx).i('TX', this.tx_d)
+        device
+          .write(this.tx_d)
+          .catch((err) => {
+            this.log(ctx).w(logTag, `write fail: ${err.message}`)
+          })
+          .finally(() => {
+            stateHolder.writing = false
+          })
+      })
+  }
+
+  private rxLoop_ = (ctx: any) => {
+    const logTag = 'SaeonAltinoLiteControl.rxLoop_()'
+    this.log(ctx).i(logTag, 'start')
+
+    const device = this.device_(ctx)
+    this.rxSubscription_ = device
+      .observeOpenedOrNot()
+      .pipe(
+        switchMap((opened) => {
+          if (opened) {
+            return device.observeReceivedData()
+          } else {
+            return EMPTY
+          }
+        }),
+        // sample(interval(50)), // 50ms 샘플링
+        map((it) => it.dataBuffer),
+        takeUntil(this.closeTrigger()),
+      )
+      .subscribe((buf) => {
+        if (this.stopped$.value) {
+          if (TRACE) this.log(ctx).i(logTag, 'stopped')
+          return
+        }
+        if (buf.byteLength >= 22) {
+          if (buf[0] == 0x02 && buf[21] == 0x03) {
+            sensors.IR1 = buf[5] * 256 + buf[6]
+            sensors.IR2 = buf[7] * 256 + buf[8]
+            sensors.IR3 = buf[9] * 256 + buf[10]
+            sensors.IR4 = buf[11] * 256 + buf[12]
+            sensors.IR5 = buf[13] * 256 + buf[14]
+            sensors.IR6 = buf[15] * 256 + buf[16]
+            sensors.CDS = buf[17] * 256 + buf[18]
+            sensors.BAT = buf[19] * 256 + buf[20]
+            if (TRACE) this.log(ctx).i(logTag + ' accept:', JSON.stringify(sensors))
+          } else {
+            this.log(ctx).w(logTag, `invalid buf value(buf[0]=${buf[0]}, buf[21]=${buf[21]}`)
+          }
+        } else {
+          this.log(ctx).w(logTag, `invalid buf.byteLength(${buf.byteLength} byte`)
+        }
+      })
+  }
+
+  async stop(ctx: any, option: string): Promise<void> {
     console.log('stop')
     if (option == 'All') {
       output.RM = 0
@@ -197,12 +256,14 @@ export class SaeonAltinoLiteControl implements ISaeonAltinoLiteControl {
       output.DM8 = 0
     }
   }
-  async go(lp: number, rp: number): Promise<void> {
+
+  async go(ctx: any, lp: number, rp: number): Promise<void> {
     output.RM = rp
     output.LM = lp
     console.log('go')
   }
-  async steering(option: string): Promise<void> {
+
+  async steering(ctx: any, option: string): Promise<void> {
     if (option == 'Center') {
       output.STR = 0
     } else if (option == 'Left-5') {
@@ -224,11 +285,13 @@ export class SaeonAltinoLiteControl implements ISaeonAltinoLiteControl {
     }
     console.log('steering')
   }
-  async steeringNumber(val: number): Promise<void> {
+
+  async steeringNumber(ctx: any, val: number): Promise<void> {
     output.STR = val
     console.log('steeringNumber')
   }
-  async sensor(option: string): Promise<number> {
+
+  async sensor(ctx: any, option: string): Promise<number> {
     console.log('sensor')
     if (option == 'CDS') return sensors.CDS
     if (option == 'IR1') return sensors.IR1
@@ -240,7 +303,8 @@ export class SaeonAltinoLiteControl implements ISaeonAltinoLiteControl {
     if (option == 'BAT') return sensors.BAT
     return 0
   }
-  async light(fn: string, state: string): Promise<void> {
+
+  async light(ctx: any, fn: string, state: string): Promise<void> {
     if (state == 'On') {
       if (fn == 'Forward') {
         output.LED |= 0x01
@@ -264,16 +328,18 @@ export class SaeonAltinoLiteControl implements ISaeonAltinoLiteControl {
     }
     console.log('light')
   }
-  async lightHex(hex: string): Promise<void> {
+
+  async lightHex(ctx: any, hex: string): Promise<void> {
     if (hex.indexOf('0x') == 0) {
-      var hexString = hex.replace('0x', '')
+      const hexString = hex.replace('0x', '')
       output.LED = parseInt(hexString, 16)
     }
     console.log('lightHex')
   }
-  async sound(oct: string, scale: string): Promise<void> {
-    var nOct = 0
-    var nScale = 0
+
+  async sound(ctx: any, oct: string, scale: string): Promise<void> {
+    let nOct = 0
+    let nScale = 0
 
     if (oct == '1-Oct') nOct = 1
     else if (oct == '2-Oct') nOct = 2
@@ -305,19 +371,23 @@ export class SaeonAltinoLiteControl implements ISaeonAltinoLiteControl {
 
     console.log('sound')
   }
-  async soundNumber(scale: number): Promise<void> {
+
+  async soundNumber(ctx: any, scale: number): Promise<void> {
     if (scale > 255) return
     if (scale < 0) return
     output.NOTE = scale
     console.log('soundNumber')
   }
-  async displayChar(ch: string): Promise<void> {
+
+  async displayChar(ctx: any, ch: string): Promise<void> {
     if (ch.length > 1) return
     if (ch.length < 1) return
     output.CHAR = ch.charCodeAt(0)
     console.log('displayChar')
   }
+
   async displayLine(
+    ctx: any,
     line: string,
     bit0: string,
     bit1: string,
@@ -328,8 +398,8 @@ export class SaeonAltinoLiteControl implements ISaeonAltinoLiteControl {
     bit6: string,
     bit7: string,
   ): Promise<void> {
-    var lineMask = 0
-    var nTemp = 0
+    let lineMask = 0
+    const nTemp = 0
 
     // disable ascii mode
     output.CHAR = 0xff
@@ -373,6 +443,7 @@ export class SaeonAltinoLiteControl implements ISaeonAltinoLiteControl {
   }
 
   async display(
+    ctx: any,
     line1: string,
     line2: string,
     line3: string,
@@ -394,7 +465,7 @@ export class SaeonAltinoLiteControl implements ISaeonAltinoLiteControl {
     if (line7.indexOf('0x') != 0) return
     if (line8.indexOf('0x') != 0) return
 
-    var lines = [
+    const lines = [
       parseInt(line8.replace('0x', ''), 16),
       parseInt(line7.replace('0x', ''), 16),
       parseInt(line6.replace('0x', ''), 16),
@@ -405,8 +476,8 @@ export class SaeonAltinoLiteControl implements ISaeonAltinoLiteControl {
       parseInt(line1.replace('0x', ''), 16),
     ]
 
-    for (var i = 0; i < 8; i++) {
-      var str = ['Off', 'Off', 'Off', 'Off', 'Off', 'Off', 'Off', 'Off']
+    for (let i = 0; i < 8; i++) {
+      const str = ['Off', 'Off', 'Off', 'Off', 'Off', 'Off', 'Off', 'Off']
       if (lines[i] & 0x80) str[0] = 'On'
       if (lines[i] & 0x40) str[1] = 'On'
       if (lines[i] & 0x20) str[2] = 'On'
@@ -415,24 +486,25 @@ export class SaeonAltinoLiteControl implements ISaeonAltinoLiteControl {
       if (lines[i] & 0x04) str[5] = 'On'
       if (lines[i] & 0x02) str[6] = 'On'
       if (lines[i] & 0x01) str[7] = 'On'
-      this.displayLine('Line-' + (i + 1), str[0], str[1], str[2], str[3], str[4], str[5], str[6], str[7])
+      this.displayLine(ctx, 'Line-' + (i + 1), str[0], str[1], str[2], str[3], str[4], str[5], str[6], str[7])
     }
 
     console.log('display')
   }
-  async display_on(x: number, y: number): Promise<void> {
+
+  async display_on(ctx: any, x: number, y: number): Promise<void> {
     if (x > 8) return
     if (x < 1) return
     if (y > 8) return
     if (y < 1) return
 
-    var nX = x - 1
-    var nY = y - 1
+    const nX = x - 1
+    const nY = y - 1
 
     // disable ascii mode
     output.CHAR = 0xff
 
-    var mask = 0x01
+    let mask = 0x01
     mask = mask << nY
 
     if (nX == 7) output.DM1 |= mask
@@ -446,19 +518,20 @@ export class SaeonAltinoLiteControl implements ISaeonAltinoLiteControl {
 
     console.log('display_on')
   }
-  async display_off(x: number, y: number): Promise<void> {
+
+  async display_off(ctx: any, x: number, y: number): Promise<void> {
     if (x > 7) return
     if (x < 0) return
     if (y > 7) return
     if (y < 0) return
 
-    var nX = x - 1
-    var nY = y - 1
+    const nX = x - 1
+    const nY = y - 1
 
     // disable ascii mode
     output.CHAR = 0xff
 
-    var mask = 0x01
+    let mask = 0x01
     mask = mask << nY
 
     if (nX == 7) output.DM1 &= ~mask
@@ -471,5 +544,54 @@ export class SaeonAltinoLiteControl implements ISaeonAltinoLiteControl {
     if (nX == 0) output.DM8 &= ~mask
 
     console.log('display_off')
+  }
+
+  /**
+   * 디바이스(serial)에 연결된 직후에 자동으로 호출됩니다
+   */
+  onDeviceOpened = async (ctx: any): Promise<void> => {
+    const logTag = 'SaeonAltinoLiteControl.onDeviceOpened()'
+    this.log(ctx).i(logTag, 'called')
+    this.rxLoop_(ctx)
+    this.txLoop_(ctx)
+  }
+
+  /**
+   * 디바이스(serial)가 닫히기 전에 자동으로 호출됩니다
+   */
+  onDeviceWillClose = async (ctx: any): Promise<void> => {
+    const logTag = 'SaeonAltinoLiteControl.onDeviceWillClose()'
+    this.log(ctx).i(logTag, 'called')
+    this.stopped$.next(true)
+
+    if (this.rxSubscription_) {
+      this.log(ctx).i(logTag, 'rxLoop stop')
+      this.rxSubscription_.unsubscribe()
+      this.rxSubscription_ = undefined
+    } else {
+      this.log(ctx).i(logTag, 'rxLoop already stopped')
+    }
+
+    if (this.txSubscription_) {
+      this.log(ctx).i(logTag, 'txLoop stop')
+      this.txSubscription_.unsubscribe()
+      this.txSubscription_ = undefined
+    } else {
+      this.log(ctx).i(logTag, 'txLoop already stopped')
+    }
+  }
+
+  onWebSocketConnected = async (ctx: any): Promise<void> => {
+    const logTag = 'SaeonAltinoLiteControl.onWebSocketConnected()'
+    this.log(ctx).i(logTag, 'called')
+  }
+
+  onWebSocketDisconnected = async (ctx: any): Promise<void> => {
+    const logTag = 'SaeonAltinoLiteControl.onWebSocketDisconnected()'
+    this.log(ctx).i(logTag, 'called')
+
+    try {
+      await this.stop(ctx, 'All')
+    } catch (err) {}
   }
 }

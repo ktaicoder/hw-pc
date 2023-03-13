@@ -1,5 +1,5 @@
 import MuiLink, { LinkProps as MuiLinkProps } from '@mui/material/Link'
-import React from 'react'
+import * as React from 'react'
 import { Link as RouterLink, LinkProps as RouterLinkProps } from 'react-router-dom'
 
 export type LinkProps = MuiLinkProps & Pick<RouterLinkProps, 'to' | 'replace'>

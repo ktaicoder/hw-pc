@@ -1,4 +1,4 @@
-import winston, { format } from 'winston'
+import * as winston from 'winston'
 import { LOG_FOLDER } from 'src/constants/paths'
 import 'winston-daily-rotate-file'
 
@@ -47,7 +47,7 @@ const logger = (
             dirname: LOG_FOLDER,
           }),
         ],
-        format: format.combine(format.timestamp(), format.json()),
+        format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
       })
 ) as winston.Logger
 

@@ -2,7 +2,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForwardIos'
 import AspectRatioIcon from '@mui/icons-material/AspectRatio'
 import CloseIcon from '@mui/icons-material/Close'
 import { Box, Dialog, DialogContent, DialogTitle, IconButton, useMediaQuery, useTheme } from '@mui/material'
-import React from 'react'
+import * as React from 'react'
 import { useMeasure, useSessionStorage } from 'react-use'
 
 export type DocViewDialogProps = {

@@ -1,11 +1,11 @@
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
-import SerialPort from 'serialport'
-import { usePromiseValue } from 'src/render/util/useServiceValue'
+import HardwareIcon from '@mui/icons-material/Hardware'
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material'
+import { ISerialPortInfo } from 'src/custom-types'
 import Portlet from 'src/render/components/Portlet'
 import PortletContent from 'src/render/components/PortletContent'
 import PortletHeader from 'src/render/components/PortletHeader'
-import HardwareIcon from '@mui/icons-material/Hardware'
 import PortletLabel from 'src/render/components/PortletLabel'
+import { usePromiseValue } from 'src/render/util/useServiceValue'
 
 // portinfo 예시
 // const info:SerialPort.PortInfo = {
@@ -19,7 +19,7 @@ import PortletLabel from 'src/render/components/PortletLabel'
 // }
 
 export default function SerialPortInspectView() {
-  const serialportList = usePromiseValue<SerialPort.PortInfo[]>(async () => await window.service.serialPort.list(), [])
+  const serialportList = usePromiseValue<ISerialPortInfo[]>(async () => await window.service.serialPort.list(), [])
 
   return (
     <Portlet>

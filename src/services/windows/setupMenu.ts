@@ -1,9 +1,5 @@
-import { clipboard, ipcMain } from 'electron'
-import { MetaDataChannel, WindowChannel } from 'src/constants/channels'
-import getFromRenderer from '../libs/getFromRenderer'
 import { IMenuService } from '../menu/interface'
-import { IPreferencesService } from '../preferences/interface'
-import { IBrowserViewMetaData, WindowNames } from './WindowProperties'
+import { WindowNames } from './WindowProperties'
 
 export async function setupMenu(menuService: IMenuService): Promise<void> {
   await menuService.insertMenu('View', [

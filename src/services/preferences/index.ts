@@ -20,7 +20,7 @@ export class PreferencesService implements IPreferencesService {
       return
     }
     this._initialized
-    let preferencesFromDisk = settings.getSync(`preferences`)
+    const preferencesFromDisk = settings.getSync('preferences')
     if (!preferencesFromDisk) {
       // use default
       return
@@ -53,7 +53,7 @@ export class PreferencesService implements IPreferencesService {
   public async reset(): Promise<void> {
     await settings.unset()
     const pref = { ...defaultPreferences }
-    await settings.set(`preferences`, { ...pref })
+    await settings.set('preferences', { ...pref })
     this.preferences$.next(pref)
   }
 }

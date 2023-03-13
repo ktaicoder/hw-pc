@@ -1,6 +1,6 @@
 import { Box } from '@mui/material'
 import { SxProps } from '@mui/system'
-import React from 'react'
+import * as React from 'react'
 import { ASCII } from './ascii'
 
 const MAX_LINES = 10000
@@ -213,7 +213,7 @@ class ReactConsole extends React.Component<Props, ReactConsoleState> implements 
         this._onSubmit()
       }
     } else if (event.ctrlKey) {
-      let values = ControlKeys[event.key]
+      const values = ControlKeys[event.key]
       if (values) {
         event.preventDefault()
         this.appendOutput(`${this.props.prompt} ^${event.key}`, '')

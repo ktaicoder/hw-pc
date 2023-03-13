@@ -3,7 +3,7 @@ import StarIcon from '@mui/icons-material/Star'
 import StarBorderIcon from '@mui/icons-material/StarBorder'
 import UsbIcon from '@mui/icons-material/Usb'
 import { Box, ButtonBase, Divider, IconButton, Paper, Typography } from '@mui/material'
-import { IHwInfo } from 'src/custom-types/hw-types'
+import { IHwInfo } from 'src/custom-types/basic-types'
 import Image from 'src/render/components/Image'
 
 type Props = {

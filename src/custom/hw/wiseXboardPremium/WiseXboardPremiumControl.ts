@@ -1,136 +1,47 @@
-import SerialPort, { parsers } from 'serialport'
-import { IHwContext, ISerialPortInfo, SerialPortHelper } from 'src/custom-types'
+import { filter, firstValueFrom, map, take } from 'rxjs'
+import { IUiLogger } from 'src/custom-types'
+import { SerialDevice } from 'src/hw-server/serialport/SerialDevice'
 import { IWiseXboardPremiumControl } from './IWiseXboardPremiumControl'
 
 const DEBUG = false
-const DELIMITER = Buffer.from([0x23, 0x08, 0x0])
 
 /**
  * 하드웨어 서비스
  */
 export class WiseXboardPremiumControl implements IWiseXboardPremiumControl {
-  private _context: IHwContext | null = null
-
-  setContext(context: IHwContext | null | undefined) {
-    this._context = context ?? null
+  private device_ = (ctx: any): SerialDevice => {
+    const { device } = ctx
+    return device as SerialDevice
   }
 
-  static createSerialPortHelper = (path: string): SerialPortHelper => {
-    const sp = new SerialPort(path, {
-      autoOpen: false,
-      baudRate: 38400,
-      lock: false,
-    })
-    const parser = new parsers.Delimiter({ delimiter: DELIMITER, includeDelimiter: false })
-    return SerialPortHelper.create(sp, parser)
+  // PC 프로그램의 콘솔 로그
+  private log = (ctx: any): IUiLogger => {
+    const { uiLogger } = ctx
+    return uiLogger as IUiLogger
   }
 
-  static isMatch = (portInfo: ISerialPortInfo): boolean => {
-    return true
-    // if (portInfo.manufacturer) {
-    //     return portInfo.manufacturer.includes('Silicon Labs')
-    // }
-    // return false
+  private write_ = async (ctx: any, values: Buffer | number[]): Promise<void> => {
+    const device = this.device_(ctx)
+    await device.write(values)
   }
 
-  private getSerialPortHelper(): SerialPortHelper | undefined {
-    return this._context?.provideSerialPortHelper?.()
-  }
-
-  /**
-   * @override IHwControl
-   * @returns 읽기 가능 여부
-   */
-  isReadable = (): boolean => {
-    const sp = this.getSerialPortHelper()
-    return sp?.isReadable() === true
-  }
-
-  private checkSerialPort(): SerialPortHelper {
-    if (!this.isReadable()) {
-      throw new Error('hw not open')
-    }
-    return this.getSerialPortHelper()!
-  }
-
-  /**
-   * DC 모터1,2 속도 설정
-   */
-  async setDCMotorSpeedP(l1: number, r1: number, l2: number, r2: number): Promise<void> {
-    const helper = this.checkSerialPort()
-    if (l1 < -100) l1 = -100
-    if (r1 < -100) r1 = -100
-    if (l1 > 100) l1 = 100
-    if (r1 > 100) r1 = 100
-    if (l2 < -100) l2 = -100
-    if (r2 < -100) r2 = -100
-    if (l2 > 100) l2 = 100
-    if (r2 > 100) r2 = 100
-    if (l1 < 0) l1 = 256 + l1
-    if (l2 < 0) l2 = 256 + l2
-    if (r1 < 0) r1 = 256 + r1
-    if (r2 < 0) r2 = 256 + r2
-
-    if (DEBUG) console.log(`setDCMotorSpeedP : l1: ${l1}, r1:${r1}, l2:${l2}, r2: ${r2}`)
-    const buf = [0x23, 5, 0x82, l1, r1, l2, r2, 0]
-    let cksum = 0
-    for (let i = 2; i < buf.length - 1; i++) {
-      cksum ^= buf[i]
-    }
-    buf[buf.length - 1] = cksum
-    await helper.write(buf)
-  }
-
-  /**
-   * DC 모터1 속도 설정
-   */
-  async setDCMotor1SpeedP(l1: number, r1: number): Promise<void> {
-    const helper = this.checkSerialPort()
-    if (l1 < -100) l1 = -100
-    if (r1 < -100) r1 = -100
-    if (l1 > 100) l1 = 100
-    if (r1 > 100) r1 = 100
-    if (l1 < 0) l1 = 256 + l1
-    if (r1 < 0) r1 = 256 + r1
-
-    if (DEBUG) console.log(`setDCMotor1SpeedP : l1: ${l1}, r1:${r1}`)
-    const buf = [0x23, 3, 0x85, l1, r1, 0]
-    let cksum = 0
-    for (let i = 2; i < buf.length - 1; i++) {
-      cksum ^= buf[i]
-    }
-    buf[buf.length - 1] = cksum
-    await helper.write(buf)
-  }
-
-  /**
-   * DC 모터2 속도 설정
-   */
-  async setDCMotor2SpeedP(l2: number, r2: number): Promise<void> {
-    const helper = this.checkSerialPort()
-    if (l2 < -100) l2 = -100
-    if (r2 < -100) r2 = -100
-    if (l2 > 100) l2 = 100
-    if (r2 > 100) r2 = 100
-    if (l2 < 0) l2 = 256 + l2
-    if (r2 < 0) r2 = 256 + r2
-
-    if (DEBUG) console.log(`setDCMotor2SpeedP : l2: ${l2}, r2:${r2}`)
-    const buf = [0x23, 3, 0x86, l2, r2, 0]
-    let cksum = 0
-    for (let i = 2; i < buf.length - 1; i++) {
-      cksum ^= buf[i]
-    }
-    buf[buf.length - 1] = cksum
-    await helper.write(buf)
+  private readNext_ = (ctx: any): Promise<Buffer> => {
+    const device = this.device_(ctx)
+    const now = Date.now()
+    return firstValueFrom(
+      device.observeReceivedData().pipe(
+        filter((it) => it.timestamp > now),
+        take(1),
+        map((it) => it.dataBuffer),
+      ),
+    )
   }
 
   /**
    * 일곱개의 핀값을 읽는다
    */
-  private async _read7(): Promise<number[]> {
-    const helper = this.checkSerialPort()
-    const buf = await helper.readNext()
+  private async read7_(ctx: any): Promise<number[]> {
+    const buf = await this.readNext_(ctx)
 
     if (buf.length != 8) {
       console.warn('check delimiter', buf.toJSON())
@@ -156,12 +67,12 @@ export class WiseXboardPremiumControl implements IWiseXboardPremiumControl {
    * 일곱개의 핀값을 읽는다
    * 첵섬이 다르거나, 구분자가 다르면 한번더 시도한다
    */
-  private async _read7Retry(): Promise<number[]> {
+  private async read7Retry_(ctx: any): Promise<number[]> {
     let remainCount = 2
     for (let i = 0; i < remainCount; i++) {
       remainCount--
       try {
-        const ret = await this._read7()
+        const ret = await this.read7_(ctx)
         console.log('_read7Retry() = ', ret)
         return ret
       } catch (err) {
@@ -178,28 +89,89 @@ export class WiseXboardPremiumControl implements IWiseXboardPremiumControl {
   }
 
   /**
+   * DC 모터1,2 속도 설정
+   */
+  async setDCMotorSpeedP(ctx: any, l1: number, r1: number, l2: number, r2: number): Promise<void> {
+    if (l1 < -100) l1 = -100
+    if (r1 < -100) r1 = -100
+    if (l1 > 100) l1 = 100
+    if (r1 > 100) r1 = 100
+    if (l2 < -100) l2 = -100
+    if (r2 < -100) r2 = -100
+    if (l2 > 100) l2 = 100
+    if (r2 > 100) r2 = 100
+    if (l1 < 0) l1 = 256 + l1
+    if (l2 < 0) l2 = 256 + l2
+    if (r1 < 0) r1 = 256 + r1
+    if (r2 < 0) r2 = 256 + r2
+
+    const buf = [0x23, 5, 0x82, l1, r1, l2, r2, 0]
+    let cksum = 0
+    for (let i = 2; i < buf.length - 1; i++) {
+      cksum ^= buf[i]
+    }
+    buf[buf.length - 1] = cksum
+    await this.write_(ctx, buf)
+  }
+
+  /**
+   * DC 모터1 속도 설정
+   */
+  async setDCMotor1SpeedP(ctx: any, l1: number, r1: number): Promise<void> {
+    if (l1 < -100) l1 = -100
+    if (r1 < -100) r1 = -100
+    if (l1 > 100) l1 = 100
+    if (r1 > 100) r1 = 100
+    if (l1 < 0) l1 = 256 + l1
+    if (r1 < 0) r1 = 256 + r1
+
+    const buf = [0x23, 3, 0x85, l1, r1, 0]
+    let cksum = 0
+    for (let i = 2; i < buf.length - 1; i++) {
+      cksum ^= buf[i]
+    }
+    buf[buf.length - 1] = cksum
+    await this.write_(ctx, buf)
+  }
+
+  /**
+   * DC 모터2 속도 설정
+   */
+  async setDCMotor2SpeedP(ctx: any, l2: number, r2: number): Promise<void> {
+    if (l2 < -100) l2 = -100
+    if (r2 < -100) r2 = -100
+    if (l2 > 100) l2 = 100
+    if (r2 > 100) r2 = 100
+    if (l2 < 0) l2 = 256 + l2
+    if (r2 < 0) r2 = 256 + r2
+
+    const buf = [0x23, 3, 0x86, l2, r2, 0]
+    let cksum = 0
+    for (let i = 2; i < buf.length - 1; i++) {
+      cksum ^= buf[i]
+    }
+    buf[buf.length - 1] = cksum
+    await this.write_(ctx, buf)
+  }
+
+  /**
    * 모든 DC 모터 끄기
    */
-  async stopDCMotorP(): Promise<void> {
-    if (DEBUG) console.log('stopDCMotorP()')
-    const helper = this.checkSerialPort()
+  async stopDCMotorP(ctx: any): Promise<void> {
     const pkt = [0x23, 1, 0x83, 0]
     let cksum = 0
     for (let i = 2; i < pkt.length - 1; i++) {
       cksum ^= pkt[i]
     }
     pkt[pkt.length - 1] = cksum
-    await helper.write(pkt)
+    await this.write_(ctx, pkt)
   }
 
   /**
    * n번핀 서보모터 각도 angle로 정하기
    * pinNum = [1,5], angle=[-90, 90]
    */
-  async setServoMotorAngleP(pinNum: number, angle: number): Promise<void> {
-    if (DEBUG) console.log(`setServoMotorAngleP() : pinNo:${pinNum}, angle:${angle}`)
-    const helper = this.checkSerialPort()
-
+  async setServoMotorAngleP(ctx: any, pinNum: number, angle: number): Promise<void> {
     if (angle < -90) angle = -90
     if (angle > 90) angle = 90
     if (angle < 0) angle = 255 + angle
@@ -218,45 +190,42 @@ export class WiseXboardPremiumControl implements IWiseXboardPremiumControl {
       cksum ^= buf[i]
     }
     buf[buf.length - 1] = cksum
-    await helper.write(buf)
+    await this.write_(ctx, buf)
   }
 
   /**
    * 리모콘 값 읽기
    */
-  async readRemoconP(): Promise<number> {
-    if (DEBUG) console.log('readRemoconP()')
-    const values = this._read7Retry()
+  async readRemoconP(ctx: any): Promise<number> {
+    const values = this.read7Retry_(ctx)
     return values[6]
   }
 
   /**
    * 아날로그 핀 읽기
-   * 일곱개의 핀값을 모두 가져온다
    */
-  async analogReadP(): Promise<number[]> {
-    if (DEBUG) console.log('analogReadP()')
+  async analogReadP(ctx: any, pin: number): Promise<number> {
     // [pin1 ~ pin7]
-    return this._read7Retry()
+    const values = await this.read7Retry_(ctx)
+    const v = values[pin - 1]
+    return v ?? 0
   }
 
   /**
    * 디지털 핀 읽기
-   * 일곱개의 핀값을 모두 가져온다
    */
-  async digitalReadP(): Promise<number[]> {
-    if (DEBUG) console.log('digitalReadP()')
+  async digitalReadP(ctx: any, pin: number): Promise<number> {
     // [pin1 ~ pin7]
-    const values = await this._read7Retry()
-    return values.map((it) => (it > 100 ? 1 : 0))
+    const values = await this.read7Retry_(ctx)
+    const v = values[pin - 1]
+    return v > 100 ? 1 : 0
   }
 
   /**
    * 디지털 n번핀 value로 정하기
    * pinNum = [0~5], value = [0,1]
    */
-  async digitalWriteP(pinNum: number, value: number): Promise<void> {
-    const helper = this.checkSerialPort()
+  async digitalWriteP(ctx: any, pinNum: number, value: number): Promise<void> {
     value = value <= 0 ? 0 : 1
     pinNum = pinNum <= 0 ? 0 : pinNum >= 5 ? 5 : pinNum
     if (DEBUG) console.log(`digitalWriteP : pinNo: ${pinNum}, value:${value}`)
@@ -267,53 +236,66 @@ export class WiseXboardPremiumControl implements IWiseXboardPremiumControl {
       cksum ^= buf[i]
     }
     buf[buf.length - 1] = cksum
-    if (DEBUG) console.log(`digitalWriteP : buf=`, buf)
-    await helper.write(buf)
+    await this.write_(ctx, buf)
   }
 
   /**
    * 키값 전송
    */
-  async sendKeyP(key: number): Promise<void> {
-    const helper = this.checkSerialPort()
-    if (DEBUG) console.log(`sendKeyP(): key: ${key}`)
-
+  async sendKeyP(ctx: any, key: number): Promise<void> {
     let cksum = 0
     const buf = [0x23, 2, 0x84, key, 0]
     for (let i = 2; i < buf.length - 1; i++) {
       cksum ^= buf[i]
     }
     buf[buf.length - 1] = cksum
-    await helper.write(buf)
+    await this.write_(ctx, buf)
   }
 
   /**
-   * 하드웨어를 연결했을때 자동으로 호출합니다
+   * 디바이스(serial)에 연결된 직후에 자동으로 호출됩니다
    */
-  async onAfterOpen(): Promise<void> {
-    if (DEBUG) console.log('XXX onAfterOpen()')
+  onDeviceOpened = async (ctx: any): Promise<void> => {
+    const logTag = 'WiseXboardPremiumControl.onDeviceOpened()'
+    this.log(ctx).i(logTag, 'called')
   }
 
   /**
-   * 연결 종료합니다
-   * 클라이언트의 연결이 종료되었을 때,
-   * 프레임워크가 자동으로 호출해준다.
-   * 이름은 onBeforeClose(), 함수인자는 없어야 한다.
+   * 디바이스(serial)가 닫히기 전에 자동으로 호출됩니다
    */
-  async onBeforeClose(): Promise<void> {
-    if (DEBUG) console.log('XXX onBeforeClose()')
-    const helper = this.checkSerialPort()
+  onDeviceWillClose = async (ctx: any): Promise<void> => {
+    const logTag = 'WiseXboardPremiumControl.onDeviceWillClose()'
+    this.log(ctx).i(logTag, 'called')
+  }
+
+  /**
+   * implement IHwControl
+   * 웹소켓 클라이언트가 연결되었고,
+   * 시리얼 장치가 OPEN 된 후에 한번 호출됩니다
+   */
+  onWebSocketConnected = async (ctx: any): Promise<void> => {
+    const logTag = 'WiseXboardPremiumControl.onWebSocketConnected()'
+    this.log(ctx).i(logTag, 'called')
+  }
+
+  /**
+   * implement IHwControl
+   * 웹소켓 클라이언트가 연결되었고,
+   * 디바이스(serial)가 CLOSE 되기 전에 한번 호출됩니다
+   */
+  onWebSocketDisconnected = async (ctx: any): Promise<void> => {
+    const logTag = 'WiseXboardPremiumControl.onWebSocketDisconnected()'
+    this.log(ctx).i(logTag, 'called')
 
     // 모터 중지
     try {
-      await this.stopDCMotorP()
+      await this.stopDCMotorP(ctx)
     } catch (err) {}
 
     // 모든 LED OFF
     try {
-      // 아무핀에나 0을 쓰면 모두 0이 된다.
       for (let i = 0; i < 7; i++) {
-        await this.digitalWriteP(i, 0)
+        await this.digitalWriteP(ctx, i, 0)
       }
     } catch (ignore) {}
   }

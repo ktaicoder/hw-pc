@@ -1,26 +1,19 @@
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import {
-  Alert,
-  Box,
-  Button,
-  ButtonBase,
-  Container,
-  Grid,
-  IconButton,
-  Toolbar,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
+import TerminalIcon from '@mui/icons-material/Terminal'
+import { Box, Button, Container, Grid } from '@mui/material'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { PulseLoader } from 'react-spinners'
 import { interval } from 'rxjs'
-import { PortInfo } from 'serialport'
-import { IHwInfo, PcDriver } from 'src/custom-types/hw-types'
+import { IHwInfo, ISerialPortInfo, PcDriver } from 'src/custom-types/basic-types'
 import Image from 'src/render/components/Image'
 import { usePromiseValue } from 'src/render/util/useServiceValue'
 import { IContext } from 'src/services/context/interface'
-import { useHwServerState } from 'src/services/hw/hook'
-import PortsView from './components/ports/PortsView'
+import { useHwServerState } from 'src/services/hw/useHwServerState'
+import ConnectedMessageView from './components/ConnectedMessageView'
+import ConsoleView from './components/ConsoleView'
+import NotConnectedMessageView from './components/NotConnectedMessageView'
+import PortsView from './components/PortsView'
+import ToolbarView from './components/ToolbarView'
 
 type Props = {
   hwInfo: IHwInfo
@@ -48,9 +41,10 @@ function isNullish(t: any): boolean {
 export default function DeviceSelectionView(props: Props) {
   const { hwInfo: info } = props
   const context = usePromiseValue<IContext | undefined>(async () => await window.service.context.getAll(), undefined)
-  const [portInfos, setPortInfos] = useState<PortInfo[]>([])
-  const [portInfo, setPortInfo] = useState<PortInfo>()
+  const [portInfos, setPortInfos] = useState<ISerialPortInfo[]>([])
+  const [portInfo, setPortInfo] = useState<ISerialPortInfo>()
   const [refreshToken, setRefreshToken] = useState(0)
+  const [consoleCollapsed, setConsoleCollapsed] = useState(true)
 
   const pcDrivers = useMemo<PcDriverMatched[]>(() => {
     if (!context) return []
@@ -103,27 +97,25 @@ export default function DeviceSelectionView(props: Props) {
     loadPorts(info.hwId)
   }, [refreshToken, loadPorts, info.hwId])
 
-  const handleClickPort = (port: PortInfo) => {
+  const handleClickPort = (port: ISerialPortInfo) => {
     setPortInfo(port)
   }
 
-  const handleClickBack = () => {
-    window.service.hw.unselectHw(info.hwId)
-  }
-
+  // 펌웨어 버튼 클릭
   const handleClickFirmwareDownload = () => {
     const firmwareFile = info.firmwareFile
     if (!firmwareFile) return
     window.service.hw.downloadDriver(firmwareFile)
   }
 
+  // 드라이버 버튼 클릭
   const handleClickDriver = (driverPath: string) => {
     window.service.hw.downloadDriver(driverPath)
   }
 
-  const handleClickChrome = () => {
-    // window.service.hw.downloadDriver(driverPath)
-    window.service.native.openUrl('https://aicodiny.com/maker')
+  // 콘솔 열기/접기 버튼 클릭
+  const handleClickConsoleCollapsedBtn = () => {
+    setConsoleCollapsed((p) => !p)
   }
 
   // const serialPortReadable = Boolean(readablePath && readablePath === portInfo?.path)
@@ -133,54 +125,30 @@ export default function DeviceSelectionView(props: Props) {
   return (
     <Box
       sx={{
+        position: 'relative',
         display: 'flex',
         justifyContent: 'flex-start',
         flexDirection: 'column',
+        height: '100vh',
+        overflow: 'hidden',
       }}
     >
-      <Toolbar
-        variant="dense"
-        sx={{
-          background: 'linear-gradient(90deg, rgba(0,92,162,1) 0%, rgba(0,51,115,1) 50%, rgba(80,137,212,1) 100%)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <IconButton
-            onClick={handleClickBack}
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            sx={{
-              marginRight: '24px',
-            }}
-          >
-            <ArrowBackIcon htmlColor="#fff" />
-          </IconButton>
-          <Typography variant="subtitle1" sx={{ color: '#FFF' }}>
-            {info.hwName}
-          </Typography>
-        </Box>
-        <Tooltip title="브라우저 열기">
-          <IconButton
-            onClick={handleClickChrome}
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            sx={{
-              marginRight: '24px',
-            }}
-          >
-            <Image sx={{ width: 24, height: 24 }} src="static/images/ic_chrome.png" />
-          </IconButton>
-        </Tooltip>
-      </Toolbar>
+      <ToolbarView
+        hwId={info.hwId}
+        hwName={typeof info.hwName === 'string' ? info.hwName : info.hwName.ko ?? info.hwName.en}
+      />
 
-      <Box sx={{ margin: '0 auto', width: '100%', maxWidth: 960 }} pt={10}>
+      <Box
+        sx={{
+          position: 'relative',
+          margin: '0 auto',
+          width: '100%',
+          maxWidth: 960,
+        }}
+        pt={10}
+      >
         <Grid container sx={{ border: '0px solid red', flex: 0 }}>
-          <Grid item xs={4} sm={4} md={5} lg={5}>
+          <Grid item xs={4} md={5}>
             <Box sx={{ position: 'relative' }}>
               <Image
                 sx={{
@@ -198,7 +166,7 @@ export default function DeviceSelectionView(props: Props) {
               </Box>
             </Box>
           </Grid>
-          <Grid item xs={4} sm={4} md={2} lg={2}>
+          <Grid item xs={4} md={2}>
             <PortsView
               portInfos={portInfos}
               portPath={portInfo?.path}
@@ -206,7 +174,7 @@ export default function DeviceSelectionView(props: Props) {
               onClickRefresh={() => setRefreshToken(Date.now())}
             />
           </Grid>
-          <Grid item xs={4} sm={4} md={5} lg={5}>
+          <Grid item xs={4} md={5}>
             <Box sx={{ position: 'relative' }}>
               <Image
                 sx={{
@@ -224,7 +192,7 @@ export default function DeviceSelectionView(props: Props) {
               </Box>
             </Box>
           </Grid>
-          <Grid item xs={4} sm={4} md={5} lg={5}>
+          <Grid item xs={4} md={5}>
             <Box
               sx={{
                 mt: 3,
@@ -233,7 +201,7 @@ export default function DeviceSelectionView(props: Props) {
                 alignItems: 'center',
               }}
             >
-              {pcDrivers.map((driver, idx) => (
+              {pcDrivers.map((driver) => (
                 <Button
                   key={driver.uri}
                   variant="contained"
@@ -245,7 +213,7 @@ export default function DeviceSelectionView(props: Props) {
               ))}
             </Box>
           </Grid>
-          <Grid item xs={4} sm={4} md={2} lg={2}>
+          <Grid item xs={4} md={2}>
             {/* dummy */}
           </Grid>
           <Grid item xs={4} sm={4} md={5} lg={5}>
@@ -271,121 +239,66 @@ export default function DeviceSelectionView(props: Props) {
         </Grid>
         <Box mt={10}>
           <Container maxWidth="sm" disableGutters>
-            {hwReady ? (
-              <Alert
-                severity="info"
-                sx={{
-                  display: 'flex',
-                  mt: 1,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  backgroundColor: '#EBF2F8',
-                  margin: '0 auto',
-                  '& ul li': {
-                    lineHeight: '1.2rem',
-                  },
-                }}
-                icon={false}
-              >
-                <ul>
-                  <li>장치에 연결되었습니다. </li>
-                  <li>이제 블록코딩으로 장치를 제어할 수 있습니다.</li>
-                </ul>
-                <ButtonBase
-                  component="div"
-                  onClick={handleClickChrome}
-                  sx={{
-                    ml: 4,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    px: 2,
-                    py: 1,
-                    border: '1px solid #01415E',
-                    borderRadius: 1,
-                  }}
-                >
-                  <Image sx={{ width: 20, height: 20, mr: 1 }} src="static/images/ic_chrome.png" />
-                  <Typography variant="body1" sx={{ fontSize: '0.9rem', color: '#01415E' }}>
-                    블록코딩 실행
-                  </Typography>
-                </ButtonBase>
-                <ul>
-                  <li>OS의 디폴트 브라우저가 크롬인 경우, 클릭시 크롬브라우저가 실행됩니다.</li>
-                  <li>크롬 브라우저 사용을 권장합니다. </li>
-                  <li>직접 크롬 브라우저를 실행 후 AI Codiny 사이트에 접속하셔도 됩니다.</li>
-                </ul>
-              </Alert>
-            ) : (
-              <Alert
-                severity="warning"
-                sx={{
-                  display: 'flex',
-                  mt: 1,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-                icon={false}
-              >
-                <ul>
-                  {portInfos.length === 0 && <li>장치를 연결해주세요.</li>}
-
-                  <li>장치를 연결했는데 연결포트가 보이지 않는 경우 드라이버를 설치해주세요.</li>
-                </ul>
-              </Alert>
-            )}
+            {hwReady ? <ConnectedMessageView /> : <NotConnectedMessageView portCount={portInfos.length} />}
           </Container>
         </Box>
+      </Box>
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 56,
+          left: 16,
+          //   right: 16,
+          width: 'calc(100% - 32px)',
+          height: 'calc(100% - 60px)',
+          borderRadius: 1,
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          transition: '0.3s',
+          '& .ConsoleView-wrapper': {
+            flex: 1,
+            width: '100%',
+            height: '100%',
+            bgcolor: 'rgba(0,0,0,0.9)',
+            px: 2,
+            pt: 0,
+            pb: 1,
+            borderRadius: 1,
+            overflow: 'hidden',
+          },
+          '&[data-is-closed="true"] .ConsoleView-wrapper': {
+            height: 0,
+            opacity: 0,
+          },
+          '&[data-is-closed="true"]': {
+            transform: 'translateY(calc(100% - 40px))',
+          },
+        }}
+        data-is-closed={consoleCollapsed}
+      >
+        <Button
+          color={consoleCollapsed ? 'info' : 'error'}
+          onClick={handleClickConsoleCollapsedBtn}
+          variant="contained"
+          size="small"
+          startIcon={<TerminalIcon />}
+          endIcon={consoleCollapsed ? undefined : <CloseIcon />}
+        >
+          {consoleCollapsed ? '콘솔 열기' : '콘솔 닫기'}
+        </Button>
 
-        {/*
-                <Box>
-                    <Typography variant="h6">장치 정보</Typography>
-                    <TableContainer>
-                        <Table>
-                            <TableBody>
-                                <TableRow>
-                                    <TableCell>모델</TableCell>
-                                    <TableCell>{info.hwName}</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>모델 유형</TableCell>
-                                    <TableCell>{info.hwKind}</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>분류</TableCell>
-                                    <TableCell>{info.category}</TableCell>
-                                </TableRow>
-
-                                {info.homepage && (
-                                    <TableRow>
-                                        <TableCell>홈페이지</TableCell>
-                                        <TableCell>
-                                            <Typography
-                                                variant="body2"
-                                                sx={{ color: 'theme.primary', cursor: 'pointer' }}
-                                                onClick={() => window.service.native.openUrl(info.homepage ?? '')}
-                                            >
-                                                info.homepage
-                                            </Typography>
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                                {info.email && (
-                                    <TableRow>
-                                        <TableCell>이메일</TableCell>
-                                        <TableCell>{info.email}</TableCell>
-                                    </TableRow>
-                                )}
-
-                                {info.guideVideo && (
-                                    <TableRow>
-                                        <TableCell colSpan={2}>{info.guideVideo}</TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </Box> */}
+        <Box
+          className="ConsoleView-wrapper"
+          style={{
+            position: 'relative',
+            marginTop: '8px',
+            border: '1px solid blue',
+          }}
+        >
+          <ConsoleView />
+        </Box>
       </Box>
     </Box>
   )

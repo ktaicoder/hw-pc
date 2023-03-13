@@ -1,11 +1,13 @@
-import { HwKind, IHwInfo } from 'src/custom-types/hw-types'
+import { HwKindKey, IHwDescriptor, IHwInfo } from 'src/custom-types/basic-types'
+import { isPortMatch, openDevice } from './openDevice'
 import { WiseXboardControl } from './WiseXboardControl'
 
-const HWID = 'wiseXboard'
+const hwId = 'wiseXboard'
+const hwKind: HwKindKey = 'serial'
 
 const info: IHwInfo = {
-  hwId: HWID,
-  hwKind: HwKind.serial,
+  hwId,
+  hwKind,
   hwName: '와이즈 엑스보드',
   category: 'module',
   supportPlatforms: ['win32'],
@@ -18,9 +20,15 @@ const info: IHwInfo = {
   ],
 }
 
-export default {
-  hwId: HWID,
-  info,
-  operator: WiseXboardControl,
-  control: () => new WiseXboardControl(),
+export const wiseXboard: IHwDescriptor = {
+  hwId, // 하드웨어 ID
+  hwKind, // 하드웨어 종류
+  info, // 하드웨어 정보
+  hw: {
+    hwId,
+    hwKind,
+    isPortMatch, // 시리얼포트 지원 함수
+    createControl: () => new WiseXboardControl(),
+    openDevice,
+  },
 }

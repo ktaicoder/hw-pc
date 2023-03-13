@@ -1,10 +1,10 @@
-import path from 'path'
 import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron'
 import windowStateKeeper, { State as windowStateKeeperState } from 'electron-window-state'
 import { injectable } from 'inversify'
+import path from 'path'
 // import { Menubar } from 'menubar'
 import { MetaDataChannel } from 'src/constants/channels'
-import { isDevelopmentOrTest, isTest } from 'src/constants/environment'
+import { isTest } from 'src/constants/environment'
 import { lazyInject } from 'src/services/container'
 import { IMenuService } from '../menu/interface'
 import { IPreferencesService } from '../preferences/interface'
@@ -13,7 +13,6 @@ import { IWindowService } from './interface'
 import { setupShortcut } from './setupShortcut'
 import { setupZoom } from './setupZoom'
 import { windowDimension, WindowMeta, WindowNames } from './WindowProperties'
-import { logger } from '../libs/log'
 
 const isMac = process.platform === 'darwin'
 
@@ -60,7 +59,7 @@ export class WindowService implements IWindowService {
     await this.setWindowMeta(windowName, meta)
     const existedWindowMeta = await this.getWindowMeta(windowName)
     // const attachToMenubar: boolean = await this.preferenceService.get('attachToMenubar')
-    const attachToMenubar: boolean = false
+    const attachToMenubar = false
     // const titleBar: boolean = await this.preferenceService.get('titleBar')
     const isMainWindow = windowName === WindowNames.main
 
@@ -111,7 +110,6 @@ export class WindowService implements IWindowService {
       webPreferences: {
         devTools: !isTest,
         nodeIntegration: true,
-        nativeWindowOpen: false,
         // webSecurity: !isDevelopmentOrTest,
         webSecurity: false,
         allowRunningInsecureContent: true,

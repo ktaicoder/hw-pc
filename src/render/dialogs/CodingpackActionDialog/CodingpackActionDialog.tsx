@@ -1,17 +1,9 @@
 import CloseIcon from '@mui/icons-material/Close'
-import {
-  Box,
-  CircularProgress,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  LinearProgress,
-  Typography,
-} from '@mui/material'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Box, CircularProgress, Dialog, DialogContent, IconButton, LinearProgress, Typography } from '@mui/material'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useMeasure } from 'react-use'
 import { BehaviorSubject, bufferTime, debounceTime, filter, firstValueFrom, take, takeUntil, timeout } from 'rxjs'
+import { CODINGPACK_LISTEN_PORT } from 'src/constants/server'
 import { CodingpackActionKind, CodingpackActionKindKey } from 'src/domain/codingpack'
 import ReactConsole, { ReactConsoleControl } from 'src/render/components/react-console/ReactConsole'
 import { fixWebPath } from 'src/render/util/fixWebPath'
@@ -21,11 +13,11 @@ import CheckAudioView from './components/CheckAudioView'
 import CodingpackInspectView from './components/CodingpackInspectView'
 import RebootView from './components/RebootView'
 import RescueView from './components/RescueView'
+import SdcardExpandView from './components/SdcardExpandView'
 import SystemResetView from './components/SystemResetView'
 import UpdateView from './components/UpdateView'
 import UserPwView from './components/UserPwView'
 import WifiSettingView from './components/WifiSettingView'
-import SdcardExpandView from './components/SdcardExpandView'
 import { HwClient } from './socket/HwClient'
 
 export type CodingpackActionDialogProps = {
@@ -45,7 +37,7 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
   const [minimized, setMinimized] = useState(false)
   const [initialReady, setInitialReady] = useState(false)
   const title = CodingpackActionKind[actionKind]
-  const hwClient = useMemo(() => new HwClient('codingpack', 'ws://127.0.0.1:3001'), [])
+  const hwClient = useMemo(() => new HwClient('codingpack', `ws://127.0.0.1:${CODINGPACK_LISTEN_PORT}`), [])
 
   const [terminal, setTerminal] = useState<ReactConsoleControl | null>(null)
 
@@ -134,7 +126,7 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
       cancelTrigger$.next(Date.now())
       hwClient.disconnect()
     }
-  }, [hwClient])
+  }, [hwClient, doConnect])
 
   const _onRunning = useCallback((running: boolean) => {
     setCmdRunning(running)

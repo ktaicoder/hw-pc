@@ -1,14 +1,6 @@
 import { ListItem, ListItemIcon, ListItemText } from '@mui/material'
-import React from 'react'
-import {
-  ICON_COLOR,
-  ICON_COLOR_ACTIVE,
-  SIDEMENU_BG_COLOR_ACTIVE,
-  SIDEMENU_BG_COLOR_HOVER,
-  SIDEMENU_BORDER_COLOR_ACTIVE,
-  SIDEMENU_FG_COLOR,
-  SIDEMENU_FG_COLOR_ACTIVE,
-} from '../../main-layout-constants'
+import * as React from 'react'
+import { ICON_COLOR, ICON_COLOR_ACTIVE, SIDEMENU_FG_COLOR, SIDEMENU_FG_COLOR_ACTIVE } from '../../main-layout-constants'
 import { IMenu } from '../../sidebar-menu-define'
 import Link, { LinkProps } from './Link'
 import MenuIcon from './MenuIcon'
@@ -19,6 +11,7 @@ type Props = {
 }
 
 const MyLink = React.forwardRef<HTMLAnchorElement, LinkProps>((props, ref) => <Link {...props} />)
+MyLink.displayName = 'MyLink'
 
 export default function MenuItem(props: Props) {
   const { menu, active, onLinkClick } = props
@@ -58,7 +51,7 @@ export default function MenuItem(props: Props) {
           backgroundColor: '#fff',
           ml: '4px',
           // borderLeft: `4px solid ${SIDEMENU_BORDER_COLOR_ACTIVE}`,
-          borderLeft: `16px solid transparent`,
+          borderLeft: '16px solid transparent',
           borderTopLeftRadius: '24px',
           borderBottomLeftRadius: '24px',
         }),

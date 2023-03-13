@@ -1,11 +1,13 @@
-import { HwKind, IHwInfo } from 'src/custom-types/hw-types'
+import { HwKindKey, IHwDescriptor, IHwInfo } from 'src/custom-types/basic-types'
+import { isPortMatch, openDevice } from './openDevice'
 import { SaeonAltinoLiteControl } from './SaeonAltinoLiteControl'
 
-const HWID = 'saeonAltinoLite'
+const hwId = 'saeonAltinoLite'
+const hwKind: HwKindKey = 'serial'
 
 const info: IHwInfo = {
-  hwId: HWID,
-  hwKind: HwKind.serial,
+  hwId,
+  hwKind,
   hwName: '새온 알티노라이트',
   category: 'module',
   supportPlatforms: ['win32'],
@@ -18,9 +20,15 @@ const info: IHwInfo = {
   ],
 }
 
-export default {
-  hwId: HWID,
-  info,
-  operator: SaeonAltinoLiteControl,
-  control: () => new SaeonAltinoLiteControl(),
+export const saeonAltinoLite: IHwDescriptor = {
+  hwId, // 하드웨어 ID
+  hwKind, // 하드웨어 종류
+  info, // 하드웨어 정보
+  hw: {
+    hwId,
+    hwKind,
+    isPortMatch, // 시리얼포트 매치 함수
+    createControl: () => new SaeonAltinoLiteControl(),
+    openDevice,
+  },
 }

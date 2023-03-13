@@ -13,10 +13,12 @@ import {
   tap,
 } from 'rxjs'
 import io, { Socket } from 'socket.io-client'
-import { TERMINAL_CMD_RESPONE, TERMINAL_MESSAGE_RESPONSE } from 'src/hw-server/HwClientHandler'
+import { codingpackCommands } from 'src/domain/codingpack'
 import { RxSocketIoClient } from './RxSocketIoClient'
 
 type WebSocketState = 'first' | 'connected' | 'disconnected'
+
+const { TERMINAL_CMD_RESPONE, TERMINAL_MESSAGE_RESPONSE } = codingpackCommands
 
 export type ResponseFrame = {
   requestId: string
@@ -26,39 +28,43 @@ export type ResponseFrame = {
 }
 
 export class HwSocket {
-  private _sock: Socket | null = null
-  private _subscription: Subscription | null = null
-  private _state$ = new BehaviorSubject<WebSocketState>('first')
-  private _frameResponse$ = new Subject<ResponseFrame>()
-  private _terminalMessage$ = new Subject<string>()
+  private sock_: Socket | null = null
+
+  private subscription_: Subscription | null = null
+
+  private state$ = new BehaviorSubject<WebSocketState>('first')
+
+  private frameResponse$ = new Subject<ResponseFrame>()
+
+  private terminalMessage$ = new Subject<string>()
 
   constructor(public websocketUrl: string) {}
 
   observeState = (): Observable<WebSocketState> => {
-    return this._state$.asObservable()
+    return this.state$.asObservable()
   }
 
   ////
   observeTerminalMessage = (): Observable<string> => {
-    return this._terminalMessage$.asObservable()
+    return this.terminalMessage$.asObservable()
   }
 
   observeFrameResponse = (requestId: string): Observable<ResponseFrame> => {
-    return this._frameResponse$.asObservable().pipe(filter((it) => it.requestId === requestId))
+    return this.frameResponse$.asObservable().pipe(filter((it) => it.requestId === requestId))
   }
 
   /**
    * 상태가 정상일때 소켓을 발행한다
    */
   private observeConnectedSocket = (): Observable<Socket | null> => {
-    return this._state$.pipe(
+    return this.state$.pipe(
       tap((it) => console.log('XXXX SOCKET STATE:' + it)),
-      map((it) => (it === 'connected' ? this._sock! : null)),
+      map((it) => (it === 'connected' ? this.sock_! : null)),
     )
   }
 
   isConnected = (): boolean => {
-    return this._sock?.connected === true
+    return this.sock_?.connected === true
   }
 
   isDisconnected = (): boolean => {
@@ -66,29 +72,29 @@ export class HwSocket {
   }
 
   connect = () => {
-    if (this._sock) {
+    if (this.sock_) {
       return
     }
-    this._state$.next('first')
+    this.state$.next('first')
     const sock = io(this.websocketUrl, {
       autoConnect: true,
       path: '/socket.io',
     })
-    this._sock = sock
+    this.sock_ = sock
     const subscription = RxSocketIoClient.fromConnectEvent(sock).subscribe(() => {
-      this._state$.next('connected')
+      this.state$.next('connected')
     })
 
     subscription.add(
-      RxSocketIoClient.fromDisonnectEvent(sock).subscribe((reason) => {
+      RxSocketIoClient.fromDisconnectEvent(sock).subscribe((reason) => {
         console.log('disconnected reason:' + reason)
-        this._state$.next('disconnected')
-        this._onDisconnected(false)
+        this.state$.next('disconnected')
+        this.onDisconnected_(false)
       }),
     )
 
     subscription.add(
-      RxSocketIoClient.fromDisonnectEvent(sock).subscribe((err) => {
+      RxSocketIoClient.fromErrorEvent(sock).subscribe((err) => {
         console.log('error occured = ' + err)
       }),
     )
@@ -106,7 +112,7 @@ export class HwSocket {
           map((msg) => msg as ResponseFrame),
         )
         .subscribe((msg) => {
-          this._frameResponse$.next(msg)
+          this.frameResponse$.next(msg)
         }),
     )
 
@@ -124,7 +130,7 @@ export class HwSocket {
         return [['\n'], str.slice(1)]
       }
 
-      let pending: string | null = str.slice(idx + 1)
+      const pending: string | null = str.slice(idx + 1)
       const acceptedLines = str
         .substring(0, idx + 1)
         .split('\n')
@@ -172,7 +178,7 @@ export class HwSocket {
           // tap((line) => console.log(`terminal=${line.length}:[${line}]`)),
         )
         .subscribe((msg) => {
-          this._terminalMessage$.next(msg)
+          this.terminalMessage$.next(msg)
         }),
     )
   }
@@ -181,32 +187,32 @@ export class HwSocket {
    * 강제로 연결을 종료한다
    */
   disconnect = () => {
-    this._onDisconnected(true)
+    this.onDisconnected_(true)
   }
 
-  private _onDisconnected = (destroy: boolean) => {
+  private onDisconnected_ = (destroy: boolean) => {
     if (destroy) {
-      this._subscription?.unsubscribe()
-      this._subscription = null
+      this.subscription_?.unsubscribe()
+      this.subscription_ = null
 
-      const s = this._sock
+      const s = this.sock_
       if (s != null) {
-        this._sock?.close()
-        this._sock = null
+        this.sock_?.close()
+        this.sock_ = null
       }
     }
 
-    if (this._state$.value !== 'disconnected') {
-      this._state$.next('disconnected')
+    if (this.state$.value !== 'disconnected') {
+      this.state$.next('disconnected')
     }
   }
 
   send = (messageName: string, frame: any) => {
-    const sock = this._sock
+    const sock = this.sock_
     if (!sock) {
       throw new Error('not connected')
     }
-
+    console.log('sock.emit():', messageName, frame)
     sock.emit(messageName, frame)
   }
 }

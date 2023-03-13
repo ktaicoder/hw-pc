@@ -1,5 +1,6 @@
+import { PortInfo } from '@serialport/bindings-interface'
 import { injectable } from 'inversify'
-import SerialPort from 'serialport'
+import { SerialPort } from 'serialport'
 import { logger } from '../libs/log'
 import { ISerialPortService } from './interface'
 
@@ -9,7 +10,7 @@ const DEBUG = false
 export class SerialPortService implements ISerialPortService {
   constructor() {}
 
-  async list(): Promise<SerialPort.PortInfo[]> {
+  async list(): Promise<PortInfo[]> {
     const ports = await SerialPort.list()
     if (DEBUG) {
       logger.debug('SerialPort.list() = ', ports)

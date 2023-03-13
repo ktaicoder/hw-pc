@@ -1,4 +1,4 @@
-import { HardwareDescriptor, IHwControl } from 'src/custom-types'
+import { IHwControl } from 'src/custom-types'
 
 /**
  * 컨트롤 인터페이스 - 클라이언트(ex: 블록코딩)에서 사용
@@ -14,12 +14,12 @@ export interface ISaeonAltinoLiteControl extends IHwControl {
    * option : Light
    * option : Display
    */
-  stop(option: string): Promise<void>
+  stop(ctx: any, option: string): Promise<void>
 
   /**
    * 뒷바퀴 구동
    */
-  go(lp: number, rp: number): Promise<void>
+  go(ctx: any, lp: number, rp: number): Promise<void>
 
   /**
    * 조향
@@ -33,13 +33,13 @@ export interface ISaeonAltinoLiteControl extends IHwControl {
    * option : Right-15
    * option : Right-20
    */
-  steering(option: string): Promise<void>
+  steering(ctx: any, option: string): Promise<void>
 
   /**
    * 조향
    * val : steering value (-127 ~ 127)
    */
-  steeringNumber(val: number): Promise<void>
+  steeringNumber(ctx: any, val: number): Promise<void>
 
   /**
    * 센서
@@ -52,7 +52,7 @@ export interface ISaeonAltinoLiteControl extends IHwControl {
    * option : IR6
    * option : BAT
    */
-  sensor(option: string): Promise<number>
+  sensor(ctx: any, option: string): Promise<number>
 
   /**
    * 라이트
@@ -63,13 +63,13 @@ export interface ISaeonAltinoLiteControl extends IHwControl {
    * state : On
    * state : Off
    */
-  light(fn: string, state: string): Promise<void>
+  light(ctx: any, fn: string, state: string): Promise<void>
 
   /**
    * 라이트
    * hex : light hex value
    */
-  lightHex(hex: string): Promise<void>
+  lightHex(ctx: any, hex: string): Promise<void>
 
   /**
    * 소리
@@ -95,19 +95,19 @@ export interface ISaeonAltinoLiteControl extends IHwControl {
    * scale : B (Si)
    * scale : Non
    */
-  sound(oct: string, scale: string): Promise<void>
+  sound(ctx: any, oct: string, scale: string): Promise<void>
 
   /**
    * 소리
    * scale : scale value (0 ~ 255)
    */
-  soundNumber(scale: number): Promise<void>
+  soundNumber(ctx: any, scale: number): Promise<void>
 
   /**
    * 표시하기
    * ch : char value
    */
-  displayChar(ch: string): Promise<void>
+  displayChar(ctx: any, ch: string): Promise<void>
 
   /**
    * 표시하기
@@ -137,6 +137,7 @@ export interface ISaeonAltinoLiteControl extends IHwControl {
    * bit7 : Off
    */
   displayLine(
+    ctx: any,
     line: string,
     bit0: string,
     bit1: string,
@@ -160,6 +161,7 @@ export interface ISaeonAltinoLiteControl extends IHwControl {
    * line8 : hex value
    */
   display(
+    ctx: any,
     line1: string,
     line2: string,
     line3: string,
@@ -173,34 +175,10 @@ export interface ISaeonAltinoLiteControl extends IHwControl {
   /**
    * 표시하기 켜기
    */
-  display_on(x: number, y: number): Promise<void>
+  display_on(ctx: any, x: number, y: number): Promise<void>
 
   /**
    * 표시하기 끄기
    */
-  display_off(x: number, y: number): Promise<void>
-}
-
-/**
- * 하드웨어 디스크립터: commands
- * 변수이름을 hwId인 saeonAltinoLite 해야 함
- */
-export const saeonAltinoLite: HardwareDescriptor = {
-  commands: [
-    'stop', //
-    'go',
-    'steering',
-    'steeringNumber',
-    'sensor',
-    'light',
-    'lightHex',
-    'sound',
-    'soundNumber',
-    'displayFlow',
-    'displayChar',
-    'displayLine',
-    'display',
-    'display_on',
-    'display_off',
-  ],
+  display_off(ctx: any, x: number, y: number): Promise<void>
 }

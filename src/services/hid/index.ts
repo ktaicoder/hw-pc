@@ -1,6 +1,5 @@
 import { injectable } from 'inversify'
 import HID, { Device } from 'node-hid'
-import { logger } from 'src/services/libs/log'
 import { IHidService } from './interface'
 
 @injectable()

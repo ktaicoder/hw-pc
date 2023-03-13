@@ -1,16 +1,33 @@
 import { shell } from 'electron'
 import { injectable } from 'inversify'
 import path from 'path'
-import { BehaviorSubject, debounceTime, Subscription } from 'rxjs'
-import SerialPort from 'serialport'
-import { IHwInfo } from 'src/custom-types'
-import { HwManager } from 'src/hw-server/HwManager'
-import { HwServer } from 'src/hw-server/HwServer'
+import { BehaviorSubject, debounceTime, finalize, from, Subject, Subscription, switchMap } from 'rxjs'
+import { HardwareDescriptors } from 'src/custom'
+import { IHwInfo, ISerialPortInfo } from 'src/custom-types'
+import { IHwDescriptor, IHwServer, IUiLogMessage } from 'src/custom-types/basic-types'
+import { HcpHwManager } from 'src/hcp/HcpHwManager'
+import { HcpWebSocketServer } from 'src/hcp/HcpWebSocketServer'
+import { CodingpackSocketIoServer } from 'src/hw-server/codingpack/CodingpackSocketIoServer'
+import { createHcpServer } from 'src/hw-server/util/createHcpServer'
 import { lazyInject } from 'src/services/container'
+import { ObservableField } from 'src/util/ObservableField'
 import { IContextService } from '../context/interface'
 import { ISerialPortService } from '../serialport/interface'
 import serviceIdentifier from '../serviceIdentifier'
+import { CodingpackHwManager } from './../../hw-server/codingpack/CodingpackHwManager'
 import { HwServerState, IHwService } from './interface'
+import { UiLogger } from './UiLogger'
+import { codingpack } from 'src/codingpack'
+
+type HwServer =
+  | {
+      kind: 'codingpack'
+      server: CodingpackSocketIoServer
+    }
+  | {
+      kind: 'hcp'
+      server: HcpWebSocketServer
+    }
 
 @injectable()
 export class HwService implements IHwService {
@@ -21,78 +38,151 @@ export class HwService implements IHwService {
    * @override
    */
   public hwServerState$ = new BehaviorSubject<HwServerState>({ running: false, hwId: undefined })
-  private hwServer_: HwServer
-  private hwManager_: HwManager
-  private hwServerSubscription_?: Subscription | null = null
+
+  public consoleMessage$ = new Subject<IUiLogMessage>()
+
+  public hwDescriptor$ = new ObservableField<IHwDescriptor | null>(null)
+
+  public serialPortPath$ = new ObservableField<string | null>(null)
+
+  private hwServer_: HwServer | undefined
+
+  private subscription_?: Subscription | null = null
+
+  private uiLogger_: UiLogger
 
   constructor() {
-    this.hwManager_ = new HwManager()
-    this.hwServer_ = new HwServer(this.hwManager_)
-    const subscription = this.hwServer_.observeRunning().subscribe((running) => {
-      this.hwServerState$.next({ ...this.hwServerState$.value, running })
-    })
-
-    subscription.add(
-      this.hwManager_
-        .observeSelection()
-        .pipe(debounceTime(100))
-        .subscribe((selectedHw) => {
-          if (selectedHw) {
-            this.hwServer_.start()
+    const subscription = this.hwDescriptor$
+      .observe()
+      .pipe(
+        // debounceTime(100),
+        switchMap((hwDescriptor) => {
+          if (hwDescriptor) {
+            return from(this.startServer_(hwDescriptor))
           } else {
-            this.hwServer_.stop()
+            return from(this.stopServer_())
           }
-          this.hwServerState$.next({ ...this.hwServerState$.value, hwId: selectedHw?.hwId })
         }),
-    )
+        finalize(() => {
+          console.warn('HwService finaalized()')
+        }),
+      )
+      .subscribe()
 
-    this.hwServerSubscription_ = subscription
-    // this.hwServer_.start()
+    this.subscription_ = subscription
+    this.uiLogger_ = new UiLogger(this.consoleMessage$)
+  }
+
+  private startServer_ = async (hwDescriptor: IHwDescriptor): Promise<any> => {
+    await this.stopServer_()
+    if (hwDescriptor.hwId === 'codingpack') {
+      return this.startCodingpackServer_(hwDescriptor)
+    }
+    return this.startHcpServer_(hwDescriptor)
+  }
+
+  private stopServer_ = async () => {
+    if (this.hwServer_) {
+      const { kind, server } = this.hwServer_
+      this.uiLogger_.i('HwService.stopServer()', `${kind} server`)
+      await server.stop()
+      this.hwServer_ = undefined
+    }
+
+    this.hwServerState$.next({ running: false })
+  }
+
+  private startHcpServer_ = async (hwDescriptor: IHwDescriptor): Promise<HcpWebSocketServer> => {
+    await this.stopServer_()
+
+    this.uiLogger_.i('HwService', 'startHcpServer()')
+    const hcpHwManager = new HcpHwManager(hwDescriptor, this.uiLogger_)
+    const server = createHcpServer(this.uiLogger_, hcpHwManager)
+    this.hwServer_ = { kind: 'hcp', server }
+
+    server.start()
+    this.hwServerState$.next({ hwId: hwDescriptor.hwId, running: true })
+    return server
+  }
+
+  private startCodingpackServer_ = async (hwDescriptor: IHwDescriptor): Promise<CodingpackSocketIoServer> => {
+    await this.stopServer_()
+
+    this.uiLogger_.i('HwService', 'startCodingpackServer()')
+    const hwManager = new CodingpackHwManager(this.uiLogger_)
+    const server = new CodingpackSocketIoServer(hwManager, this.uiLogger_)
+    this.hwServer_ = { kind: 'codingpack', server }
+
+    server.start()
+    this.hwServerState$.next({ hwId: hwDescriptor.hwId, running: true })
+    return server
   }
 
   async getHwServerState(): Promise<HwServerState> {
     return this.hwServerState$.value
   }
 
+  isReadable = async (hwId: string, portPath: string): Promise<boolean> => {
+    const { kind, server } = this.hwServer_ ?? {}
+    if (!kind || !server) return false
+    if (kind === 'codingpack') {
+      const mgr = server.getHwManager()
+      return (
+        hwId === mgr.getHwId() &&
+        mgr.getDevice()?.getSerialPortPath() === portPath &&
+        mgr.getDevice()?.isOpened() === true
+      )
+    }
+
+    if (kind === 'hcp') {
+      const mgr = server.getHcpHwManager()
+      return (
+        hwId === mgr.getHwId() &&
+        mgr.getDevice()?.getSerialPortPath() === portPath &&
+        mgr.getDevice()?.isOpened() === true
+      )
+    }
+
+    return false
+  }
+
   async infoList(): Promise<IHwInfo[]> {
     try {
-      return this.hwManager_.list().map((it) => it.info)
+      return Object.values(HardwareDescriptors)
+        .filter((it) => it.hwId !== 'codingpack')
+        .map((it) => it.info)
     } catch (err) {
       console.log('error', err)
       return []
     }
   }
 
+  private hwDescriptorOf_(hwId: string): IHwDescriptor | null {
+    if (hwId === codingpack.hwId) return codingpack
+    return HardwareDescriptors[hwId] ?? null
+  }
+
   async findInfoById(hwId: string): Promise<IHwInfo | null> {
-    return this.hwManager_.findHw(hwId)?.info ?? null
+    return this.hwDescriptorOf_(hwId)?.info ?? null
   }
 
   async isSupportHw(hwId: string): Promise<boolean> {
-    return this.hwManager_.findHw(hwId) ? true : false
+    return HardwareDescriptors[hwId] ? true : false
   }
 
-  async serialPortList(hwId: string): Promise<SerialPort.PortInfo[]> {
-    const hw = this.hwManager_.findHw(hwId)
-    if (!hw) return []
+  /**
+   * 시리얼 포트 목록 조회
+   * 특정 하드웨어에서 지원하는 시리얼 포트 목록을 조회하려고 했는데
+   * 하드웨어와 상관없이 그냥 전체 목록을 리턴한다
+   * @param hwId 하드웨어 ID
+   * @returns
+   */
+  async serialPortList(hwId: string): Promise<ISerialPortInfo[]> {
     const list = await this.serialPortService.list()
-    if (!hw.operator.isMatch) {
-      console.log('isMatch 함수가 없습니다. 전체 시리얼포트를 리턴합니다')
-      return list
-    }
-    return list.filter(hw.operator.isMatch)
-  }
+    const hw = this.hwDescriptorOf_(hwId)?.hw
+    if (!hw) return list
 
-  // TODO 이름 변경, checkReadable
-  async isReadable(hwId: string, portPath: string): Promise<boolean> {
-    return this.hwManager_.isRegisteredHw(hwId)
-    // if (!this._hwManager.isRegisteredHw(hwId)) return false
-    // const { info, operator } = this._hwManager.findHw(hwId) ?? {}
-    // if (!info || !operator) {
-    //     console.log(`isReadable: false, not registered hw, ${hwId}, ${portPath}:`)
-    //     return false
-    // }
-    // const found = (await this.serialPortList(hwId)).find((it) => it.path === portPath)
-    // return found ? true : false
+    return list.filter((portInfo) => hw.isPortMatch(portInfo, this.uiLogger_))
   }
 
   async downloadDriver(driverUri: string): Promise<void> {
@@ -119,19 +209,61 @@ export class HwService implements IHwService {
    * @returns
    */
   async selectHw(hwId: string): Promise<void> {
-    this.hwManager_.selectHw(hwId)
+    if (hwId === this.hwDescriptor$.value?.hwId) {
+      console.log('already selected hwId=', hwId)
+      return
+    }
+
+    const descriptor = this.hwDescriptorOf_(hwId)
+    this.hwDescriptor$.setValue(descriptor)
   }
 
   async unselectHw(hwId: string): Promise<void> {
-    this.hwManager_.unselectHw(hwId)
-    this.hwServer_.stop()
+    console.log('unselectHw', hwId, this.hwDescriptor$.value?.hwId)
+    this.hwDescriptor$.setValue(null)
   }
 
   async selectSerialPort(hwId: string, portPath: string): Promise<void> {
-    this.hwManager_.selectSerialPort(hwId, portPath)
+    const { kind, server } = this.hwServer_ ?? ({} as any)
+
+    if (!kind || !server) {
+      // 하드웨어를 먼저 선택하세요
+      console.warn('server not started, select hwId first')
+      return
+    }
+
+    if (server.getHwId() !== hwId) {
+      // 하드웨어를 먼저 선택하세요
+      console.warn(`server hardware is not matched, serverHwid=${server.getHwId()} != ${hwId}`)
+      return
+    }
+
+    if (kind === 'codingpack') {
+      const s = server as CodingpackSocketIoServer
+      await s.getHwManager().close()
+      await new Promise((resolve) => {
+        setTimeout(resolve, 700)
+      })
+      await s.getHwManager().openSerialPort(portPath)
+      return
+    }
+
+    if (kind === 'hcp') {
+      const s = server as HcpWebSocketServer
+      await s.getHcpHwManager().close()
+      await new Promise((resolve) => {
+        setTimeout(resolve, 700)
+      })
+      await s.getHcpHwManager().openSerialPort(portPath)
+      return
+    }
+
+    console.warn('[HwService.selectSerialPort] unknown kind: ', kind)
+    return
   }
 
   async stopServer(): Promise<void> {
-    await this.hwServer_.stop()
+    this.hwDescriptor$.setValue(null)
+    // null로 설정하면 stopServer_()가 호출된다
   }
 }

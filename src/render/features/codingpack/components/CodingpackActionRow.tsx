@@ -1,5 +1,5 @@
 import { toast } from 'react-toastify'
-import React from 'react'
+import * as React from 'react'
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'
 import { Box, Button, ButtonBase, SvgIconProps, SxProps, Typography } from '@mui/material'
 import WifiIcon from '@mui/icons-material/Wifi'
@@ -12,7 +12,7 @@ import AutoFixNormalRoundedIcon from '@mui/icons-material/AutoFixNormalRounded'
 import { CodingpackActionKindKey } from 'src/domain/codingpack'
 import { ChevronRight } from '@mui/icons-material'
 import { CustomEvents } from 'src/render/lib/CustomEvents'
-import { HwKind } from 'src/custom-types'
+import { HwKindKey } from 'src/custom-types'
 import Image from 'src/render/components/Image'
 
 type Props = {

@@ -77,7 +77,7 @@ export default function UserPwView(props: Props) {
         setCmdRunning(false)
       }
     },
-    [hwClient],
+    [hwClient, setResultMessage],
   )
 
   const doCancel = useCallback(async () => {
@@ -113,7 +113,7 @@ export default function UserPwView(props: Props) {
       return
     }
 
-    if (pw.includes(`'`) || pw.includes(`"`) || pw.includes('`')) {
+    if (pw.includes("'") || pw.includes('"') || pw.includes('`')) {
       toast.warn('비밀번호에 따옴표를 포함할 수 없습니다')
       return
     }

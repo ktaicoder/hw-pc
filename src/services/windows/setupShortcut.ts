@@ -1,5 +1,5 @@
 import { BrowserWindow, globalShortcut } from 'electron'
-import localShortcut from 'electron-localshortcut'
+import * as localShortcut from 'electron-localshortcut'
 import { zoomIn, zoomOut } from '../libs/zoom'
 
 export const setupShortcut = (mainWindow: BrowserWindow) => {
