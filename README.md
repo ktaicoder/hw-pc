@@ -2,9 +2,43 @@
 
 AI Codiny에서 하드웨어 제어를 위한 PC용 프로그램입니다. `electron` 기반으로 구현되었습니다.
 
-## 사전 준비
+## 2023년 3월 새로운 환경
 
-- `yarn`을 기준으로 설명합니다.(`npm` 사용해도 됩니다)
+### 통신 프로토콜의 변경(HCP)
+- 그 동안 블록코딩과 PC 프로그램의 통신 방식은 `socket.io`를 사용해왔습니다. 하지만 안드로이드를 포함하여 다양한 하드웨어 및 프로그래밍 언어를 지원하기에는 `socket.io`는 부족하여, `raw websocket`위에 코디니 자체적으로 설계한 통신 프로토콜(HCP)을 사용하도록 변경했습니다. 이를 위해 하드웨어 제어 관련하여 많은 변경이 필요했고, 기존에 작성된 하드웨어의 소스코드들도 변경해야 했습니다.
+
+- 기존의 하드웨어 제어 코드들은 간소화하는 방향으로 변경했고, 작성법도 유사하여 크게 어려움이 없을 것 같습니다. 기존 하드웨어 소스 코드는 코디니 연구소에서 모두 수정했습니다.
+
+- PC 프로그램은 `electron` 기반으로 작성되었는데, 이번에 최신 버전으로 함께 업그래이드 했습니다. PC 프로그램의 주요 역할은 시리얼포트를 이용한 하드웨어 제어입니다. `serialport` 라이브러리도 최신 버전으로 업그래이드 했습니다.
+
+### 변경사항 요약
+
+변경사항을 요약하면 다음과 같습니다.
+
+|                 | 기존           | 2023년 3월부터 |
+| --------------- | -------------- | -------------- |
+| 통신            | socket.io      | websocket      |
+| electron        | 15.x           | 23.x           |
+| electron-forge  | 6.0.0-beta.64  | 6.0.5          |
+| node            | 16.x 이상      | 18.x 이상      |
+| React           | 17             | 18             |
+| Package Manager | yarn classic   | npm            |
+| serialport      | 9.x            | 10.x           |
+
+
+## Technical stacks
+
+- 패키지 매니저 npm 8.x
+- React 18
+- Electron 23.x
+- Electron-forge 6.x
+- Serialport 10.x
+- Mobx 6.x
+- RxJS 7.x
+- xterm 5.x
+- socket.io 4.6
+- mui 5.x
+
 
 ## Quick Start
 
@@ -13,8 +47,8 @@ AI Codiny에서 하드웨어 제어를 위한 PC용 프로그램입니다. `elec
 ```sh
 $  git clone https://github.com/ktaicoder/hw-pc.git
 $  cd hw-pc
-$  yarn install
-$  yarn dev
+$  npm install
+$  npm run dev
 ```
 
 
