@@ -1,10 +1,11 @@
 import { shell } from 'electron'
 import { injectable } from 'inversify'
 import path from 'path'
-import { BehaviorSubject, debounceTime, finalize, from, Subject, Subscription, switchMap } from 'rxjs'
+import { BehaviorSubject, finalize, from, Subject, Subscription, switchMap } from 'rxjs'
+import { codingpack } from 'src/codingpack'
 import { HardwareDescriptors } from 'src/custom'
 import { IHwInfo, ISerialPortInfo } from 'src/custom-types'
-import { IHwDescriptor, IHwServer, IUiLogMessage } from 'src/custom-types/basic-types'
+import { IHwDescriptor, IUiLogMessage } from 'src/custom-types/basic-types'
 import { HcpHwManager } from 'src/hcp/HcpHwManager'
 import { HcpWebSocketServer } from 'src/hcp/HcpWebSocketServer'
 import { CodingpackSocketIoServer } from 'src/hw-server/codingpack/CodingpackSocketIoServer'
@@ -17,7 +18,6 @@ import serviceIdentifier from '../serviceIdentifier'
 import { CodingpackHwManager } from './../../hw-server/codingpack/CodingpackHwManager'
 import { HwServerState, IHwService } from './interface'
 import { UiLogger } from './UiLogger'
-import { codingpack } from 'src/codingpack'
 
 type HwServer =
   | {
