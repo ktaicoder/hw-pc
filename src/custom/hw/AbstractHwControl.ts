@@ -51,7 +51,8 @@ export abstract class AbstractHwConrtol implements IHwControl {
   }
 
   /**
-   * 디바이스(serial)가 닫히기 직전에 자동으로 호출됩니다
+   * 디바이스(serial)가 닫히기 직전에 자동으로 호출됩니다.
+   * 디바이스는 강제로 분리되거나 오류가 발생할 수 있으므로 호출되지 않을 수도 있습니다.
    */
   onDeviceWillClose = async (ctx: any): Promise<void> => {
     // empty
