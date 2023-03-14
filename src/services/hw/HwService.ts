@@ -108,7 +108,7 @@ export class HwService implements IHwService {
       await server.stop()
       this.hwServer_ = undefined
     }
-    this.deviceStateManager_.reset(false) // 디바이스 상태 리셋
+    this.deviceStateManager_.reset() // 디바이스 상태 리셋
     this.hwServerState$.next({ running: false })
   }
 
