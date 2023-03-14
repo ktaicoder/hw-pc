@@ -153,6 +153,7 @@ export class HcpClientHandler {
   close = async () => {
     this.uiLogger_.i('HcpClientHandler.close()', 'called')
     await this.callWebSocketDisconnected_()
+    this.socket_.close()
     this.socket_.removeAllListeners()
     this.destroyTrigger$.next(true)
   }

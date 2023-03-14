@@ -88,7 +88,7 @@ export class CodingpackSocketIoServer implements IHwServer {
     io.disconnectSockets(true)
     io.removeAllListeners()
 
-    return new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       io.close((err) => {
         if (err) {
           console.log('ignore, socket.io-server close error:' + err.message)
