@@ -61,9 +61,6 @@ export class HwService implements IHwService {
 
   private subscription_?: Subscription | null = null
 
-  // 서버가 동작중인 상태에서만 사용되는 Subscription
-  private serverSubscription_?: Subscription | null = null
-
   private uiLogger_: UiLogger
 
   constructor() {
