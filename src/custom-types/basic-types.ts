@@ -131,6 +131,15 @@ export interface IHwDescriptor {
   info: IHwInfo
 }
 
+export type UiDeviceState = {
+  // 시리얼디바이스의 연결이 끊어졌을때 알림이 제대로 안오므로, connected는 사용불가
+  // connected: boolean
+  rxTimestamp: number
+  txTimestamp: number
+  txBytes: number
+  rxBytes: number
+}
+
 /**
  * UiLog는 디바이스 상세화면의 콘솔 UI의 로그를 의미합니다.
  * 로그 레벨(debug, info, warn, error)

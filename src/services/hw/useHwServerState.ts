@@ -4,10 +4,7 @@ import { HwServerState } from './interface'
 export function useHwServerState(): HwServerState | undefined {
   const [hwServerState, setHwServerState] = useState<HwServerState | undefined>()
   useEffect(() => {
-    const s1 = window.observables.hw.hwServerState$.subscribe((stat) => {
-      console.log('XXX useHwServerState() ', stat)
-      setHwServerState(stat)
-    })
+    const s1 = window.observables.hw.hwServerState$.subscribe(setHwServerState)
     return () => {
       s1.unsubscribe()
     }

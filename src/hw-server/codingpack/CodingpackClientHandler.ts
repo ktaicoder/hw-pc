@@ -1,4 +1,4 @@
-import { BehaviorSubject, filter, merge, Observable, Subscription, take, takeUntil, tap } from 'rxjs'
+import { BehaviorSubject, filter, merge, Observable, Subscription, take, takeUntil } from 'rxjs'
 import { Socket } from 'socket.io'
 import { ISerialDevice, IUiLogger } from 'src/custom-types'
 import { codingpackCommands } from 'src/domain/codingpack'
@@ -105,7 +105,9 @@ export class CodingpackClientHandler {
     // 웹소켓 연결이 끊어지면, onWebSocketDisconnected()호출
     const subscription = RxSocketIo.fromDisconnectEvent(this.socket_) //
       .pipe(takeUntil(this.destroyTrigger_()))
-      .subscribe(() => this.callWebSocketDisconnected_())
+      .subscribe(() => {
+        this.callWebSocketDisconnected_()
+      })
 
     this.subscription_ = this.subscription_ ?? new Subscription()
     this.subscription_.add(subscription)

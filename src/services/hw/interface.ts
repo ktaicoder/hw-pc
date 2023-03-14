@@ -1,6 +1,6 @@
 import { BehaviorSubject, Observable } from 'rxjs'
 import { HwChannel } from 'src/constants/channels'
-import { IHwInfo, ISerialPortInfo, IUiLogMessage } from 'src/custom-types/basic-types'
+import { IHwInfo, ISerialPortInfo, IUiLogMessage, UiDeviceState } from 'src/custom-types/basic-types'
 import { ProxyPropertyType } from 'src/electron-ipc-cat/common'
 
 export type HwServerState = {
@@ -11,6 +11,8 @@ export type HwServerState = {
 export interface IHwService {
   consoleMessage$: Observable<IUiLogMessage>
   hwServerState$: BehaviorSubject<HwServerState>
+  webSocketClientCount$: BehaviorSubject<number>
+  deviceState$: BehaviorSubject<UiDeviceState>
   stopServer(): Promise<void>
   getHwServerState(): Promise<HwServerState>
   serialPortList(hwId: string): Promise<ISerialPortInfo[]>
@@ -30,6 +32,9 @@ export const HwServiceIPCDescriptor = {
   properties: {
     consoleMessage$: ProxyPropertyType.Value$,
     hwServerState$: ProxyPropertyType.Value$,
+    webSocketClientCount$: ProxyPropertyType.Value$,
+    deviceConnected$: ProxyPropertyType.Value$,
+    deviceState$: ProxyPropertyType.Value$,
     stopServer: ProxyPropertyType.Function,
     getHwServerState: ProxyPropertyType.Function,
     serialPortList: ProxyPropertyType.Function,

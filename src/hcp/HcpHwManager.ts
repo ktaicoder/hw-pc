@@ -1,6 +1,8 @@
-import { BehaviorSubject, filter, Observable, take, takeUntil } from 'rxjs'
+import { BehaviorSubject, filter, Observable, of, switchMap, take, takeUntil } from 'rxjs'
 import { IHwControl, IHwDescriptor, ISerialDevice, IUiLogger } from 'src/custom-types'
+import { SerialDevice } from 'src/hw-server/serialport/SerialDevice'
 import { SerialDeviceManager } from 'src/hw-server/serialport/SerialDeviceManager'
+import { DeviceStateManager } from 'src/services/hw/DeviceStateManager'
 
 export class HcpHwManager {
   private readonly deviceManager_: SerialDeviceManager
@@ -11,6 +13,7 @@ export class HcpHwManager {
 
   constructor(
     public readonly hwDescriptor: IHwDescriptor, //
+    private readonly deviceStateMgr: DeviceStateManager,
     private readonly uiLogger: IUiLogger,
   ) {
     this.deviceManager_ = new SerialDeviceManager(hwDescriptor.hw, uiLogger)
@@ -27,6 +30,21 @@ export class HcpHwManager {
     return this.deviceManager_.observeDevice()
   }
 
+  /**
+   * device 연결 여부 관찰
+   */
+  observeOpenedOrNot = (): Observable<boolean> => {
+    return this.deviceManager_.observeDevice().pipe(
+      switchMap((device) => {
+        if (!device) {
+          return of(false)
+        }
+        return device.observeOpenedOrNot()
+      }),
+      takeUntil(this.stopTrigger$.pipe(filter((it) => it))),
+    )
+  }
+
   observeConnectedDevice = (): Observable<ISerialDevice> => {
     return this.deviceManager_.observeConnectedDevice()
   }
@@ -35,9 +53,20 @@ export class HcpHwManager {
     return this.deviceManager_.getConnectedSerialDevice()
   }
 
+  private onReadFromSerialDevice_ = (rxBytes: number) => {
+    this.deviceStateMgr.onRxOccured(rxBytes)
+  }
+
+  private onWriteToFromSerialDevice_ = (txBytes: number) => {
+    this.deviceStateMgr.onTxOccured(txBytes)
+  }
+
   openSerialPort = async (path: string) => {
     this.stopTrigger$.next(false)
-    await this.deviceManager_.open(path)
+    const device = (await this.deviceManager_.open(path)) as SerialDevice
+    device.setOnRead(this.onReadFromSerialDevice_)
+    device.setOnWrite(this.onWriteToFromSerialDevice_)
+
     this.observeConnectedDevice()
       .pipe(take(1), takeUntil(this.stopTrigger$.pipe(filter((it) => it))))
       .subscribe((device) => {

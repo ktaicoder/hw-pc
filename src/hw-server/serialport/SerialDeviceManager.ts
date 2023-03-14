@@ -12,12 +12,13 @@ export class SerialDeviceManager {
     private readonly uiLogger: IUiLogger,
   ) {}
 
-  open = async (serialPortPath: string) => {
+  open = async (serialPortPath: string): Promise<ISerialDevice> => {
     await this.close()
     this.uiLogger.d('SerialDeviceManager.open() try open:', serialPortPath)
     const device = this.hw.openDevice({ serialPortPath, uiLogger: this.uiLogger })
     this.lastDevice_ = device
     this.serialDevice$.setValue(device)
+    return device
   }
 
   close = async () => {

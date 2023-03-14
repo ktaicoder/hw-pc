@@ -137,7 +137,7 @@ export class MenuService implements IMenuService {
         submenu: [
           {
             label: () => 'LearnMore',
-            click: () => shell.openExternal('https://github.com/ktaicodingblock/aicodingblockhw'),
+            click: () => shell.openExternal('https://github.com/ktaicoder/hw-pc'),
           },
         ],
       },

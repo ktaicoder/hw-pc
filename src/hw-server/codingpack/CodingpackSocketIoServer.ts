@@ -1,8 +1,7 @@
-import { IHwServer } from './../../custom-types/basic-types'
 import { BehaviorSubject, Observable, Subject, Subscription, takeUntil } from 'rxjs'
 import { Server } from 'socket.io'
 import { CODINGPACK_LISTEN_PORT } from 'src/constants/server'
-import { IUiLogger } from 'src/custom-types'
+import { IHwServer, IUiLogger } from 'src/custom-types/basic-types'
 import { RxSocketIoServer } from 'src/util/RxSocketIoServer'
 import { createSocketIoServer } from '../util/createSocketIoServer'
 import { CodingpackClientHandler } from './CodingpackClientHandler'
@@ -27,8 +26,16 @@ export class CodingpackSocketIoServer implements IHwServer {
 
   private readonly uiLogger_: IUiLogger
 
-  constructor(hwManager: CodingpackHwManager, uiLogger: IUiLogger, opts?: { listenPort: number }) {
+  private readonly clientCount$: BehaviorSubject<number>
+
+  constructor(
+    clientCount$: BehaviorSubject<number>,
+    hwManager: CodingpackHwManager,
+    uiLogger: IUiLogger,
+    opts?: { listenPort: number },
+  ) {
     this.options_ = { ...(opts ?? DEFAULT_OPTIONS) }
+    this.clientCount$ = clientCount$
     this.hwManager_ = hwManager
     this.uiLogger_ = uiLogger
   }
@@ -49,7 +56,7 @@ export class CodingpackSocketIoServer implements IHwServer {
     return this.hwManager_
   }
 
-  private updateRunning = (running: boolean) => {
+  private updateRunning_ = (running: boolean) => {
     if (this.running$.value !== running) {
       this.running$.next(running)
     }
@@ -58,7 +65,7 @@ export class CodingpackSocketIoServer implements IHwServer {
   start = () => {
     if (this.io_) {
       console.log('already running')
-      this.updateRunning(true)
+      this.updateRunning_(true)
       return
     }
 
@@ -67,13 +74,17 @@ export class CodingpackSocketIoServer implements IHwServer {
     this.subscription_ = RxSocketIoServer.fromConnectionEvent(io)
       .pipe(takeUntil(this.destroyTrigger$))
       .subscribe((socket) => {
+        this.clientCount$.next(this.clientCount$.value + 1)
         CodingpackClientHandler.start(socket, this.destroyTrigger$, this.hwManager_)
+        socket.once('disconnect', () => {
+          this.clientCount$.next(this.clientCount$.value - 1)
+        })
       })
 
     const listenPort = this.options_.listenPort
     console.log('websocket server start listen:', listenPort)
     io.listen(listenPort)
-    this.updateRunning(true)
+    this.updateRunning_(true)
   }
 
   stop = async (): Promise<void> => {
@@ -95,9 +106,10 @@ export class CodingpackSocketIoServer implements IHwServer {
         } else {
           console.log('socket.io-server closed')
         }
-        this.updateRunning(false)
+        this.updateRunning_(false)
         resolve()
       })
     })
+    this.clientCount$.next(0)
   }
 }

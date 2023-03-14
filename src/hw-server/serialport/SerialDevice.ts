@@ -9,7 +9,6 @@ import {
   Subject,
   Subscription,
   switchMap,
-  take,
   takeUntil,
   timeout,
 } from 'rxjs'
@@ -28,6 +27,9 @@ function errmsg(err: any): string {
   return msg.toString()
 }
 
+type OnWriteFn = (bytes: number) => void
+type OnReadFn = (bytes: number) => void
+
 export class SerialDevice implements ISerialDevice {
   private debugTag_: string
 
@@ -45,6 +47,9 @@ export class SerialDevice implements ISerialDevice {
 
   private uiLogger_?: IUiLogger
 
+  private hookOnWrite_?: OnWriteFn
+  private hookOnRead_?: OnReadFn
+
   constructor(debugTag: string, uiLogger: IUiLogger) {
     this.uiLogger_ = uiLogger
     if (debugTag) {
@@ -56,6 +61,14 @@ export class SerialDevice implements ISerialDevice {
 
   private log_ = (message?: any, ...optionalParams: any[]) => {
     if (DEBUG) console.log(this.debugTag_, message, ...optionalParams)
+  }
+
+  setOnWrite = (fn: OnWriteFn | undefined) => {
+    this.hookOnWrite_ = fn
+  }
+
+  setOnRead = (fn: OnReadFn | undefined) => {
+    this.hookOnRead_ = fn
   }
 
   /**
@@ -193,6 +206,7 @@ export class SerialDevice implements ISerialDevice {
         next: (dataBuffer: Buffer) => {
           if (TRACE) console.log('SerialDevice.startReadLoop()', dataBuffer)
           this.uiLogger_?.d('RX', dataBuffer)
+          this.hookOnRead_?.(dataBuffer.byteLength)
           this.receivedData$.next({ timestamp: Date.now(), dataBuffer })
         },
         error: (err) => {
@@ -220,6 +234,7 @@ export class SerialDevice implements ISerialDevice {
     }
 
     try {
+      this.hookOnWrite_?.(values.length)
       await firstValueFrom(
         RxSerialPort.write(port, values) //
           .pipe(takeUntil(this.closeTrigger_())),

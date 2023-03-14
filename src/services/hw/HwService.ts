@@ -5,7 +5,7 @@ import { BehaviorSubject, finalize, from, Subject, Subscription, switchMap } fro
 import { codingpack } from 'src/codingpack'
 import { HardwareDescriptors } from 'src/custom'
 import { IHwInfo, ISerialPortInfo } from 'src/custom-types'
-import { IHwDescriptor, IUiLogMessage } from 'src/custom-types/basic-types'
+import { IHwDescriptor, IUiLogMessage, UiDeviceState } from 'src/custom-types/basic-types'
 import { HcpHwManager } from 'src/hcp/HcpHwManager'
 import { HcpWebSocketServer } from 'src/hcp/HcpWebSocketServer'
 import { CodingpackSocketIoServer } from 'src/hw-server/codingpack/CodingpackSocketIoServer'
@@ -16,6 +16,7 @@ import { IContextService } from '../context/interface'
 import { ISerialPortService } from '../serialport/interface'
 import serviceIdentifier from '../serviceIdentifier'
 import { CodingpackHwManager } from './../../hw-server/codingpack/CodingpackHwManager'
+import { DeviceStateManager } from './DeviceStateManager'
 import { HwServerState, IHwService } from './interface'
 import { UiLogger } from './UiLogger'
 
@@ -41,6 +42,17 @@ export class HwService implements IHwService {
 
   public consoleMessage$ = new Subject<IUiLogMessage>()
 
+  public webSocketClientCount$ = new BehaviorSubject(0)
+
+  public deviceState$ = new BehaviorSubject<UiDeviceState>({
+    txTimestamp: 0,
+    txBytes: 0,
+    rxTimestamp: 0,
+    rxBytes: 0,
+  })
+
+  private deviceStateManager_ = new DeviceStateManager()
+
   public hwDescriptor$ = new ObservableField<IHwDescriptor | null>(null)
 
   public serialPortPath$ = new ObservableField<string | null>(null)
@@ -48,6 +60,9 @@ export class HwService implements IHwService {
   private hwServer_: HwServer | undefined
 
   private subscription_?: Subscription | null = null
+
+  // 서버가 동작중인 상태에서만 사용되는 Subscription
+  private serverSubscription_?: Subscription | null = null
 
   private uiLogger_: UiLogger
 
@@ -69,6 +84,11 @@ export class HwService implements IHwService {
       )
       .subscribe()
 
+    subscription.add(
+      this.deviceStateManager_.observe().subscribe((data) => {
+        this.deviceState$.next(data)
+      }),
+    )
     this.subscription_ = subscription
     this.uiLogger_ = new UiLogger(this.consoleMessage$)
   }
@@ -88,7 +108,7 @@ export class HwService implements IHwService {
       await server.stop()
       this.hwServer_ = undefined
     }
-
+    this.deviceStateManager_.reset(false) // 디바이스 상태 리셋
     this.hwServerState$.next({ running: false })
   }
 
@@ -96,12 +116,13 @@ export class HwService implements IHwService {
     await this.stopServer_()
 
     this.uiLogger_.i('HwService', 'startHcpServer()')
-    const hcpHwManager = new HcpHwManager(hwDescriptor, this.uiLogger_)
-    const server = createHcpServer(this.uiLogger_, hcpHwManager)
+    const hcpHwManager = new HcpHwManager(hwDescriptor, this.deviceStateManager_, this.uiLogger_)
+    const server = createHcpServer(this.webSocketClientCount$, this.uiLogger_, hcpHwManager)
     this.hwServer_ = { kind: 'hcp', server }
 
     server.start()
     this.hwServerState$.next({ hwId: hwDescriptor.hwId, running: true })
+
     return server
   }
 
@@ -110,11 +131,12 @@ export class HwService implements IHwService {
 
     this.uiLogger_.i('HwService', 'startCodingpackServer()')
     const hwManager = new CodingpackHwManager(this.uiLogger_)
-    const server = new CodingpackSocketIoServer(hwManager, this.uiLogger_)
+    const server = new CodingpackSocketIoServer(this.webSocketClientCount$, hwManager, this.uiLogger_)
     this.hwServer_ = { kind: 'codingpack', server }
 
     server.start()
     this.hwServerState$.next({ hwId: hwDescriptor.hwId, running: true })
+
     return server
   }
 

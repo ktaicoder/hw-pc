@@ -1,9 +1,9 @@
 import { BehaviorSubject, Observable } from 'rxjs'
-import { WebSocket, WebSocketServer, ServerOptions } from 'ws'
+import { IHwServer, IUiLogger } from 'src/custom-types'
 import { v4 as uuidv4 } from 'uuid'
+import { ServerOptions, WebSocket, WebSocketServer } from 'ws'
 import { HcpClientHandler } from './HcpClientHandler'
 import { HcpHwManager } from './HcpHwManager'
-import { IHwServer, IUiLogger } from 'src/custom-types'
 
 function errmsg(err: any): string {
   if (typeof err === undefined || err === null) return ''
@@ -25,12 +25,20 @@ export class HcpWebSocketServer implements IHwServer {
 
   private running$ = new BehaviorSubject(false)
 
+  private readonly clientCount$: BehaviorSubject<number>
+
   private readonly uiLogger_: IUiLogger
 
-  constructor(opts: ServerOptions, uiLogger: IUiLogger, hcpHwManager: HcpHwManager) {
+  constructor(
+    opts: ServerOptions,
+    clientCount$: BehaviorSubject<number>,
+    uiLogger: IUiLogger,
+    hcpHwManager: HcpHwManager,
+  ) {
     this.options = { ...opts }
     this.hcpHwManager_ = hcpHwManager
     this.uiLogger_ = uiLogger
+    this.clientCount$ = clientCount$
   }
 
   getHwId = () => {
@@ -65,6 +73,7 @@ export class HcpWebSocketServer implements IHwServer {
     this.uiLogger_.i(logTag, `onConnected() ${clientId}`)
     const handler = new HcpClientHandler(clientId, sock, this.uiLogger_, this.hcpHwManager_)
     this.registerHandler_(handler)
+    this.clientCount$.next(this.clientCount$.value + 1)
     sock.once('close', (reason) => {
       this.unregisterHandler_(clientId)
       this.onDisconnected_(clientId, reason)
@@ -74,6 +83,7 @@ export class HcpWebSocketServer implements IHwServer {
   private onDisconnected_ = (clientId: string, reason: number) => {
     const logTag = 'HcpWebSocketServer'
     this.uiLogger_.w(logTag, `onDisconnected() reason=${reason}, ${clientId}`)
+    this.clientCount$.next(this.clientCount$.value - 1)
   }
 
   private registerHandler_ = (handler: HcpClientHandler) => {
@@ -109,6 +119,7 @@ export class HcpWebSocketServer implements IHwServer {
       s.removeAllListeners()
       this.server_ = null
     }
+    this.clientCount$.next(0)
     await this.hcpHwManager_.close()
     this.running$.next(false)
   }
