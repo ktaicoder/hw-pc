@@ -9,6 +9,8 @@ import { useUiLog } from 'src/services/hw/useUiLog'
 import { ITerminalOptions, Terminal } from 'xterm'
 import { DEFAULT_TERM_OPTIONS, toTermHexLine } from './xterm-util'
 
+const TERM_MAX_LINES = 10000
+
 const TERM_OPTIONS: ITerminalOptions = {
   cursorStyle: 'underline',
   ...DEFAULT_TERM_OPTIONS,
@@ -41,6 +43,7 @@ export default function ConsoleView(props: Props) {
 
   // 터미널 폰트가 로드된 후
   useEffect(() => {
+    let lineCount = 0
     const s1 = uiLogManager.observeMessage().subscribe((msg) => {
       if (disabledRef.current) return
 
@@ -49,7 +52,13 @@ export default function ConsoleView(props: Props) {
         return
       }
       appendTermLine(termRef.current, msg)
+      lineCount++
+      if (lineCount > TERM_MAX_LINES) {
+        termRef.current?.clear()
+        lineCount = 0
+      }
     })
+    termRef.current?.scrollLines
     return () => {
       s1.unsubscribe()
     }
