@@ -1,5 +1,8 @@
-import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked'
-import { Box, ButtonBase, SxProps, Typography } from '@mui/material'
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
+import CheckBoxIcon from '@mui/icons-material/CheckBox'
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
+import { Box, ButtonBase, Stack, SxProps, Tooltip, Typography } from '@mui/material'
 import chalk from 'chalk'
 import { useEffect, useRef } from 'react'
 import { useUpdate } from 'react-use'
@@ -58,7 +61,6 @@ export default function ConsoleView(props: Props) {
         lineCount = 0
       }
     })
-    termRef.current?.scrollLines
     return () => {
       s1.unsubscribe()
     }
@@ -76,6 +78,20 @@ export default function ConsoleView(props: Props) {
   const handleClickRxVisibleBtn = () => {
     rxVisibleRef.current = !rxVisibleRef.current
     refresh()
+  }
+
+  // 콘솔 스크롤업 버튼 클릭
+  const handleClickScrollUpBtn = () => {
+    const term = termRef.current
+    if (!term) return
+    term.scrollToTop()
+  }
+
+  // 콘솔 스크롤다운 버튼 클릭
+  const handleClickScrollBottomBtn = () => {
+    const term = termRef.current
+    if (!term) return
+    term.scrollToBottom()
   }
 
   return (
@@ -116,52 +132,82 @@ export default function ConsoleView(props: Props) {
           }}
         />
       </Box>
-      <Box
+      <Stack
+        direction="row"
+        justifyContent="center"
+        alignItems="center"
+        spacing={1}
         sx={{
           position: 'absolute',
           top: 2,
           left: 0,
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'center',
-          alignItems: 'center',
         }}
       >
-        <ButtonBase
-          onClick={handleClickConsoleClearBtn}
-          component="div"
-          sx={{
-            background: 'transparent',
-            border: '1px solid #fff8',
-            color: '#eee',
-            fontSize: '0.80rem',
-            borderRadius: 1,
-            py: '2px',
-            px: 1,
-          }}
-        >
-          지우기
-        </ButtonBase>
-        <ButtonBase
-          onClick={handleClickRxVisibleBtn}
-          component="div"
-          sx={{
-            ml: 2,
-            background: 'transparent',
-            border: rxVisibleRef.current ? 'none' : '1px solid #fff8',
-            borderRadius: 1,
-            color: rxVisibleRef.current ? 'error.main' : '#ccc',
-            fontSize: '0.80rem',
-            py: '2px',
-            px: 1,
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          {rxVisibleRef.current && <RadioButtonCheckedIcon sx={{ mr: 1 }} />}
-          <Typography>RX 표시</Typography>
-        </ButtonBase>
-      </Box>
+        <Tooltip title="위로 스크롤">
+          <ButtonBase
+            onClick={handleClickScrollUpBtn}
+            component="div"
+            sx={{
+              background: 'transparent',
+              borderRadius: '50%',
+              color: '#ccc',
+              p: 1,
+            }}
+          >
+            <ArrowUpwardIcon sx={{ fontSize: '1rem' }} />
+          </ButtonBase>
+        </Tooltip>
+        <Tooltip title="아래로 스크롤">
+          <ButtonBase
+            onClick={handleClickScrollBottomBtn}
+            component="div"
+            sx={{
+              background: 'transparent',
+              borderRadius: '50%',
+              color: '#ccc',
+              p: 1,
+            }}
+          >
+            <ArrowDownwardIcon sx={{ fontSize: '1rem' }} />
+          </ButtonBase>
+        </Tooltip>
+        <Tooltip title="콘솔 지우기">
+          <ButtonBase
+            onClick={handleClickConsoleClearBtn}
+            component="div"
+            sx={{
+              background: 'transparent',
+              color: '#ccc',
+              fontSize: '0.80rem',
+              borderRadius: 1,
+              py: '2px',
+              px: 1,
+            }}
+          >
+            CLEAR
+          </ButtonBase>
+        </Tooltip>
+        <Tooltip title="RX 데이터 표시">
+          <ButtonBase
+            onClick={handleClickRxVisibleBtn}
+            component="div"
+            sx={{
+              background: 'transparent',
+              borderRadius: 1,
+              color: rxVisibleRef.current ? 'error.main' : '#ccc',
+              fontSize: '0.80rem',
+              py: '2px',
+              px: 1,
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            {rxVisibleRef.current && <CheckBoxIcon sx={{ mr: 1 }} />}
+            {!rxVisibleRef.current && <CheckBoxOutlineBlankIcon sx={{ mr: 1 }} />}
+            <Typography>RX</Typography>
+          </ButtonBase>
+        </Tooltip>
+      </Stack>
     </Box>
   )
 }
