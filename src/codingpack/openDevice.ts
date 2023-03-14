@@ -14,7 +14,8 @@ export function isPortMatch(port: ISerialPortInfo, logger?: IUiLogger): boolean 
   // const { manufacturer, productId, vendorId } = port
   const { manufacturer = '' } = port
 
-  const matched = ['wch.cn'].includes(manufacturer.toLowerCase())
+  const manufacturerLower = manufacturer.toLowerCase()
+  const matched = ['wch.cn'].some((it) => manufacturerLower.includes(it))
 
   // 로그
   //   if (logger) {

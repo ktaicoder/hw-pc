@@ -15,17 +15,12 @@ export function isPortMatch(portInfo: ISerialPortInfo): boolean {
   // const { path, manufacturer, productId, vendorId } = port
   const { manufacturer = '' } = portInfo
 
-  let matched = false
-
   // altino는 블루투스 SPP(serial port profile)라서,
   // 매칭 규칙을 설정할 수 없으니, 기본적으로 모두 허용합니다.
   // 하지만, 유명한 몇 개만 걸러내도 사용자에게 유용할 것 같습니다.
   // silicon labs(CP210)와 wch.cn(CH340)을 걸러냅니다.
-  if (['silicon labs', 'wch.cn'].includes(manufacturer.toLowerCase())) {
-    matched = false
-  } else {
-    matched = true
-  }
+  const manufacturerLower = manufacturer.toLowerCase()
+  const matched = ['silicon labs', 'wch.cn'].some((it) => manufacturerLower.includes(it))
 
   return matched
 }

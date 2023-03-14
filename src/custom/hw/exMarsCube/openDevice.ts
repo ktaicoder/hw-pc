@@ -14,7 +14,8 @@ export function isPortMatch(port: ISerialPortInfo): boolean {
   // const { manufacturer, productId, vendorId } = port
   const { manufacturer = '' } = port
 
-  const matched = ['wch.cn'].includes(manufacturer.toLowerCase())
+  const manufacturerLower = manufacturer.toLowerCase()
+  const matched = ['wch.cn'].some((it) => manufacturerLower.includes(it))
 
   return matched
 }

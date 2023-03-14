@@ -17,8 +17,8 @@ export function isPortMatch(port: ISerialPortInfo): boolean {
   const { manufacturer = '' } = port
 
   // silicon labs(CP210)만 허용
-  const matched = ['silicon labs'].includes(manufacturer.toLowerCase())
-
+  const manufacturerLower = manufacturer.toLowerCase()
+  const matched = ['silicon labs'].some((it) => manufacturerLower.includes(it))
   return matched
 }
 
