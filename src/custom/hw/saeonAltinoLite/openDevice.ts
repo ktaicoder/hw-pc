@@ -20,7 +20,7 @@ export function isPortMatch(portInfo: ISerialPortInfo): boolean {
   // 하지만, 유명한 몇 개만 걸러내도 사용자에게 유용할 것 같습니다.
   // silicon labs(CP210)와 wch.cn(CH340)을 걸러냅니다.
   const manufacturerLower = manufacturer.toLowerCase()
-  const matched = ['silicon labs', 'wch.cn'].some((it) => manufacturerLower.includes(it))
+  const matched = ['silicon labs', 'wch.cn'].every((it) => !manufacturerLower.includes(it))
 
   return matched
 }

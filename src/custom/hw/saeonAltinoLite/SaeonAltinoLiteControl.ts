@@ -90,6 +90,7 @@ export class SaeonAltinoLiteControl extends AbstractHwConrtol implements ISaeonA
         }
         if (!device.isOpened()) {
           this.log(ctx).i(logTag, 'not opened')
+          stateHolder.writing = false
           return
         }
         stateHolder.writing = true
