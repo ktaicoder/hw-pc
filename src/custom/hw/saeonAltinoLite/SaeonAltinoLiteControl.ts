@@ -5,6 +5,7 @@ import {
   interval,
   map,
   Observable,
+  sampleTime,
   Subscription,
   switchMap,
   take,
@@ -80,7 +81,7 @@ export class SaeonAltinoLiteControl extends AbstractHwConrtol implements ISaeonA
             return EMPTY
           }
         }),
-        // sample(interval(50)), // 50ms 샘플링
+        sampleTime(50), // 50ms 샘플링
         takeUntil(this.closeTrigger()),
       )
       .subscribe(() => {
@@ -143,7 +144,7 @@ export class SaeonAltinoLiteControl extends AbstractHwConrtol implements ISaeonA
             return EMPTY
           }
         }),
-        // sample(interval(50)), // 50ms 샘플링
+        sampleTime(50), // 50ms 샘플링
         map((it) => it.dataBuffer),
         takeUntil(this.closeTrigger()),
       )
