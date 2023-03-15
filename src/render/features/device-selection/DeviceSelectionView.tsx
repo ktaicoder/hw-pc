@@ -1,24 +1,20 @@
 import CloseIcon from '@mui/icons-material/Close'
-import DesktopAccessDisabledIcon from '@mui/icons-material/DesktopAccessDisabled'
-import ImportantDevicesIcon from '@mui/icons-material/ImportantDevices'
 import TerminalIcon from '@mui/icons-material/Terminal'
-import { Box, Button, Container, Grid, Stack, Tooltip, Typography } from '@mui/material'
+import { Box, Button, Container, Grid } from '@mui/material'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { PulseLoader } from 'react-spinners'
 import { interval } from 'rxjs'
 import { IHwInfo, ISerialPortInfo, PcDriver } from 'src/custom-types/basic-types'
 import Image from 'src/render/components/Image'
-import { useTimeoutData } from 'src/render/hooks/useTimeoutData'
 import { usePromiseValue } from 'src/render/util/useServiceValue'
 import { IContext } from 'src/services/context/interface'
-import { useDeviceState } from 'src/services/hw/useDeviceState'
 import { useHwServerState } from 'src/services/hw/useHwServerState'
-import { useWebSocketClientCount } from 'src/services/hw/useWebSocketClientCount'
 import ConnectedMessageView from './components/ConnectedMessageView'
 import ConsoleView from './components/ConsoleView'
 import NotConnectedMessageView from './components/NotConnectedMessageView'
 import PortsView from './components/PortsView'
 import ToolbarView from './components/ToolbarView'
+import TxRxView from './components/TxRxView'
 
 type Props = {
   hwInfo: IHwInfo
@@ -50,12 +46,6 @@ export default function DeviceSelectionView(props: Props) {
   const [portInfo, setPortInfo] = useState<ISerialPortInfo>()
   const [refreshToken, setRefreshToken] = useState(0)
   const [consoleCollapsed, setConsoleCollapsed] = useState(true)
-  const webSocketClientCount = useWebSocketClientCount()
-  const deviceState = useDeviceState()
-  const [txVisible, setTxVisible] = useTimeoutData<boolean>(1000)
-  const [rxVisible, setRxVisible] = useTimeoutData<boolean>(1000)
-
-  const { rxTimestamp, txTimestamp } = deviceState
 
   const portCheckInterval = portInfos.length === 0 ? 5000 : 7000
 
@@ -85,22 +75,6 @@ export default function DeviceSelectionView(props: Props) {
       }
     }
   }, [portInfo, portInfos])
-
-  useEffect(() => {
-    const timestamp = txTimestamp
-    const diff = Date.now() - timestamp
-    if (diff < 700) {
-      setTxVisible(true)
-    }
-  }, [txTimestamp, setTxVisible])
-
-  useEffect(() => {
-    const timestamp = rxTimestamp
-    const diff = Date.now() - timestamp
-    if (diff < 700) {
-      setRxVisible(true)
-    }
-  }, [rxTimestamp, setRxVisible])
 
   useEffect(() => {
     const hwId = info.hwId
@@ -268,34 +242,13 @@ export default function DeviceSelectionView(props: Props) {
           </Container>
         </Box>
       </Box>
-      <Stack
-        direction="row"
-        alignItems="center"
-        spacing={2}
+      <TxRxView
         sx={{
           position: 'absolute',
           top: 56,
           right: 16,
         }}
-      >
-        <Tooltip title="TX: 장치에 송신중">
-          <Typography sx={{ fontSize: '0.8rem', color: txVisible ? '#009688' : '#aaa' }}>TX</Typography>
-        </Tooltip>
-
-        <Tooltip title="RX: 장치로부터 수신중">
-          <Typography sx={{ fontSize: '0.8rem', color: rxVisible ? '#009688' : '#aaa' }}>RX</Typography>
-        </Tooltip>
-
-        {webSocketClientCount > 0 ? (
-          <Tooltip title="블록코딩 연결됨">
-            <ImportantDevicesIcon sx={{ fontSize: '1.1rem', color: '#009688' }} />
-          </Tooltip>
-        ) : (
-          <Tooltip title="블록코딩과 연결안됨">
-            <DesktopAccessDisabledIcon sx={{ fontSize: '1.1rem', color: '#aaa' }} />
-          </Tooltip>
-        )}
-      </Stack>
+      />
       <Box
         sx={{
           position: 'absolute',
