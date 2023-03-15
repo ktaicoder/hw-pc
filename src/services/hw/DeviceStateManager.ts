@@ -1,5 +1,5 @@
 import { ObservableField } from 'src/util/ObservableField'
-import { combineLatest, map, Observable, tap } from 'rxjs'
+import { combineLatest, map, Observable, tap, throttleTime } from 'rxjs'
 
 export class DeviceStateManager {
   private txBytes$ = new ObservableField(0)
@@ -8,12 +8,12 @@ export class DeviceStateManager {
   private rxTimestamp$ = new ObservableField(0)
 
   onTxOccured = (bytes: number) => {
-    this.txBytes$.setValue((p) => p + bytes)
+    this.txBytes$.setValue(bytes)
     this.txTimestamp$.setValue(Date.now())
   }
 
   onRxOccured = (bytes: number) => {
-    this.rxBytes$.setValue((p) => p + bytes)
+    this.rxBytes$.setValue(bytes)
     this.rxTimestamp$.setValue(Date.now())
   }
 
@@ -36,6 +36,7 @@ export class DeviceStateManager {
       this.rxBytes$.observe(),
       this.rxTimestamp$.observe(),
     ]).pipe(
+      throttleTime(150, undefined, { leading: true, trailing: true }),
       map(([txBytes, txTimestamp, rxBytes, rxTimestamp]) => ({
         txBytes,
         txTimestamp,
