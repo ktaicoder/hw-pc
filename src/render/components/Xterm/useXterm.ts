@@ -9,15 +9,13 @@ export function useXterm(options?: ITerminalOptions) {
   const [fitAddon, setFitAddon] = useState<FitAddon>()
   const optionsRef = useRef<ITerminalOptions | undefined>(options)
   const [_, copyToClipboard] = useCopyToClipboard()
-  const loadTerminal = useCallback(
-    async (options?: ITerminalOptions) => {
-      const terminal = await import('xterm').then((m) => new m.Terminal(options))
-      const fitAddon = await import('xterm-addon-fit').then((m) => new m.FitAddon())
-      setFitAddon(fitAddon)
-      setTerminal(terminal)
-    },
-    [copyToClipboard],
-  )
+
+  const loadTerminal = useCallback(async (options?: ITerminalOptions) => {
+    const terminal = await import('xterm').then((m) => new m.Terminal(options))
+    const fitAddon = await import('xterm-addon-fit').then((m) => new m.FitAddon())
+    setFitAddon(fitAddon)
+    setTerminal(terminal)
+  }, [])
 
   useEffect(() => {
     loadTerminal(optionsRef.current)
@@ -55,7 +53,7 @@ export function useXterm(options?: ITerminalOptions) {
     return () => {
       disaposable.dispose()
     }
-  }, [terminal])
+  }, [copyToClipboard, terminal])
 
   return { fitAddon, terminal }
 }
