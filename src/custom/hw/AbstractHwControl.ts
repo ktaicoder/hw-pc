@@ -1,6 +1,5 @@
-import { IHwControl } from 'src/custom-types'
 import { filter, firstValueFrom, map, take } from 'rxjs'
-import { IUiLogger } from 'src/custom-types'
+import { IHwControl, IUiLogger } from 'src/custom-types'
 import { SerialDevice } from 'src/hw-server/serialport/SerialDevice'
 
 export abstract class AbstractHwConrtol implements IHwControl {
