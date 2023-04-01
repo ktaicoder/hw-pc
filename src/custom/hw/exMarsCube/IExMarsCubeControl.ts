@@ -1,3 +1,14 @@
+export type Packet = Array<number>
+export enum Color {
+  off = 'O',
+  red = 'R',
+  green = 'G',
+  blue = 'B',
+  yellow = 'Y',
+  purple = 'P',
+  white = 'W',
+  skip = 'S',
+}
 export enum Index {
   menu = 0,
   face = 7,
@@ -15,7 +26,6 @@ export enum Action {
   faceResetAll,
   faceMoveWithMotor,
 }
-
 export enum Rotation {
   zero,
   thirty,
@@ -25,7 +35,6 @@ export enum Rotation {
   aHundredFifty,
   aHundredEighty,
 }
-
 export enum FaceColor {
   white,
   yellow,
@@ -35,7 +44,6 @@ export enum FaceColor {
   purple,
   all = 7,
 }
-
 export enum CellColor {
   off,
   red,
@@ -46,17 +54,63 @@ export enum CellColor {
   white,
   skip,
 }
-
-export enum Direction {
+export enum DirectionState {
   brake,
   cw,
   ccw,
   passive,
 }
-
+export enum DirectionFromFace {
+  forwardCW,
+  forwardCCW,
+  rightCW,
+  rightCCW,
+  leftCW,
+  leftCCW,
+  upCW,
+  upCCW,
+  downCW,
+  donwCCW,
+  backwardCW,
+  backwardCCW,
+}
+export enum Pitch {
+  C,
+  CSharp,
+  D,
+  DSharp,
+  E,
+  F,
+  FSharp,
+  G,
+  GSharp,
+  A,
+  ASharp,
+  B,
+  Rest,
+}
+export enum Switch {
+  Off,
+  On,
+}
 export enum Mode {
   main,
   sub,
+}
+export enum Record {
+  normal,
+  fifthRelay,
+  halfBlind,
+  fullBlind,
+  timePenalty,
+  twenty_twentyEightMode,
+  minimumRotation,
+  zeroTwoMode,
+}
+export enum PacketType {
+  sendUSB = 11,
+  sendByte = 7,
+  received = 7,
 }
 
 /**
@@ -123,6 +177,11 @@ export interface IExMarsCubeControl {
    * 모든 색상을 초기화하기
    */
   setResetAllFace(ctx: any): Promise<void>
+
+  /**
+   * 모든 회전값을 초기화하기
+   */
+  setResetRotation(ctx: any): Promise<void>
 
   /**
    * face 면의 가운데 셀 LED 색상을 color 으로 바꾸기
@@ -193,6 +252,11 @@ export interface IExMarsCubeControl {
    * mode 기록 가져오기
    */
   setReturnModeRecord(ctx: any, mode: string): Promise<void>
+
+  /**
+   * 주사위 숫자를 %1 로 바로 시작하기
+   */
+  setDiceStart(ctx: any, dice: string): Promise<void>
 
   /**
    * 주사위 숫자 기록 가져오기
