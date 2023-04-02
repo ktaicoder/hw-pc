@@ -45,8 +45,8 @@ const output = {
 }
 
 export class SaeonAltinoLiteControl extends AbstractHwConrtol implements ISaeonAltinoLiteControl {
-  private tx_d: Array<number> = [0x02, 16, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x03]
-  private rx_d: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  private tx_d = [0x02, 16, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x03]
+  private rx_d = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
   private rxSubscription_: Subscription | undefined
 
@@ -122,9 +122,11 @@ export class SaeonAltinoLiteControl extends AbstractHwConrtol implements ISaeonA
           .write(this.tx_d)
           .catch((err) => {
             this.log(ctx).w(logTag, `write fail: ${err.message}`)
-          })
-          .finally(() => {
             stateHolder.writing = false
+          })
+          .then((success) => {
+            stateHolder.writing = false
+            if (TRACE) this.log(ctx).i(logTag, `TX FINISHED ${success ? 'success' : 'fail'}`)
           })
       })
   }
