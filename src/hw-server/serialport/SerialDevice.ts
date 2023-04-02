@@ -224,7 +224,7 @@ export class SerialDevice implements ISerialDevice {
   write = async (values: Buffer | number[]): Promise<boolean> => {
     const logTag = `${this.debugTag_}SerialDevice.write()`
 
-    this.uiLogger_?.d(logTag, values)
+    // this.uiLogger_?.d(logTag, values)
 
     const port = this.port_
     if (!port) {

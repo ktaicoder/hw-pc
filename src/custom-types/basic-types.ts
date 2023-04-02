@@ -71,6 +71,13 @@ export interface IHwInfo {
   email?: string
   pcDrivers: PcDriver[]
   firmwareFile?: string
+
+  /**
+   * 시리얼포트 자동 선택 여부
+   * 시리얼포트 목록을 로드할 때 자동으로 시리얼 포트를 자동으로 선택합니다.
+   * 특별한 경우가 아니라면 true로 설정하세요.
+   */
+  autoSelect: boolean
 }
 
 export interface ISerialDeviceOpenParams {

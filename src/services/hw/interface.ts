@@ -23,8 +23,9 @@ export interface IHwService {
   infoList(): Promise<IHwInfo[]>
   isReadable(hwId: string, portPath: string): Promise<boolean>
   selectHw(hwId: string): Promise<void>
-  unselectHw(hwId: string): Promise<void>
+  unselectHw(): Promise<void>
   selectSerialPort(hwId: string, portPath: string): Promise<void>
+  unselectSerialPort(): Promise<void>
 }
 
 export const HwServiceIPCDescriptor = {
@@ -47,5 +48,6 @@ export const HwServiceIPCDescriptor = {
     selectHw: ProxyPropertyType.Function,
     unselectHw: ProxyPropertyType.Function,
     selectSerialPort: ProxyPropertyType.Function,
+    unselectSerialPort: ProxyPropertyType.Function,
   },
 }

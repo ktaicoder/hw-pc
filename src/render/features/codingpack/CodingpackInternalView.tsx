@@ -111,14 +111,14 @@ export default function CodingpackInternalView(props: Props) {
   }, [info.hwId, portInfo])
 
   useUnmount(() => {
-    window.service.hw.unselectHw(info.hwId)
+    window.service.hw.unselectHw()
   })
 
   useEffect(() => {
     loadPorts(info.hwId)
   }, [refreshToken, loadPorts, info.hwId])
 
-  const _onClickPort = (port: PortInfo) => {
+  const handleSelectPort = (port: PortInfo | undefined) => {
     setPortInfo(port)
   }
 
@@ -187,8 +187,9 @@ export default function CodingpackInternalView(props: Props) {
             <PortsView
               portInfos={portInfos}
               portPath={portInfo?.path}
-              onClickPort={_onClickPort}
+              onSelectPort={handleSelectPort}
               onClickRefresh={() => setRefreshToken(Date.now())}
+              showEmptyMenu={false}
             />
           </Grid>
           <Grid item xs={4} md={5}>

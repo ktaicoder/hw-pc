@@ -18,6 +18,7 @@ const info: IHwInfo = {
       'win32-x64': 'CP210x_Universal_Windows_Driver/CP210xVCPInstaller_x64.exe',
     },
   ],
+  autoSelect: true,
 }
 
 export const wiseXboardPremium: IHwDescriptor = {

@@ -1,11 +1,11 @@
 import CloseIcon from '@mui/icons-material/Close'
 import TerminalIcon from '@mui/icons-material/Terminal'
 import { Box, Button, Container, Grid } from '@mui/material'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { PulseLoader } from 'react-spinners'
-import { interval } from 'rxjs'
 import { IHwInfo, ISerialPortInfo, PcDriver } from 'src/custom-types/basic-types'
 import Image from 'src/render/components/Image'
+import useSerialPortList from 'src/render/hooks/useSerialPortList'
 import { usePromiseValue } from 'src/render/util/useServiceValue'
 import { IContext } from 'src/services/context/interface'
 import { useHwServerState } from 'src/services/hw/useHwServerState'
@@ -42,12 +42,13 @@ function isNullish(t: any): boolean {
 export default function DeviceSelectionView(props: Props) {
   const { hwInfo: info } = props
   const context = usePromiseValue<IContext | undefined>(async () => await window.service.context.getAll(), undefined)
-  const [portInfos, setPortInfos] = useState<ISerialPortInfo[]>([])
   const [portInfo, setPortInfo] = useState<ISerialPortInfo>()
   const [refreshToken, setRefreshToken] = useState(0)
   const [consoleCollapsed, setConsoleCollapsed] = useState(true)
 
-  const portCheckInterval = portInfos.length === 0 ? 5000 : 7000
+  const autoSelect = info.autoSelect
+
+  const portInfos = useSerialPortList(info.hwId, refreshToken)
 
   const pcDrivers = useMemo<PcDriverMatched[]>(() => {
     if (!context) return []
@@ -56,49 +57,33 @@ export default function DeviceSelectionView(props: Props) {
 
   const hwServerState = useHwServerState()
 
-  const loadPorts = useCallback(async (hwId: string) => {
-    const ports = await window.service.hw.serialPortList(hwId)
-    setPortInfos(ports ?? [])
-  }, [])
-
   useEffect(() => {
     const newPorts = portInfos
     const prevPort = portInfo
     if (newPorts.length > 0) {
-      const found = prevPort ? newPorts.find((it) => it.path === prevPort.path) : undefined
-      if (!found) {
-        setPortInfo(newPorts[0])
+      if (autoSelect) {
+        const found = prevPort ? newPorts.find((it) => it.path === prevPort.path) : undefined
+        if (!found) {
+          setPortInfo(newPorts[0])
+        }
       }
     } else {
       if (prevPort) {
         setPortInfo(undefined)
       }
     }
-  }, [portInfo, portInfos])
-
-  useEffect(() => {
-    const hwId = info.hwId
-    const s1 = interval(portCheckInterval).subscribe(() => {
-      loadPorts(hwId)
-    })
-    return () => {
-      s1.unsubscribe()
-    }
-  }, [info.hwId, loadPorts, portCheckInterval])
+  }, [autoSelect, portInfo, portInfos])
 
   useEffect(() => {
     if (!portInfo) {
+      window.service.hw.unselectSerialPort()
       return
     }
     const hwId = info.hwId
     window.service.hw.selectSerialPort(hwId, portInfo.path)
   }, [info.hwId, portInfo])
 
-  useEffect(() => {
-    loadPorts(info.hwId)
-  }, [refreshToken, loadPorts, info.hwId])
-
-  const handleClickPort = (port: ISerialPortInfo) => {
+  const handleSelectPort = (port: ISerialPortInfo | undefined) => {
     setPortInfo(port)
   }
 
@@ -117,6 +102,10 @@ export default function DeviceSelectionView(props: Props) {
   // 콘솔 열기/접기 버튼 클릭
   const handleClickConsoleCollapsedBtn = () => {
     setConsoleCollapsed((p) => !p)
+  }
+
+  const handleClickRefreshBtn = () => {
+    setRefreshToken(Date.now())
   }
 
   const hwReady = hwServerState?.running === true && !isNullish(portInfo)
@@ -140,13 +129,13 @@ export default function DeviceSelectionView(props: Props) {
       <Box
         sx={{
           position: 'relative',
-          margin: '0 auto',
+          mx: 'auto',
           width: '100%',
           maxWidth: 960,
+          pt: 10,
         }}
-        pt={10}
       >
-        <Grid container sx={{ border: '0px solid red', flex: 0 }}>
+        <Grid container sx={{ flex: 0 }}>
           <Grid item xs={4} md={5}>
             <Box sx={{ position: 'relative' }}>
               <Image
@@ -169,8 +158,9 @@ export default function DeviceSelectionView(props: Props) {
             <PortsView
               portInfos={portInfos}
               portPath={portInfo?.path}
-              onClickPort={handleClickPort}
-              onClickRefresh={() => setRefreshToken(Date.now())}
+              onSelectPort={handleSelectPort}
+              onClickRefresh={handleClickRefreshBtn}
+              showEmptyMenu={!autoSelect}
             />
           </Grid>
           <Grid item xs={4} md={5}>

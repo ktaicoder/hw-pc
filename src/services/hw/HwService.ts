@@ -191,8 +191,7 @@ export class HwService implements IHwService {
 
   /**
    * 시리얼 포트 목록 조회
-   * 특정 하드웨어에서 지원하는 시리얼 포트 목록을 조회하려고 했는데
-   * 하드웨어와 상관없이 그냥 전체 목록을 리턴한다
+   * 특정 하드웨어에서 지원하는 시리얼 포트 목록을 조회
    * @param hwId 하드웨어 ID
    * @returns
    */
@@ -201,7 +200,9 @@ export class HwService implements IHwService {
     const hw = this.hwDescriptorOf_(hwId)?.hw
     if (!hw) return list
 
-    return list.filter((portInfo) => hw.isPortMatch(portInfo, this.uiLogger_))
+    const ports = list.filter((portInfo) => hw.isPortMatch(portInfo, this.uiLogger_))
+    ports.sort((a, b) => a.path.localeCompare(b.path))
+    return ports
   }
 
   async downloadDriver(driverUri: string): Promise<void> {
@@ -237,9 +238,29 @@ export class HwService implements IHwService {
     this.hwDescriptor$.setValue(descriptor)
   }
 
-  async unselectHw(hwId: string): Promise<void> {
-    console.log('unselectHw', hwId, this.hwDescriptor$.value?.hwId)
+  async unselectHw(): Promise<void> {
+    console.log('unselectHw', this.hwDescriptor$.value?.hwId)
     this.hwDescriptor$.setValue(null)
+  }
+
+  async unselectSerialPort(): Promise<void> {
+    const { kind, server } = this.hwServer_ ?? ({} as any)
+    if (!kind || !server) {
+      console.warn('server not started, select hwId first')
+      return
+    }
+
+    if (kind === 'codingpack') {
+      const s = server as CodingpackSocketIoServer
+      await s.getHwManager().close()
+      return
+    }
+
+    if (kind === 'hcp') {
+      const s = server as HcpWebSocketServer
+      await s.getHcpHwManager().close()
+      return
+    }
   }
 
   async selectSerialPort(hwId: string, portPath: string): Promise<void> {

@@ -11,27 +11,31 @@ import {
   Menu,
   MenuItem,
   Typography,
+  Box,
 } from '@mui/material'
-import { Box } from '@mui/system'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ISerialPortInfo } from 'src/custom-types'
+import { sleepAsync } from 'src/render/util/sleepAsync'
 
 type Props = {
   portInfos: ISerialPortInfo[]
   portPath?: string
-  onClickPort: (port: ISerialPortInfo) => void
+  onSelectPort: (port: ISerialPortInfo | undefined) => void
   onClickRefresh: () => void
+  showEmptyMenu?: boolean
 }
 
 export default function PortsView(props: Props) {
-  const { portInfos, portPath, onClickPort, onClickRefresh } = props
+  const { showEmptyMenu = false, portInfos = [], portPath, onSelectPort } = props
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const port = useMemo<ISerialPortInfo | undefined>(
     () => portInfos.find((it) => it.path === portPath),
     [portInfos, portPath],
   )
-  const open = Boolean(anchorEl)
-  const [refreshing, setRefreshing] = useState(false)
+  const open = !!anchorEl
+  const [refreshToken, setRefreshToken] = useState(0)
+  const onClickRefreshRef = useRef<Props['onClickRefresh']>()
+  onClickRefreshRef.current = props.onClickRefresh
 
   const handleClickListItem = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -40,25 +44,35 @@ export default function PortsView(props: Props) {
     setAnchorEl(null)
   }
 
-  const handleMenuItemClick = (event: React.MouseEvent<HTMLElement>, port: ISerialPortInfo) => {
+  const handleMenuItemClick = (port: ISerialPortInfo | undefined) => (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(null)
     setTimeout(() => {
-      onClickPort(port)
+      onSelectPort(port)
     }, 0)
   }
 
+  const doDummyLoad = useCallback(async (ctx: { canceled: boolean }, milli: number) => {
+    try {
+      let remain = milli
+      while (remain > 0 && !ctx.canceled) {
+        await sleepAsync(50)
+        remain -= 50
+      }
+      if (ctx.canceled) return
+      onClickRefreshRef.current?.()
+      setRefreshToken(0)
+    } catch (ignore) { }
+  }, [])
+
+  // dummy loading
   useEffect(() => {
-    let timer: any = null
-    if (refreshing) {
-      timer = setTimeout(() => {
-        onClickRefresh()
-        setRefreshing(false)
-      }, 2700)
-    }
+    if (refreshToken === 0) return
+    const ctx = { canceled: false }
+    doDummyLoad(ctx, 2700)
     return () => {
-      if (timer) clearTimeout(timer)
+      ctx.canceled = true
     }
-  }, [refreshing, onClickRefresh])
+  }, [refreshToken, doDummyLoad])
 
   return (
     <Box
@@ -69,29 +83,7 @@ export default function PortsView(props: Props) {
         pt: 6,
       }}
     >
-      {!port && (
-        <Box
-          sx={{
-            mt: 2.5,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            border: '0px solid red',
-          }}
-        >
-          <Typography sx={{ textAlign: 'center', fontSize: '0.9rem', minHeight: 24, color: '#888' }}>
-            연결 없음
-          </Typography>
-          {refreshing && <CircularProgress size="1rem" sx={{ my: 1 }} />}
-          {!refreshing && (
-            <IconButton onClick={() => setRefreshing(true)}>
-              <Refresh fontSize="small" />
-            </IconButton>
-          )}
-        </Box>
-      )}
-      {port && (
+      {(port || showEmptyMenu) && (
         <>
           <Typography sx={{ display: 'block', textAlign: 'center', fontSize: '0.75rem', mr: 3 }}>연결포트</Typography>
           <List>
@@ -99,18 +91,22 @@ export default function PortsView(props: Props) {
               <ListItemButton
                 onClick={handleClickListItem}
                 sx={{
-                  margin: '0 auto',
+                  mx: 'auto',
                   '& .MuiListItemIcon-root': {
                     minWidth: 'auto',
                   },
                   '& .MuiListItemText-root': {
-                    margin: 0,
-                    padding: 0,
+                    m: 0,
+                    p: 0,
                     textAlign: 'center',
                   },
                 }}
               >
-                <ListItemText primary={port.path} secondary={port.manufacturer} />
+                {port ? (
+                  <ListItemText primary={port.path} secondary={port.manufacturer} />
+                ) : (
+                  <ListItemText primary="선택" secondary="" />
+                )}
                 <ListItemIcon>
                   <ArrowDropDownIcon fontSize="small" />
                 </ListItemIcon>
@@ -119,23 +115,53 @@ export default function PortsView(props: Props) {
           </List>
         </>
       )}
-      {portInfos && portInfos.length > 0 && (
+
+      {!port && portInfos.length === 0 && (
+        <Box
+          sx={{
+            mt: 2.5,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Typography
+            sx={{
+              textAlign: 'center',
+              fontSize: '0.9rem',
+              minHeight: 24,
+              color: '#888',
+            }}
+          >
+            연결 없음
+          </Typography>
+          {refreshToken > 0 && <CircularProgress size="1rem" sx={{ my: 1 }} />}
+          {refreshToken === 0 && (
+            <IconButton onClick={() => setRefreshToken(Date.now())}>
+              <Refresh fontSize="small" />
+            </IconButton>
+          )}
+        </Box>
+      )}
+
+      {portInfos.length > 0 && (
         <Menu
-          id="lock-menu"
+          id="ports-menu"
           anchorEl={anchorEl}
           open={open}
           onClose={handleClose}
           MenuListProps={{
-            'aria-labelledby': 'lock-button',
+            'aria-labelledby': 'port-button',
             role: 'listbox',
           }}
         >
+          <MenuItem selected={!port} onClick={handleMenuItemClick(undefined)}>
+            <ListItemText primary="선택" secondary="" sx={{ textAlign: 'center' }} />
+          </MenuItem>
+
           {portInfos.map((it) => (
-            <MenuItem
-              key={it.path}
-              selected={it.path === port?.path}
-              onClick={(event) => handleMenuItemClick(event, it)}
-            >
+            <MenuItem key={it.path} selected={it.path === port?.path} onClick={handleMenuItemClick(it)}>
               <ListItemText primary={it.path} secondary={it.manufacturer} sx={{ textAlign: 'center' }} />
             </MenuItem>
           ))}
