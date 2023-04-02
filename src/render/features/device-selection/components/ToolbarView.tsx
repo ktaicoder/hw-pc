@@ -11,7 +11,7 @@ export default function ToolbarView(props: Props) {
   const { hwId, hwName } = props
 
   const handleClickBack = () => {
-    window.service.hw.unselectHw(hwId)
+    window.service.hw.unselectHw()
   }
 
   const handleClickChrome = () => {

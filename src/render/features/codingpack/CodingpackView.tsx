@@ -26,7 +26,7 @@ export default function CodingpackView() {
   }, [loadInfo])
 
   useUnmount(() => {
-    window.service.hw.unselectHw('')
+    window.service.hw.unselectHw()
   })
 
   useEffect(() => {

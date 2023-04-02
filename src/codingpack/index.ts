@@ -18,6 +18,7 @@ const info: IHwInfo = {
       'win32-x64': 'CH34x/CH34x_Install_Windows_v3_4.exe',
     },
   ],
+  autoSelect: true,
 }
 
 export const codingpack: IHwDescriptor = {
