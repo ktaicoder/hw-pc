@@ -20,7 +20,6 @@ export default function TxRxView(props: Props) {
 
   useEffect(() => {
     const diff = Date.now() - txTimestamp
-    console.log('tx diff=', diff)
     if (diff < 1000) {
       setTxVisible(true)
     }
