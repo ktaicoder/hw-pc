@@ -221,16 +221,16 @@ export class SerialDevice implements ISerialDevice {
   /**
    * implement ISerialDevice
    */
-  write = async (values: Buffer | number[]): Promise<void> => {
+  write = async (values: Buffer | number[]): Promise<boolean> => {
     const logTag = `${this.debugTag_}SerialDevice.write()`
 
-    // this.uiLogger_?.d(logTag, values)
+    this.uiLogger_?.d(logTag, values)
 
     const port = this.port_
     if (!port) {
       this.log_(logTag, `port not configured: ${this.deviceState$.value}`)
       this.uiLogger_?.w(logTag, `port not configured, ${this.deviceState$.value}`)
-      return
+      return false
     }
 
     try {
@@ -239,9 +239,11 @@ export class SerialDevice implements ISerialDevice {
         RxSerialPort.write(port, values) //
           .pipe(takeUntil(this.closeTrigger_())),
       )
+      return true
     } catch (ignore) {
       this.uiLogger_?.w(logTag, `failed: ${errmsg(ignore)}`)
     }
+    return false
   }
 
   /**

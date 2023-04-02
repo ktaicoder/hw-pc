@@ -72,16 +72,22 @@ export class RxSerialPort {
         return
       }
       try {
-        sp.write(values, (err) => {
-          if (err) {
-            emitter.error(err)
-          } else {
-            sp.drain(function () {
+        const success = sp.write(values)
+        if (!success) {
+          sp.drain((err) => {
+            console.log('drain err', err)
+            if (err) {
+              emitter.error(err)
+            } else {
               emitter.next()
               emitter.complete()
-            })
-          }
-        })
+            }
+          })
+        } else {
+          // console.log('write success')
+          emitter.next()
+          emitter.complete()
+        }
       } catch (err) {
         emitter.error(err)
       }

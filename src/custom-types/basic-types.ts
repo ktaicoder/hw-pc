@@ -181,7 +181,7 @@ export interface ISerialDevice {
 
   open: (port: SerialPort, parser?: Stream.Transform) => Promise<void>
 
-  write: (buffer: Buffer) => Promise<void>
+  write: (values: Buffer | number[]) => Promise<boolean>
 
   observeDeviceState: () => Observable<SerialPortDeviceState>
 
