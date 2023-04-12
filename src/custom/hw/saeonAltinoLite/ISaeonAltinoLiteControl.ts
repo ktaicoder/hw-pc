@@ -67,7 +67,7 @@ export interface ISaeonAltinoLiteControl {
    * 라이트
    * hex : light hex value
    */
-  lightHex(ctx: any, hex: string): Promise<void>
+  lightHex(ctx: any, hex: number): Promise<void>
 
   /**
    * 소리
@@ -160,14 +160,22 @@ export interface ISaeonAltinoLiteControl {
    */
   display(
     ctx: any,
-    line1: string,
-    line2: string,
-    line3: string,
-    line4: string,
-    line5: string,
-    line6: string,
-    line7: string,
-    line8: string,
+    line1: number,
+    line2: number,
+    line3: number,
+    line4: number,
+    line5: number,
+    line6: number,
+    line7: number,
+    line8: number,
+    // line1: string,
+    // line2: string,
+    // line3: string,
+    // line4: string,
+    // line5: string,
+    // line6: string,
+    // line7: string,
+    // line8: string,
   ): Promise<void>
 
   /**

@@ -215,9 +215,14 @@ export class SaeonAltinoLiteControl extends AbstractHwConrtol implements ISaeonA
   }
 
   async go(ctx: any, lp: number, rp: number): Promise<void> {
+    if (lp > 1000) lp = 1000
+    if (lp < -1000) lp = -1000
+
+    if (rp > 1000) rp = 1000
+    if (rp < -1000) rp = -1000
     output.RM = rp
     output.LM = lp
-    console.log('go')
+    console.log('go lp : ' + lp + ' rp : ' + rp)
   }
 
   async steering(ctx: any, option: string): Promise<void> {
@@ -286,12 +291,17 @@ export class SaeonAltinoLiteControl extends AbstractHwConrtol implements ISaeonA
     console.log('light')
   }
 
-  async lightHex(ctx: any, hex: string): Promise<void> {
-    if (hex.indexOf('0x') == 0) {
-      const hexString = hex.replace('0x', '')
-      output.LED = parseInt(hexString, 16)
-    }
-    console.log('lightHex')
+  async lightHex(ctx: any, hex: number): Promise<void> {
+    // if (hex.indexOf('0x') == 0) {
+    //   const hexString = hex.replace('0x', '')
+    //   output.LED = parseInt(hexString, 16)
+    // }
+    // else {
+    //   if(parseInt(hex, 10) > 15) return;
+    //   output.LED = parseInt(hex, 10);
+    // }
+    output.LED = hex
+    console.log('lightHex : ' + hex)
   }
 
   async sound(ctx: any, oct: string, scale: string): Promise<void> {
@@ -330,17 +340,21 @@ export class SaeonAltinoLiteControl extends AbstractHwConrtol implements ISaeonA
   }
 
   async soundNumber(ctx: any, scale: number): Promise<void> {
-    if (scale > 255) return
+    if (scale > 96) return
     if (scale < 0) return
     output.NOTE = scale
     console.log('soundNumber')
   }
 
   async displayChar(ctx: any, ch: string): Promise<void> {
-    if (ch.length > 1) return
+    //if (ch.length > 1) return
     if (ch.length < 1) return
+    ch = ch.replace(/“ /g, '')
+    ch = ch.replace(/ ”/g, '')
+
     output.CHAR = ch.charCodeAt(0)
-    console.log('displayChar')
+    console.log('displayChar : ' + ch.charCodeAt(0))
+    console.log(typeof ch)
   }
 
   async displayLine(
@@ -401,52 +415,124 @@ export class SaeonAltinoLiteControl extends AbstractHwConrtol implements ISaeonA
 
   async display(
     ctx: any,
-    line1: string,
-    line2: string,
-    line3: string,
-    line4: string,
-    line5: string,
-    line6: string,
-    line7: string,
-    line8: string,
+    line1: number,
+    line2: number,
+    line3: number,
+    line4: number,
+    line5: number,
+    line6: number,
+    line7: number,
+    line8: number,
+    // line1: string,
+    // line2: string,
+    // line3: string,
+    // line4: string,
+    // line5: string,
+    // line6: string,
+    // line7: string,
+    // line8: string,
   ): Promise<void> {
+    const strBuf = [
+      line1,
+      line2,
+      line3,
+      line4,
+      line5,
+      line6,
+      line7,
+      line8,
+      //parseInt(line1.replace('0x', ''), 10),
+      // parseInt(line2.replace('0x', ''), 10),
+      // parseInt(line3.replace('0x', ''), 10),
+      // parseInt(line4.replace('0x', ''), 10),
+      // parseInt(line5.replace('0x', ''), 10),
+      // parseInt(line6.replace('0x', ''), 10),
+      // parseInt(line7.replace('0x', ''), 10),
+      // parseInt(line8.replace('0x', ''), 10),
+    ]
+
     // disable ascii mode
     output.CHAR = 0xff
 
-    if (line1.indexOf('0x') != 0) return
-    if (line2.indexOf('0x') != 0) return
-    if (line3.indexOf('0x') != 0) return
-    if (line4.indexOf('0x') != 0) return
-    if (line5.indexOf('0x') != 0) return
-    if (line6.indexOf('0x') != 0) return
-    if (line7.indexOf('0x') != 0) return
-    if (line8.indexOf('0x') != 0) return
-
-    const lines = [
-      parseInt(line8.replace('0x', ''), 16),
-      parseInt(line7.replace('0x', ''), 16),
-      parseInt(line6.replace('0x', ''), 16),
-      parseInt(line5.replace('0x', ''), 16),
-      parseInt(line4.replace('0x', ''), 16),
-      parseInt(line3.replace('0x', ''), 16),
-      parseInt(line2.replace('0x', ''), 16),
-      parseInt(line1.replace('0x', ''), 16),
-    ]
-
     for (let i = 0; i < 8; i++) {
-      const str = ['Off', 'Off', 'Off', 'Off', 'Off', 'Off', 'Off', 'Off']
-      if (lines[i] & 0x80) str[0] = 'On'
-      if (lines[i] & 0x40) str[1] = 'On'
-      if (lines[i] & 0x20) str[2] = 'On'
-      if (lines[i] & 0x10) str[3] = 'On'
-      if (lines[i] & 0x08) str[4] = 'On'
-      if (lines[i] & 0x04) str[5] = 'On'
-      if (lines[i] & 0x02) str[6] = 'On'
-      if (lines[i] & 0x01) str[7] = 'On'
-      this.displayLine(ctx, 'Line-' + (i + 1), str[0], str[1], str[2], str[3], str[4], str[5], str[6], str[7])
+      const value = strBuf[i]
+
+      //output[6 + (7 - i)] = value
+      if (i == 0) output.DM8 = strBuf[i]
+      else if (i == 1) output.DM7 = strBuf[i]
+      else if (i == 2) output.DM6 = strBuf[i]
+      else if (i == 3) output.DM5 = strBuf[i]
+      else if (i == 4) output.DM4 = strBuf[i]
+      else if (i == 5) output.DM3 = strBuf[i]
+      else if (i == 6) output.DM2 = strBuf[i]
+      else if (i == 7) output.DM1 = strBuf[i]
+      else return
+
+      // console.log(output.DM8)
+      // console.log(output.DM7)
+      // console.log(output.DM6)
+      // console.log(output.DM5)
+      // console.log(output.DM4)
+      // console.log(output.DM3)
+      // console.log(output.DM2)
+      // console.log(output.DM1)
     }
 
+    //----------------------------------------------
+    /*
+    // disable ascii mode
+    output.CHAR = 0xff
+
+    // if (line1.indexOf('0x') != 0) return
+    // if (line2.indexOf('0x') != 0) return
+    // if (line3.indexOf('0x') != 0) return
+    // if (line4.indexOf('0x') != 0) return
+    // if (line5.indexOf('0x') != 0) return
+    // if (line6.indexOf('0x') != 0) return
+    // if (line7.indexOf('0x') != 0) return
+    // if (line8.indexOf('0x') != 0) return
+
+    const lines = [
+      // parseInt(line8.replace('0x', ''), 16),
+      // parseInt(line7.replace('0x', ''), 16),
+      // parseInt(line6.replace('0x', ''), 16),
+      // parseInt(line5.replace('0x', ''), 16),
+      // parseInt(line4.replace('0x', ''), 16),
+      // parseInt(line3.replace('0x', ''), 16),
+      // parseInt(line2.replace('0x', ''), 16),
+      // parseInt(line1.replace('0x', ''), 16),
+      parseInt(line1.replace('0x', ''), 10),
+      parseInt(line2.replace('0x', ''), 10),
+      parseInt(line3.replace('0x', ''), 10),
+      parseInt(line4.replace('0x', ''), 10),
+      parseInt(line5.replace('0x', ''), 10),
+      parseInt(line6.replace('0x', ''), 10),
+      parseInt(line7.replace('0x', ''), 10),
+      parseInt(line8.replace('0x', ''), 10),
+    ]
+
+    for(let i = 0; i < 8; i++) {
+      let value = 0;
+      value = lines[i + 1];
+      output[6 + i] = value;
+    }
+
+    // for (let i = 0; i < 8; i++) {
+    //   const str = ['Off', 'Off', 'Off', 'Off', 'Off', 'Off', 'Off', 'Off']
+    //   if (lines[i] & 0x80) str[0] = 'On'
+    //   if (lines[i] & 0x40) str[1] = 'On'
+    //   if (lines[i] & 0x20) str[2] = 'On'
+    //   if (lines[i] & 0x10) str[3] = 'On'
+    //   if (lines[i] & 0x08) str[4] = 'On'
+    //   if (lines[i] & 0x04) str[5] = 'On'
+    //   if (lines[i] & 0x02) str[6] = 'On'
+    //   if (lines[i] & 0x01) str[7] = 'On'
+    //   this.displayLine(ctx, 'Line-' + (i + 1), str[0], str[1], str[2], str[3], str[4], str[5], str[6], str[7])
+    // }
+
     console.log('display')
+    //console.log(typeof lines[0] + line1)
+*/
   }
 
   async display_on(ctx: any, x: number, y: number): Promise<void> {
@@ -477,10 +563,10 @@ export class SaeonAltinoLiteControl extends AbstractHwConrtol implements ISaeonA
   }
 
   async display_off(ctx: any, x: number, y: number): Promise<void> {
-    if (x > 7) return
-    if (x < 0) return
-    if (y > 7) return
-    if (y < 0) return
+    if (x > 8) return
+    if (x < 1) return
+    if (y > 8) return
+    if (y < 1) return
 
     const nX = x - 1
     const nY = y - 1
