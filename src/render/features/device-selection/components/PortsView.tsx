@@ -61,7 +61,7 @@ export default function PortsView(props: Props) {
       if (ctx.canceled) return
       onClickRefreshRef.current?.()
       setRefreshToken(0)
-    } catch (ignore) { }
+    } catch (ignore) {}
   }, [])
 
   // dummy loading
