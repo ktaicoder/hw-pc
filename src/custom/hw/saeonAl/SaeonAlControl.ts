@@ -238,63 +238,6 @@ export class SaeonAlControl extends AbstractHwConrtol implements ISaeonAlControl
       })
   }
 
-  private getBitMergeReuslt(byH: any, byL: any) {
-    let nTempH = byH
-    const nTempL = byL
-
-    nTempH = (nTempH << 8) | byL
-
-    return nTempH
-  }
-
-  private getBitMergeResultItSigned_12Bit(byH: any, byL: any) {
-    let nTempH = byH
-    const nTempL = byL
-
-    nTempH = (nTempH << 8) | byL
-
-    if ((nTempH & 0x8000) == 0x8000) {
-      nTempH = ~(nTempH - 1)
-      nTempH = 0 - (nTempH & 0xffff)
-    } else {
-      nTempH &= 0x7fff
-    }
-    return (nTempH = nTempH >> 4)
-  }
-
-  private GetBitMergeResultSigned_16Bit(byH: any, byL: any) {
-    let nTempH = byH
-    const nTempL = byL
-
-    nTempH = (nTempH << 8) | byL
-
-    if ((nTempH & 0x8000) == 0x8000) {
-      nTempH = ~(nTempH - 1)
-      nTempH = 0 - (nTempH & 0xffff)
-    } else {
-      nTempH &= 0x7fff
-    }
-    return nTempH
-  }
-
-  private GetTemperatureValueByADC(adcVal: number) {
-    const k3 = (5.0 / 1024) * adcVal
-    const k2 = (10 * k3) / (5 - k3)
-    const k = 0.0009 * (k2 * k2 * k2 * k2) - 0.0622 * (k2 * k2 * k2) + (1.5411 * k2 * k2 - 18.05 * k2 + 103.61)
-
-    return Math.round(k)
-  }
-
-  private GetBatteryValueByADC(adcVal: number) {
-    const voltage = 0.0027 * adcVal + 5.8958
-    if (voltage < 7) return 0
-    if (voltage > 8.3) return 100
-    let per = ((voltage - 7) / (8.3 - 7)) * 100
-    if (per < 0) per = 0
-    if (per > 100) per = 100
-    return Math.round(per)
-  }
-
   private rxLoop_ = (ctx: any) => {
     const logTag = 'SaeonAlControl.rxLoop_()'
     this.log(ctx).i(logTag, 'start')
@@ -358,6 +301,63 @@ export class SaeonAlControl extends AbstractHwConrtol implements ISaeonAlControl
           this.log(ctx).w(logTag, `invalid buf.byteLength(${buf.byteLength} byte`)
         }
       })
+  }
+
+  private getBitMergeReuslt(byH: any, byL: any) {
+    let nTempH = byH
+    const nTempL = byL
+
+    nTempH = (nTempH << 8) | byL
+
+    return nTempH
+  }
+
+  private getBitMergeResultItSigned_12Bit(byH: any, byL: any) {
+    let nTempH = byH
+    const nTempL = byL
+
+    nTempH = (nTempH << 8) | byL
+
+    if ((nTempH & 0x8000) == 0x8000) {
+      nTempH = ~(nTempH - 1)
+      nTempH = 0 - (nTempH & 0xffff)
+    } else {
+      nTempH &= 0x7fff
+    }
+    return (nTempH = nTempH >> 4)
+  }
+
+  private GetBitMergeResultSigned_16Bit(byH: any, byL: any) {
+    let nTempH = byH
+    const nTempL = byL
+
+    nTempH = (nTempH << 8) | byL
+
+    if ((nTempH & 0x8000) == 0x8000) {
+      nTempH = ~(nTempH - 1)
+      nTempH = 0 - (nTempH & 0xffff)
+    } else {
+      nTempH &= 0x7fff
+    }
+    return nTempH
+  }
+
+  private GetTemperatureValueByADC(adcVal: number) {
+    const k3 = (5.0 / 1024) * adcVal
+    const k2 = (10 * k3) / (5 - k3)
+    const k = 0.0009 * (k2 * k2 * k2 * k2) - 0.0622 * (k2 * k2 * k2) + (1.5411 * k2 * k2 - 18.05 * k2 + 103.61)
+
+    return Math.round(k)
+  }
+
+  private GetBatteryValueByADC(adcVal: number) {
+    const voltage = 0.0027 * adcVal + 5.8958
+    if (voltage < 7) return 0
+    if (voltage > 8.3) return 100
+    let per = ((voltage - 7) / (8.3 - 7)) * 100
+    if (per < 0) per = 0
+    if (per > 100) per = 100
+    return Math.round(per)
   }
 
   async stop(ctx: any, option: string): Promise<void> {
