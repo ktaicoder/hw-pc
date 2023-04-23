@@ -1,13 +1,13 @@
 import { Transform, TransformCallback } from 'stream'
 
-const LOG_TAG = 'AltinoLiteParser'
+const LOG_TAG = 'SaeonAltinoLiteParser'
 
 /**
- * AltinoLiteParser입니다
+ * SaeonAltinoLiteParser입니다
  * 지정된 패킷 크기의 시작/종료 마크를 찾아서 패킷을 전송합니다.
  * Transform 클래스를 상속합니다
  */
-export class AltinoLiteParser extends Transform {
+export class SaeonAltinoLiteParser extends Transform {
   // 중개 버퍼
   private buffer: Buffer
 

@@ -1,7 +1,7 @@
 import { SerialPort } from 'serialport'
 import { ISerialDeviceOpenParams, ISerialPortInfo } from 'src/custom-types'
 import { SerialDevice } from 'src/hw-server/serialport/SerialDevice'
-import { AltinoLiteParser } from './AltinoLiteParser'
+import { SaeonAltinoLiteParser } from './SaeonAltinoLiteParser'
 
 const DEBUG_TAG = 'saeonAltinoLite'
 
@@ -20,7 +20,8 @@ export function isPortMatch(portInfo: ISerialPortInfo): boolean {
   // 하지만, 유명한 몇 개만 걸러내도 사용자에게 유용할 것 같습니다.
   // silicon labs(CP210)와 wch.cn(CH340)을 걸러냅니다.
   const manufacturerLower = manufacturer.toLowerCase()
-  const matched = ['silicon labs', 'wch.cn'].every((it) => !manufacturerLower.includes(it))
+  const blackList = ['silicon labs', 'wch.cn']
+  const matched = blackList.every((it) => !manufacturerLower.includes(it))
 
   return matched
 }
@@ -52,7 +53,7 @@ export function openDevice(params: ISerialDeviceOpenParams): SerialDevice {
   })
 
   // RX 데이터 파서
-  const parser = new AltinoLiteParser()
+  const parser = new SaeonAltinoLiteParser()
 
   // 시리얼 디바이스 열기
   device.open(port, parser)
