@@ -37,5 +37,4 @@ export type IPossibleWindowMeta<M extends WindowMeta[WindowNames] = WindowMeta[W
  */
 export interface IBrowserViewMetaData {
   isPopup?: boolean
-  workspaceID?: string
 }

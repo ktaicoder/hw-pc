@@ -8,6 +8,7 @@ import CodingpackPage from './pages/codingpack/CodingpackPage'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import OpenDocDialogEventHandler from './components/custom-event-handlers/OpenDocDialogEventHandler'
+
 const DATA = [
   { path: '/inspect-serial', comp: InspectSerialPage },
   { path: '/inspect-hid', comp: InspectHidPage },

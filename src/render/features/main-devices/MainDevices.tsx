@@ -9,7 +9,7 @@ import { useMeasure } from 'react-use'
 import { IHwInfo } from 'src/custom-types/basic-types'
 import Image from 'src/render/components/Image'
 import MainLayoutContext from 'src/render/layout/main/MainLayoutContext'
-import DeviceGridItem from './components/device-grid-item/DeviceGridItem'
+import DeviceGridItem from './components/DeviceGridItem'
 import { useHwInfoList } from './useHwInfoList'
 
 const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
