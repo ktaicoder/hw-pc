@@ -39,7 +39,7 @@ const Main = styled('main', {
 type Props = {
   title: string
   isMainPage?: boolean
-  children?: React.ReactChild | React.ReactChild[]
+  children?: React.ReactNode
 }
 
 function MainLayout(props: Props) {
