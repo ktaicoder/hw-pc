@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { HwServerState } from './interface'
+import { HwServerState } from './IHwService'
 
 export function useHwServerState(): HwServerState | undefined {
   const [hwServerState, setHwServerState] = useState<HwServerState | undefined>()

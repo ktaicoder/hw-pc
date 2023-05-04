@@ -1,17 +1,15 @@
 import { HashRouter, Route, Switch } from 'react-router-dom'
 import Home from './pages/home/HomePage'
-import InspectSerialPage from './pages/inspect-serial/InspectSerialPage'
-import InspectHidPage from './pages/inspect-hid/InspectHidPage'
-import InfoPage from './pages/info/InfoPage'
-import SettingsPage from './pages/settings/SettingsPage'
-import CodingpackPage from './pages/codingpack/CodingpackPage'
+import InspectSerialPage from './pages/InspectSerialPage'
+import InfoPage from './pages/InfoPage'
+import SettingsPage from './pages/SettingsPage'
+import CodingpackPage from './pages/CodingpackPage'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import OpenDocDialogEventHandler from './components/custom-event-handlers/OpenDocDialogEventHandler'
+import OpenDocDialogEventHandler from './custom-events/OpenDocDialogEventHandler'
 
 const DATA = [
   { path: '/inspect-serial', comp: InspectSerialPage },
-  { path: '/inspect-hid', comp: InspectHidPage },
   { path: '/codingpack', comp: CodingpackPage },
   { path: '/info', comp: InfoPage },
   { path: '/settings', comp: SettingsPage },

@@ -108,9 +108,12 @@ export enum Record {
   zeroTwoMode,
 }
 export enum PacketType {
-  sendUSB = 11,
   sendByte = 7,
   received = 7,
+}
+export enum PacketDelimiter {
+  header = 0,
+  terminator = 90,
 }
 
 /**
@@ -267,4 +270,9 @@ export interface IExMarsCubeControl {
    * 자동 솔빙 시작
    */
   setAutoSolveCube(ctx: any): Promise<void>
+
+  /**
+   * 면 셀 색상값 가져오기
+   */
+  setReturnCallCellColor(ctx: any): Promise<void>
 }

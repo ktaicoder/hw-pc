@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useUnmount } from 'react-use'
 import { firstValueFrom } from 'rxjs'
 import { CodingpackActionKindKey } from 'src/domain/codingpack'
-import { CodingpackActions } from 'src/render/features/codingpack/codingpack-actions'
+import { CodingpackActions } from 'src/render/features/CodingpackHome/CodingpackActions'
 import { HwClient } from '../socket/HwClient'
 
 type RunningCallbackFn = (running: boolean) => void

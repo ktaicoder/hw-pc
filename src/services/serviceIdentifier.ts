@@ -1,7 +1,6 @@
 export default {
   SerialPort: Symbol.for('SerialPort'),
   Hw: Symbol.for('Hw'),
-  Hid: Symbol.for('Hid'),
   Context: Symbol.for('Context'),
   Window: Symbol.for('Window'),
   Menu: Symbol.for('MenuService'),

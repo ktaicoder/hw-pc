@@ -18,9 +18,9 @@ import { toast } from 'react-toastify'
 import { useUnmount } from 'react-use'
 import { firstValueFrom } from 'rxjs'
 import { CodingpackActionKindKey } from 'src/domain/codingpack'
-import { CodingpackActions } from 'src/render/features/codingpack/codingpack-actions'
+import { CodingpackActions } from 'src/render/features/CodingpackHome/CodingpackActions'
 import { sleepAsync } from 'src/render/util/sleepAsync'
-import { useTimeoutText } from 'src/render/util/useTimeoutText'
+import { useTimeoutText } from 'src/render/hooks/useTimeoutText'
 import { HwClient } from '../socket/HwClient'
 
 type RunningCallbackFn = (running: boolean) => void

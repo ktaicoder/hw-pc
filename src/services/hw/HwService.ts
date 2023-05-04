@@ -13,11 +13,11 @@ import { createHcpServer } from 'src/hw-server/util/createHcpServer'
 import { lazyInject } from 'src/services/container'
 import { ObservableField } from 'src/util/ObservableField'
 import { IContextService } from '../context/interface'
-import { ISerialPortService } from '../serialport/interface'
+import { ISerialPortService } from '../serialport/ISerialPortService'
 import serviceIdentifier from '../serviceIdentifier'
 import { CodingpackHwManager } from './../../hw-server/codingpack/CodingpackHwManager'
 import { DeviceStateManager } from './DeviceStateManager'
-import { HwServerState, IHwService } from './interface'
+import { HwServerState, IHwService } from './IHwService'
 import { UiLogger } from './UiLogger'
 
 type HwServer =

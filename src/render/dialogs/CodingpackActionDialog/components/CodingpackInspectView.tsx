@@ -22,7 +22,7 @@ import CustomTableBody from 'src/render/components/CustomTableBody'
 import Portlet from 'src/render/components/Portlet'
 import PortletContent from 'src/render/components/PortletContent'
 import PortletHeader from 'src/render/components/PortletHeader'
-import { CodingpackActions } from 'src/render/features/codingpack/codingpack-actions'
+import { CodingpackActions } from 'src/render/features/CodingpackHome/CodingpackActions'
 import { CodingpackInfo, HwClient } from '../socket/HwClient'
 
 type RunningCallbackFn = (running: boolean) => void

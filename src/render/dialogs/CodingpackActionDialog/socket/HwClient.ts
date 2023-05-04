@@ -14,7 +14,7 @@ import {
   tap,
   timeout,
 } from 'rxjs'
-import { ControlKeys } from 'src/render/components/react-console/ReactConsole'
+import { ControlKeys } from 'src/render/components/ReactConsole/ReactConsole'
 import stripAnsi from 'strip-ansi'
 import { HwSocket, ResponseFrame } from './HwSocket'
 import { codingpackCommands } from 'src/domain/codingpack'
