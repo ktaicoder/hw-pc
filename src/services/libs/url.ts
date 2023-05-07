@@ -1,5 +1,5 @@
 import { address } from 'ip'
-import { defaultServerIP } from 'src/constants/urls'
+import { BuildVars } from 'src/BuildVars'
 import { logger } from 'src/logger'
 
 /**
@@ -10,7 +10,7 @@ import { logger } from 'src/logger'
 export function getLocalHostUrlWithActualIP(originalUrl: string): string {
   const localHostUrlWithActualIP = originalUrl.replace(
     /((?:\d{1,3}\.){3}\d{1,3}|localhost)/,
-    address('public') ?? defaultServerIP,
+    address('public') ?? BuildVars.defaultServerIP,
   )
   logger.debug(
     `Current available address: address() returns ${address('public') ?? 'undefined'}

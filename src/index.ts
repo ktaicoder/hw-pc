@@ -2,8 +2,8 @@ import { app } from 'electron'
 import unhandled from 'electron-unhandled'
 import { debugInfo, openNewGitHubIssue } from 'electron-util'
 import path from 'path'
-import { isTest } from 'src/constants/environment'
 import { logger } from 'src/logger'
+import { isTest } from 'src/util/electron-is-development'
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS '] = 'true'
 

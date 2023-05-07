@@ -1,6 +1,6 @@
 import { BehaviorSubject, Observable, Subject, Subscription, takeUntil } from 'rxjs'
 import { Server } from 'socket.io'
-import { CODINGPACK_LISTEN_PORT } from 'src/constants/server'
+import { BuildVars } from 'src/BuildVars'
 import { IHwServer, IUiLogger } from 'src/custom-types/basic-types'
 import { RxSocketIoServer } from 'src/util/RxSocketIoServer'
 import { createSocketIoServer } from '../util/createSocketIoServer'
@@ -8,7 +8,7 @@ import { CodingpackClientHandler } from './CodingpackClientHandler'
 import { CodingpackHwManager } from './CodingpackHwManager'
 
 const DEFAULT_OPTIONS = {
-  listenPort: CODINGPACK_LISTEN_PORT,
+  listenPort: BuildVars.codingpackListenPort,
 }
 
 export class CodingpackSocketIoServer implements IHwServer {

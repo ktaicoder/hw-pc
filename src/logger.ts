@@ -1,6 +1,6 @@
 import * as winston from 'winston'
-import { LOG_FOLDER } from 'src/constants/paths'
 import 'winston-daily-rotate-file'
+import { PathHelper } from './PathHelper'
 
 const logger = (
   process.env.NODE_ENV === 'test'
@@ -32,8 +32,8 @@ const logger = (
             datePattern: 'YYYYMMDD',
             zippedArchive: false,
             maxSize: '20mb',
-            maxFiles: '14d',
-            dirname: LOG_FOLDER,
+            maxFiles: '7d',
+            dirname: PathHelper.logPath(),
             level: 'info',
           }),
         ],
@@ -44,7 +44,7 @@ const logger = (
             zippedArchive: false,
             maxSize: '20mb',
             maxFiles: '14d',
-            dirname: LOG_FOLDER,
+            dirname: PathHelper.logPath(),
           }),
         ],
         format: winston.format.combine(winston.format.timestamp(), winston.format.json()),

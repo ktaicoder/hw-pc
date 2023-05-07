@@ -3,7 +3,7 @@ import { Box, CircularProgress, Dialog, DialogContent, IconButton, LinearProgres
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useMeasure } from 'react-use'
 import { BehaviorSubject, bufferTime, debounceTime, filter, firstValueFrom, take, takeUntil, timeout } from 'rxjs'
-import { CODINGPACK_LISTEN_PORT } from 'src/constants/server'
+import { BuildVars } from 'src/BuildVars'
 import { CodingpackActionKind, CodingpackActionKindKey } from 'src/domain/codingpack'
 import { ReactConsole, ReactConsoleControl } from 'src/render/components/ReactConsole'
 import { fixWebPath } from 'src/render/util/fixWebPath'
@@ -37,7 +37,7 @@ export default function CodingpackActionDialog(props: CodingpackActionDialogProp
   const [minimized, setMinimized] = useState(false)
   const [initialReady, setInitialReady] = useState(false)
   const title = CodingpackActionKind[actionKind]
-  const hwClient = useMemo(() => new HwClient('codingpack', `ws://127.0.0.1:${CODINGPACK_LISTEN_PORT}`), [])
+  const hwClient = useMemo(() => new HwClient('codingpack', `ws://127.0.0.1:${BuildVars.codingpackListenPort}`), [])
 
   const [terminal, setTerminal] = useState<ReactConsoleControl | null>(null)
 
