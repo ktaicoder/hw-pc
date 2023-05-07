@@ -45,11 +45,6 @@ export enum NativeChannel {
   name = 'NativeChannel',
 }
 
-export enum SystemPreferenceChannel {
-  name = 'SystemPreferenceChannel',
-  setSystemPreference = 'set-system-preference',
-}
-
 export enum MetaDataChannel {
   browserViewMetaData = 'browserViewMetaData',
   getViewMetaData = 'getViewMetaData',
@@ -63,5 +58,4 @@ export type Channels =
   | WindowChannel
   | MenuChannel
   | NativeChannel
-  | SystemPreferenceChannel
   | MetaDataChannel
