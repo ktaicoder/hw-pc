@@ -1,34 +1,34 @@
+import { nav } from '@cp949/mui-common'
 import { Box, Divider, List, ListItem, ListItemText, useMediaQuery } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import Image from 'src/render/components/Image'
-import useStore from 'src/render/store/useStore'
+import { useStore } from 'src/render/lib/store/useStore'
+import { sideMenuManager } from 'src/render/sidebar-menus'
 import { SIDEMENU_FG_COLOR } from '../../main-layout-constants'
-import { IMenu, ISection, isCurrentMenu, isCurrentSection, menus } from '../../sidebar-menu-define'
 import DrawerHeader from '../DrawerHeader'
-import MenuItem from './MenuItem'
-import SectionMenu from './SectionMenu'
-
-const ALL_MENUS = menus
+import SideMenuItem from './SideMenuItem'
+import SideSectionMenu from './SideSectionMenu'
 
 function Sidebar() {
   const theme = useTheme()
   const navigate = useNavigate()
-
   const { pathname: pathkey } = useLocation()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const smOrDown = useMediaQuery(theme.breakpoints.down('md'))
   const { sidebarStore } = useStore()
 
-  const handleClickLink = () => {
-    if (isMobile) {
-      sidebarStore.setOpen(false)
+  const handleClickMenu = (menu: nav.IMenu) => (e: React.MouseEvent) => {
+    console.log('navigate=', menu.href)
+    if (smOrDown) {
+      sidebarStore.toggleOpen(false)
     }
-    // history.push("/inspect");
+    navigate(menu.href)
   }
 
   return (
     <Box
+      className="Sidebar-root"
       component="nav"
       sx={{
         color: SIDEMENU_FG_COLOR,
@@ -39,7 +39,14 @@ function Sidebar() {
         },
       }}
     >
-      <DrawerHeader sx={{ pl: 2, pr: 1, color: 'primary.main', justifyContent: 'flex-start' }}>
+      <DrawerHeader
+        sx={{
+          pl: 2,
+          pr: 1,
+          color: 'primary.main',
+          justifyContent: 'flex-start',
+        }}
+      >
         {/* <IconButton
                     size="small"
                     onClick={() => sidebarStore.toggleOpen()}
@@ -52,20 +59,22 @@ function Sidebar() {
 
         <Image
           component="img"
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/', { replace: true })}
           sx={{ maxWidth: '80%', height: 20, objectFit: 'contain' }}
-          src="static/images/logo_white.png"
+          src="/static/images/logo_white.png"
         />
       </DrawerHeader>
-      <List disablePadding>
-        {ALL_MENUS.map((item, idx) => {
+      <List disablePadding sx={{ pt: '2px' }}>
+        {sideMenuManager.menuItems.map((item, idx) => {
           if (item.type === 'menu') {
             return (
-              <MenuItem
+              <SideMenuItem
                 key={idx}
-                menu={item as IMenu}
-                onLinkClick={handleClickLink}
-                active={isCurrentMenu(item.href, pathkey)}
+                className="Sidebar-sideMenuItem"
+                icon={item.icon}
+                title={item.title}
+                onClick={handleClickMenu(item)}
+                active={sideMenuManager.isMenuPathMatched(item, pathkey)}
               />
             )
           } else if (item.type === 'divider') {
@@ -87,15 +96,14 @@ function Sidebar() {
               </ListItem>
             )
           } else if (item.type === 'section') {
-            const section = item as ISection
+            const section = item
             return (
-              <SectionMenu
+              <SideSectionMenu
                 key={idx}
-                active={isCurrentSection(section.sectionId, pathkey)}
                 section={section}
                 currentHref={pathkey}
                 expanded={sidebarStore.expandedSectionIds.includes(section.sectionId)}
-                onClickLink={handleClickLink}
+                onClickMenu={handleClickMenu}
                 onClickSection={() => sidebarStore.toggleExpandSection(section.sectionId)}
               />
             )

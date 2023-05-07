@@ -1,6 +1,7 @@
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import Refresh from '@mui/icons-material/Refresh'
 import {
+  Box,
   CircularProgress,
   IconButton,
   List,
@@ -11,11 +12,10 @@ import {
   Menu,
   MenuItem,
   Typography,
-  Box,
 } from '@mui/material'
+import { default as sleepAsync } from 'delay'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ISerialPortInfo } from 'src/custom-types'
-import { sleepAsync } from 'src/render/util/sleepAsync'
 
 type Props = {
   portInfos: ISerialPortInfo[]

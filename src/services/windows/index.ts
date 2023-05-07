@@ -139,7 +139,7 @@ export class WindowService implements IWindowService {
       newWindow.setMenuBarVisibility(false)
       // const unregisterContextMenu = await this.menuService.initContextMenuForWindowWebContents(newWindow.webContents)
       newWindow.on('closed', () => {
-        this.windows[windowName] = undefined
+        delete this.windows[windowName]
         // unregisterContextMenu()
       })
     }

@@ -1,26 +1,30 @@
 import { app } from 'electron'
-import process from 'process'
+import { injectable } from 'inversify'
 import os from 'os'
 import osName from 'os-name'
-import { isElectronDevelopment } from 'src/constants/isElectronDevelopment'
-import { injectable } from 'inversify'
-import { IContextService, IContext, IPaths, IConstants } from './interface'
-import * as paths from 'src/constants/paths'
-import * as appPaths from 'src/constants/appPaths'
+import process from 'process'
+import { PathHelper } from 'src/PathHelper'
 import { getLocalHostUrlWithActualIP } from 'src/services/libs/url'
+import { isDevelopment } from 'src/util/electron-is-development'
+import { IConstants, IContext, IContextService, IPaths } from './interface'
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string
 
 @injectable()
 export class ContextService implements IContextService {
   private readonly pathConstants: IPaths = {
-    ...paths,
-    ...appPaths,
+    MENUBAR_ICON_PATH: PathHelper.menubarIconPath(),
+    SETTINGS_FOLDER: PathHelper.settingsPath(),
+    DRIVER_FOLDER: PathHelper.driversPath(),
+    FIRMWARE_FOLDER: PathHelper.firmwaresPath(),
+    WEB_ROOT_FOLDER: PathHelper.webRootPath(),
+    APP_FOLDER: PathHelper.appPath(),
+    LOG_FOLDER: PathHelper.logPath(),
     MAIN_WINDOW_WEBPACK_ENTRY: MAIN_WINDOW_WEBPACK_ENTRY,
   }
 
   private readonly constants: IConstants = {
-    isDevelopment: isElectronDevelopment,
+    isDevelopment: isDevelopment,
     platform: process.platform,
     appVersion: app.getVersion(),
     appName: app.name,
@@ -28,7 +32,11 @@ export class ContextService implements IContextService {
     osName: osName(),
     osArch: os.arch(),
     osHomeDir: os.homedir(),
+    processResourcePath: process.resourcesPath,
     environmentVersions: process.versions,
+    appPath: app.getAppPath(),
+    appIsPackaged: app.isPackaged,
+    locale: app.getLocale(),
   }
 
   private readonly context: IContext

@@ -19,7 +19,7 @@ import { useUnmount } from 'react-use'
 import { firstValueFrom } from 'rxjs'
 import { CodingpackActionKindKey } from 'src/domain/codingpack'
 import { CodingpackActions } from 'src/render/features/CodingpackHome/CodingpackActions'
-import { sleepAsync } from 'src/render/util/sleepAsync'
+import { default as sleepAsync } from 'delay'
 import { useTimeoutText } from 'src/render/hooks/useTimeoutText'
 import { HwClient } from '../socket/HwClient'
 

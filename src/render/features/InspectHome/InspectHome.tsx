@@ -1,7 +1,7 @@
 import { Box, Paper, Tab, Tabs } from '@mui/material'
 import { useState } from 'react'
-import EnvInspectView from './components/EnvInspectView'
-import SerialPortInspectView from './components/SerialPortInspectView'
+import SerialPortInspectView from 'src/render//components/SerialPortInspectView'
+import EnvInspectView from 'src/render/components/EnvInspectView'
 
 export default function InspectHome() {
   const [tabIndex, setTabIndex] = useState(0)

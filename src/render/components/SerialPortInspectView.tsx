@@ -1,10 +1,7 @@
 import HardwareIcon from '@mui/icons-material/Hardware'
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material'
 import { ISerialPortInfo } from 'src/custom-types'
-import Portlet from 'src/render/components/Portlet'
-import PortletContent from 'src/render/components/PortletContent'
-import PortletHeader from 'src/render/components/PortletHeader'
-import PortletLabel from 'src/render/components/PortletLabel'
+import { Portlet, PortletContent, PortletHeader, PortletLabel } from '@cp949/mui-common'
 import { usePromiseValue } from 'src/render/hooks/useServiceValue'
 
 // portinfo 예시

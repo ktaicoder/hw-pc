@@ -15,13 +15,13 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
+import { default as sleepAsync } from 'delay'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
 import { useUnmount } from 'react-use'
 import { firstValueFrom } from 'rxjs'
 import { CodingpackActionKindKey } from 'src/domain/codingpack'
 import { CodingpackActions } from 'src/render/features/CodingpackHome/CodingpackActions'
-import { sleepAsync } from 'src/render/util/sleepAsync'
 import { useTimeoutText } from 'src/render/hooks/useTimeoutText'
 import { HwClient, WifiAp } from '../socket/HwClient'
 import WifiApList from './WifiApList'

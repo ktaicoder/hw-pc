@@ -5,7 +5,7 @@ import RootStore from './RootStore'
 /**
  * Mobx store hook
  */
-export default function useStore(): RootStore {
+export function useStore(): RootStore {
   const context = useContext(MobXProviderContext)
   if (context === undefined) {
     throw new Error('useStore must be used within StoreProvider')

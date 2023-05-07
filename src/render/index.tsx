@@ -2,9 +2,9 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
 import { createRoot } from 'react-dom/client'
 import 'src/electron-ipc-cat/fixContextIsolation'
+import StoreProvider from 'src/render/lib/store/StoreProvider'
 import { WindowNames } from 'src/services/windows/WindowProperties'
 import RouteByWindowName from './RouteByWindowName'
-import StoreProvider from './store/StoreProvider'
 import theme from './theme'
 
 const root = createRoot(document.querySelector('#root')!)

@@ -1,15 +1,18 @@
+import { nav } from '@cp949/mui-common'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import {
   Collapse,
   Divider,
   List,
-  ListItemButton as MuiListItemButton,
-  ListItemButtonProps as MuiListItemButtonProps,
   ListItemIcon,
   ListItemText,
+  ListItemButton as MuiListItemButton,
+  ListItemButtonProps as MuiListItemButtonProps,
+  styled,
 } from '@mui/material'
-import { styled } from '@mui/system'
+import clsx from 'clsx'
+import { sideMenuManager } from 'src/render/sidebar-menus'
 import {
   DIVIDER_COLOR,
   ICON_COLOR,
@@ -17,18 +20,15 @@ import {
   SIDEMENU_BG_COLOR_HOVER,
   SIDEMENU_FG_COLOR,
 } from '../../main-layout-constants'
-import { isCurrentMenu, ISection } from '../../sidebar-menu-define'
-import MenuIcon from './MenuIcon'
-import MenuItem from './MenuItem'
+import SideMenuItem from './SideMenuItem'
 
 type Props = {
-  section: ISection
+  section: nav.ISection
   expanded: boolean
   currentHref?: string
-  active: boolean
   indent?: boolean
-  onClickSection?: () => void
-  onClickLink?: () => void
+  onClickSection?: (e: React.MouseEvent) => void
+  onClickMenu: (menu: nav.IMenu) => (e: React.MouseEvent) => void
 }
 const ListItemButton = styled(MuiListItemButton, {
   shouldForwardProp: (p) => p !== 'active',
@@ -61,24 +61,19 @@ const ListItemButton = styled(MuiListItemButton, {
   }
 })
 
-export default function SectionMenu(props: Props) {
-  const {
-    section,
-    active,
-    onClickSection: onSectionClick,
-    expanded = false,
-    currentHref,
-    onClickLink: onLinkClick,
-  } = props
+export default function SideSectionMenu(props: Props) {
+  const { section, onClickSection, expanded = false, currentHref, onClickMenu } = props
 
   return (
     <>
-      <ListItemButton onClick={onSectionClick} active={active}>
-        {section.icon && (
-          <ListItemIcon>
-            <MenuIcon iconName={section.icon} />
-          </ListItemIcon>
-        )}
+      <ListItemButton
+        active={sideMenuManager.isSectionPathMatched(section, currentHref)}
+        onClick={onClickSection}
+        className={clsx('SideSectionMenu-root', {
+          'SideSectionMenu-expanded': expanded, // 현재 섹션이 펼쳐진 상태
+        })}
+      >
+        {section.icon && <ListItemIcon>{section.icon}</ListItemIcon>}
         <ListItemText primary={section.title} />
         {expanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
       </ListItemButton>
@@ -101,11 +96,13 @@ export default function SectionMenu(props: Props) {
               return <Divider key={idx} />
             }
             return (
-              <MenuItem
-                key={menu.href + idx}
-                menu={menu}
-                onLinkClick={onLinkClick}
-                active={isCurrentMenu(menu.href, currentHref)}
+              <SideMenuItem
+                key={menu.id}
+                icon={menu.icon}
+                title={menu.title}
+                sx={{ pl: 6 }}
+                onClick={onClickMenu(menu)}
+                active={sideMenuManager.isMenuPathMatched(menu, currentHref)}
               />
             )
           })}

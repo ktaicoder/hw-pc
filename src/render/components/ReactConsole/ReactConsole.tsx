@@ -1,6 +1,7 @@
-import { Box } from '@mui/material'
-import { SxProps } from '@mui/system'
+import { Box, SxProps } from '@mui/material'
+import clsx from 'clsx'
 import * as React from 'react'
+import { flatSx } from 'src/render/util/sx-props'
 import { ASCII } from './ascii'
 
 const MAX_LINES = 10000
@@ -43,7 +44,8 @@ export const ControlKeys = {
 
 export interface ReactConsoleProps {
   // general props
-  sx: SxProps
+  sx?: SxProps
+  className?: string
   autoFocus?: boolean
   readonly?: boolean
   hide?: boolean
@@ -66,14 +68,14 @@ type ReactConsoleState = {
 }
 
 export interface ReactConsoleControl {
-  print: (msg: string[]) => void
+  print: (msg: string[] | string) => void
   getLineCount: () => number
   clear: () => void
   scrollToBottom: () => void
 }
 type Props = ReactConsoleProps
 
-class ReactConsole extends React.Component<Props, ReactConsoleState> implements ReactConsoleControl {
+export class ReactConsole extends React.Component<Props, ReactConsoleState> implements ReactConsoleControl {
   inputRef: any = null
   wrapperRef: any = null
   static defaultProps = {
@@ -135,12 +137,18 @@ class ReactConsole extends React.Component<Props, ReactConsoleState> implements 
   public getLineCount = (): number => {
     return this.state.output.length
   }
-  public print = async (msgLines: string[]) => {
+
+  public print = (msgLines: string[] | string) => {
     // console.log('print:' + inputString)
-    if (msgLines.length === 0) {
-      return
+    if (typeof msgLines === 'string') {
+      this.appendOutput(msgLines)
+    } else {
+      if (msgLines.length === 0) {
+        return
+      }
+      this.appendOutput(msgLines.join(''))
     }
-    this.appendOutput(msgLines.join(''))
+
     if (this.inputRef) {
       this.inputRef.focus()
       this.scrollToBottom()
@@ -236,22 +244,25 @@ class ReactConsole extends React.Component<Props, ReactConsoleState> implements 
   }
 
   render() {
-    const { hide = false, prompt, autoFocus, readonly } = this.props
+    const { sx, className, hide = false, prompt, autoFocus, readonly } = this.props
     if (hide) return <div />
 
     return (
       <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          color: 'white',
-          flex: 1,
-          fontFamily: '"Nanum Gothic Coding",monospace',
-          fontSize: '0.85rem',
-          padding: 2,
-          overflowY: 'auto',
-          ...this.props.sx,
-        }}
+        className={clsx('ReactConsole-root', className)}
+        sx={flatSx(
+          {
+            display: 'flex',
+            flexDirection: 'column',
+            color: 'white',
+            flex: 1,
+            fontFamily: '"Nanum Gothic Coding",monospace',
+            fontSize: '0.85rem',
+            padding: 2,
+            overflowY: 'auto',
+          },
+          sx,
+        )}
         onClick={this.focusConsole}
         ref={(ref) => (this.wrapperRef = ref)}
       >
@@ -307,5 +318,3 @@ class ReactConsole extends React.Component<Props, ReactConsoleState> implements 
     )
   }
 }
-
-export default ReactConsole

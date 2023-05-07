@@ -11,7 +11,7 @@ import { Box } from '@mui/system'
 import { observer } from 'mobx-react'
 import React, { useContext } from 'react'
 import { useMeasure } from 'react-use'
-import useStore from 'src/render/store/useStore'
+import { useStore } from 'src/render/lib/store/useStore'
 import MainLayoutContext from '../MainLayoutContext'
 import { SIDEMENU_WIDTH } from '../main-layout-constants'
 

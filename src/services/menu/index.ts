@@ -2,7 +2,7 @@ import { app, Menu, shell, MenuItemConstructorOptions } from 'electron'
 import { injectable } from 'inversify'
 import { compact, debounce, drop, remove, take } from 'lodash'
 import { lazyInject } from 'src/services/container'
-import { logger } from 'src/services/libs/log'
+import { logger } from 'src/logger'
 import type { IPreferencesService } from 'src/services/preferences/interface'
 import serviceIdentifier from 'src/services/serviceIdentifier'
 import type { IWindowService } from 'src/services/windows/interface'
@@ -107,23 +107,23 @@ export class MenuService implements IMenuService {
         label: () => app.name,
         id: app.name,
         submenu: [
-          {
-            label: () => 'About',
-            click: () => this.windowService.open(WindowNames.about),
-          },
-          { type: 'separator' },
+          // {
+          //   label: () => 'About',
+          //   click: () => this.windowService.open(WindowNames.about),
+          // },
+          // { type: 'separator' },
           // {
           //     label: () => 'ContextMenu.CheckForUpdates',
           //     click: () => ipcMain.emit('request-check-for-updates'),
           // },
-          {
-            label: () => 'Settings',
-            accelerator: 'CmdOrCtrl+,',
-            click: () => this.windowService.open(WindowNames.preferences),
-          },
+          // {
+          //   label: () => 'Settings',
+          //   accelerator: 'CmdOrCtrl+,',
+          //   click: () => this.windowService.open(WindowNames.preferences),
+          // },
           // { type: 'separator' },
           // { role: 'services', submenu: [] },
-          { type: 'separator' },
+          // { type: 'separator' },
           // { role: 'hide' },
           // { role: 'hideOthers' },
           // { role: 'unhide' },

@@ -1,11 +1,23 @@
-const isDev = process.env.NODE_ENV === 'development'
-// const isDev = MAIN_WINDOW_WEBPACK_ENTRY.startsWith('http')
+const removeTrailingSlash = (str: string) => {
+  if (str.endsWith('/')) {
+    return str.replace(/\/+$/, '')
+  }
+  return str
+}
+
+const removeStartingSlash = (str: string) => {
+  if (str.startsWith('/')) {
+    return str.replace(/^\/+/, '')
+  }
+  return str
+}
+
+const ensurePathPrefix = (prefix: string, str: string) => {
+  if (str.startsWith(prefix)) return str
+  return prefix + removeStartingSlash(str)
+}
 
 export const fixWebPath = (src: string | undefined): string | undefined => {
   if (!src) return undefined
-  if (isDev) {
-    return `/main_window${src.startsWith('/') ? '' : '/'}${src}`
-  } else {
-    return src
-  }
+  return ensurePathPrefix('local://', src)
 }

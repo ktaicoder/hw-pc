@@ -1,6 +1,6 @@
 import { address } from 'ip'
 import { defaultServerIP } from 'src/constants/urls'
-import { logger } from './log'
+import { logger } from 'src/logger'
 
 /**
  * get wiki address with local machine ip, so QR code will be correct, instead of get `0.0.0.0`

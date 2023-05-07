@@ -1,6 +1,12 @@
-export class BuildVars {
+export const BuildVars = {
   /**
    * block coding url
    */
-  static blockcodingUrl = 'https://aicodiny.com/codex'
+  blockcodingUrl: 'https://aicodiny.com/codex',
+
+  launchSchema: 'ktaicodingblock-hw',
+
+  defaultServerIP: '0.0.0.0',
+
+  codingpackListenPort: 13996,
 }

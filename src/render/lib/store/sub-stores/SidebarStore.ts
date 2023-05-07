@@ -1,10 +1,11 @@
 import { action, observable, makeObservable } from 'mobx'
 import log from 'src/render/log'
+import { nav } from '@cp949/mui-common'
 
 /**
  * 사이드바 상태를 보관하는 mobx 스토어
  */
-export default class SidebarStore {
+export class SidebarStore {
   constructor() {
     makeObservable(this)
   }
@@ -22,7 +23,7 @@ export default class SidebarStore {
   /**
    * 펼쳐진 sectionId 목록
    */
-  @observable expandedSectionIds: string[] = []
+  @observable expandedSectionIds: nav.MenuIdType[] = []
 
   /**
    * 사이드바 열림 상태 변경
@@ -56,7 +57,7 @@ export default class SidebarStore {
    * 왼쪽 메뉴 섹션 펼침
    * @param sectionId 펼칠 섹션 ID
    */
-  @action expandSection = (sectionId: string) => {
+  @action expandSection = (sectionId: nav.MenuIdType) => {
     const idx = this.expandedSectionIds.indexOf(sectionId)
     if (idx < 0) {
       this.expandedSectionIds.push(sectionId)
@@ -67,7 +68,7 @@ export default class SidebarStore {
    * 왼쪽 메뉴 섹션 접기
    * @param sectionId 펼칠 섹션 ID
    */
-  @action foldSection = (sectionId: string) => {
+  @action foldSection = (sectionId: nav.MenuIdType) => {
     const idx = this.expandedSectionIds.indexOf(sectionId)
     if (idx >= 0) {
       this.expandedSectionIds.splice(idx, 1)
@@ -78,7 +79,7 @@ export default class SidebarStore {
    * 왼쪽 메뉴 섹션 펼침 상태 토글
    * @param sectionId 토글 할 섹션 ID
    */
-  @action toggleExpandSection = (sectionId: string) => {
+  @action toggleExpandSection = (sectionId: nav.MenuIdType) => {
     const idx = this.expandedSectionIds.indexOf(sectionId)
     if (idx >= 0) {
       this.expandedSectionIds.splice(idx, 1)

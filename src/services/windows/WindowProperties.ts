@@ -1,7 +1,7 @@
 export enum WindowNames {
   main = 'main',
-  about = 'about',
-  preferences = 'preferences',
+  // about = 'about',
+  // preferences = 'preferences',
 }
 
 /**
@@ -12,20 +12,20 @@ export const windowDimension: Record<WindowNames, { height?: number; width?: num
     width: 1200,
     height: 768,
   },
-  [WindowNames.about]: {
-    width: 400,
-    height: 420,
-  },
-  [WindowNames.preferences]: {
-    width: 600,
-    height: 620,
-  },
+  // [WindowNames.about]: {
+  //   width: 400,
+  //   height: 420,
+  // },
+  // [WindowNames.preferences]: {
+  //   width: 600,
+  //   height: 620,
+  // },
 }
 
 export interface WindowMeta {
   [WindowNames.main]: { forceClose?: boolean }
-  [WindowNames.about]: undefined
-  [WindowNames.preferences]: undefined
+  // [WindowNames.about]: undefined
+  // [WindowNames.preferences]: undefined
 }
 
 export type IPossibleWindowMeta<M extends WindowMeta[WindowNames] = WindowMeta[WindowNames.main]> = {

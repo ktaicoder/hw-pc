@@ -1,4 +1,3 @@
-import { Box } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { IHwInfo } from 'src/custom-types/basic-types'

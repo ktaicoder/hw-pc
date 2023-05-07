@@ -2,6 +2,7 @@ import { RouterProvider } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { appRouter } from './appRouter'
+import LightboxImageViewEventHandler from './custom-events/LightboxImageViewEventHandler'
 import OpenDocDialogEventHandler from './custom-events/OpenDocDialogEventHandler'
 
 // const DATA = [
@@ -24,6 +25,7 @@ export default function App() {
         pauseOnHover={true}
         draggable={true}
       />
+      <LightboxImageViewEventHandler />
     </>
   )
 }

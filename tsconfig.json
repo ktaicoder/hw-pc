@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
+    "target": "ES6",
     "allowJs": true,
     "module": "commonjs",
-    "target": "es2019",
     "skipLibCheck": true,
     "esModuleInterop": true,
     "sourceMap": true,
@@ -10,22 +10,22 @@
     "outDir": "dist",
     "jsx": "react-jsx",
     "moduleResolution": "node",
-    "resolveJsonModule": true,
     "noImplicitReturns": false,
     "noImplicitThis": false,
     "noImplicitAny": false,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "strictNullChecks": true,
-    "suppressImplicitAnyIndexErrors": true,
+    "resolveJsonModule": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "allowSyntheticDefaultImports":true,
+    "strictNullChecks": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "forceConsistentCasingInFileNames": true,
     "types": ["reflect-metadata"],
     "paths": {
       "src/*": ["src/*"],
       "*": ["node_modules/*"]
     }
   },
-  "include": ["src/**/*", "test.js"]
+  "include": ["src/**/*"]
 }

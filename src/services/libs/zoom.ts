@@ -1,5 +1,5 @@
 import { BrowserWindow } from 'electron'
-import { logger } from './log'
+import { logger } from 'src/logger'
 
 const DEBUG = false
 const ZOOM_MAX = 1.5

@@ -1,10 +1,10 @@
 import { Menu as MenuIcon, MenuOpen as MenuOpenIcon } from '@mui/icons-material'
-import { IconButton, Toolbar, Typography, useTheme, Box } from '@mui/material'
+import { Box, IconButton, Toolbar, Typography } from '@mui/material'
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar'
 import { styled } from '@mui/material/styles'
-import { SIDEMENU_WIDTH } from '../main-layout-constants'
-import useStore from 'src/render/store/useStore'
 import { observer } from 'mobx-react'
+import { useStore } from 'src/render/lib/store/useStore'
+import { SIDEMENU_WIDTH } from '../main-layout-constants'
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean

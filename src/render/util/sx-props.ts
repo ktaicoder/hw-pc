@@ -5,14 +5,14 @@ import { SxProps, Theme } from '@mui/material'
  * @param sxArray SxProps의 배열
  * @returns SxProps
  */
-export function flatSx(...sxArray: Array<SxProps<Theme> | undefined | false | null>): SxProps<Theme> {
+export function flatSx<T extends Theme = Theme>(...sxArray: Array<SxProps<T> | undefined | false | null>): SxProps<T> {
   return sxArray
     .filter((it) => !!it) // filter undefined
     .flatMap((sx) => (Array.isArray(sx) ? sx : [sx ?? false]))
     .filter((it) => it !== false)
 }
 
-export function firstSx(...sxArray: Array<SxProps<Theme> | undefined>) {
+export function firstSx<T extends Theme = Theme>(...sxArray: Array<SxProps<T> | undefined>) {
   return sxArray
     .filter((it) => !!it) // filter undefined
     .flatMap((sx) => (Array.isArray(sx) ? sx : [sx ?? false]))

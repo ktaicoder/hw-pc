@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { PulseLoader } from 'react-spinners'
 import { IHwInfo, ISerialPortInfo, PcDriver } from 'src/custom-types/basic-types'
 import Image from 'src/render/components/Image'
+import { useMoveBackWhenUnselected } from 'src/render/hooks/useMoveBackWhenUnselected'
 import useSerialPortList from 'src/render/hooks/useSerialPortList'
 import { usePromiseValue } from 'src/render/hooks/useServiceValue'
 import { IContext } from 'src/services/context/interface'
@@ -15,7 +16,6 @@ import ConsoleView from './components/ConsoleView'
 import NotConnectedMessageView from './components/NotConnectedMessageView'
 import ToolbarView from './components/ToolbarView'
 import TxRxView from './components/TxRxView'
-import { useMoveBackWhenUnselected } from 'src/render/hooks/useMoveBackWhenUnselected'
 
 type Props = {
   hwInfo: IHwInfo

@@ -1,6 +1,6 @@
 import { Box, Paper, Tab, Tabs } from '@mui/material'
 import { useState } from 'react'
-import EnvInspectView from '../InspectHome/components/EnvInspectView'
+import EnvInspectView from 'src/render/components/EnvInspectView'
 
 export default function SettingsView() {
   const [tabIndex, setTabIndex] = useState(0)

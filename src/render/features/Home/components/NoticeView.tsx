@@ -1,19 +1,7 @@
 import { MdOrUp, SmOrUp } from '@cp949/mui-common'
 import { Box } from '@mui/material'
-import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip'
-import { styled } from '@mui/material/styles'
 import Image from 'src/render/components/Image'
-
-const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
-  <Tooltip {...props} classes={{ popper: className }} />
-))(({ theme }) => ({
-  [`& .${tooltipClasses.tooltip}`]: {
-    backgroundColor: theme.palette.common.white,
-    color: 'rgba(0, 0, 0, 0.87)',
-    boxShadow: theme.shadows[1],
-    fontSize: 11,
-  },
-}))
+import LightTooltip from './LightTooltip'
 
 export default function NoticeView() {
   return (

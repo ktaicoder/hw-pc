@@ -6,9 +6,7 @@ import {
   CircularProgress,
   IconButton,
   Table,
-  TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
   Typography,
@@ -16,12 +14,9 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
 import { useUnmount } from 'react-use'
-import { firstValueFrom, interval } from 'rxjs'
+import { firstValueFrom } from 'rxjs'
 import { CodingpackActionKindKey } from 'src/domain/codingpack'
-import CustomTableBody from 'src/render/components/CustomTableBody'
-import Portlet from 'src/render/components/Portlet'
-import PortletContent from 'src/render/components/PortletContent'
-import PortletHeader from 'src/render/components/PortletHeader'
+import { CustomTableBody } from '@cp949/mui-common'
 import { CodingpackActions } from 'src/render/features/CodingpackHome/CodingpackActions'
 import { CodingpackInfo, HwClient } from '../socket/HwClient'
 

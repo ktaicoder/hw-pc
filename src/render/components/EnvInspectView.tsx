@@ -1,14 +1,10 @@
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material'
-import { usePromiseValue } from 'src/render/hooks/useServiceValue'
-import { IContext } from 'src/services/context/interface'
-import { usePreference } from 'src/services/preferences/hooks'
-import Portlet from 'src/render/components/Portlet'
-import PortletContent from 'src/render/components/PortletContent'
-import PortletHeader from 'src/render/components/PortletHeader'
-import PortletLabel from 'src/render/components/PortletLabel'
+import { Portlet, PortletContent, PortletHeader, PortletLabel } from '@cp949/mui-common'
 import InfoIcon from '@mui/icons-material/Info'
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material'
+import { IContext } from 'src/services/context/interface'
+import { usePromiseValue } from '../hooks/useServiceValue'
+
 export default function EnvInspectView() {
-  const preference = usePreference()
   const context = usePromiseValue<IContext | undefined>(async () => await window.service.context.getAll(), undefined)
 
   return (
@@ -29,6 +25,7 @@ export default function EnvInspectView() {
                   {context?.appVersion ? `-v${context?.appVersion}` : ''}
                 </TableCell>
               </TableRow>
+              <RowItem label="패키징" value={context?.appIsPackaged} />
               <TableRow>
                 <TableCell>디버그</TableCell>
                 <TableCell>{context?.isDevelopment === true ? 'Yes' : 'No'}</TableCell>
@@ -59,27 +56,29 @@ export default function EnvInspectView() {
                 <TableCell>V8</TableCell>
                 <TableCell>{context?.environmentVersions?.['v8']}</TableCell>
               </TableRow>
-
               <TableRow>
-                <TableCell>바탕화면 위치</TableCell>
-                <TableCell>{context?.DESKTOP_PATH}</TableCell>
+                <TableCell>프로세스 리소스</TableCell>
+                <TableCell>{context?.processResourcePath}</TableCell>
               </TableRow>
-              <TableRow>
-                <TableCell>로그 폴더</TableCell>
-                <TableCell>{context?.LOG_FOLDER}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>설정 폴더</TableCell>
-                <TableCell>{context?.SETTINGS_FOLDER}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>애플리케이션 진입점</TableCell>
-                <TableCell>{context?.MAIN_WINDOW_WEBPACK_ENTRY}</TableCell>
-              </TableRow>
+              <RowItem label="locale" value={context?.locale ?? '-'} />
             </TableBody>
           </Table>
         </TableContainer>
       </PortletContent>
     </Portlet>
   )
+}
+
+function RowItem(props: { label: string; value: any }) {
+  const { label, value } = props
+  return (
+    <TableRow>
+      <TableCell>{label}</TableCell>
+      <TableCell>{typeof value === 'boolean' ? yesOrNo(value) : value}</TableCell>
+    </TableRow>
+  )
+}
+
+function yesOrNo(v: boolean) {
+  return v ? 'Yes' : 'No'
 }

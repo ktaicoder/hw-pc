@@ -1,27 +1,28 @@
+import { BuildVars } from 'src/BuildVars'
 import { app, ipcMain, session, powerMonitor, protocol, dialog } from 'electron'
 import settings from 'electron-settings'
 import fs from 'fs-extra'
 import path from 'path'
 import 'reflect-metadata'
-import { SETTINGS_FOLDER, LAUNCH_SCHEMA } from 'src/constants/appPaths'
 import { MainChannel } from 'src/constants/channels'
 import { isTest } from 'src/constants/environment'
 import { bindServiceProxy } from 'src/main/bindServiceProxy'
 import { container } from 'src/services/container'
-import { logger } from 'src/services/libs/log'
+import { logger } from 'src/logger'
 import { IPreferencesService } from 'src/services/preferences/interface'
 import serviceIdentifier from 'src/services/serviceIdentifier'
 import { IWindowService } from 'src/services/windows/interface'
 import { WindowNames } from 'src/services/windows/WindowProperties'
+import { PathHelper } from 'src/PathHelper'
 
 app.commandLine.appendSwitch('enable-web-bluetooth', 'true')
 
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
-    app.setAsDefaultProtocolClient(LAUNCH_SCHEMA, process.execPath, [path.resolve(process.argv[1])])
+    app.setAsDefaultProtocolClient(BuildVars.launchSchema, process.execPath, [path.resolve(process.argv[1])])
   }
 } else {
-  app.setAsDefaultProtocolClient(LAUNCH_SCHEMA)
+  app.setAsDefaultProtocolClient(BuildVars.launchSchema)
 }
 
 // require('update-electron-app')()
@@ -36,7 +37,9 @@ const CSP = [
   'filesystem:',
   'ws://127.0.0.1:*',
   'http://127.0.0.1:*',
+  'local:',
   'http://localhost:*',
+  'https://aicodiny.com',
   'https://ktaicoder.github.io',
   'https://fonts.googleapis.com',
   'https://fonts.gstatic.com',
@@ -48,7 +51,7 @@ const CSP_ARRAY = ['default-src', 'style-src-elem', 'img-src', 'script-src', 'fo
   (it) => `${it} ${CSP.join(' ')}`,
 )
 
-settings.configure({ dir: SETTINGS_FOLDER })
+settings.configure({ dir: PathHelper.settingsPath() })
 bindServiceProxy()
 
 const preferenceService = container.get<IPreferencesService>(serviceIdentifier.Preferences)
@@ -65,22 +68,35 @@ async function customInit() {
     })
   })
 
-  const succ = protocol.registerFileProtocol('file', (request, callback) => {
-    logger.warn('protocol handler called:', request.url)
+  let succ = protocol.registerFileProtocol('file', (request, callback) => {
     const pathname = decodeURIComponent(request.url.replace('file:///', ''))
+    logger.debug('file protocol handler called:', request.url, { pathname })
     if (path.isAbsolute(pathname) ? fs.existsSync(pathname) : fs.existsSync(`/${pathname}`)) {
-      logger.warn(`registerFileProtocol ${pathname}`)
+      logger.debug(`registerFileProtocol ${pathname}`)
       callback(pathname)
     } else {
       // on production, __dirname will be in .webpack/main
       const filePath = path.join(app.getAppPath(), '.webpack', 'renderer', pathname)
-      logger.warn(`registerFileProtocol ${filePath}`)
+      logger.debug(`registerFileProtocol ${filePath}`)
       callback(filePath)
     }
   })
 
   if (!succ) {
     logger.error('Failed to registerFileProtocol file:///')
+    app.quit()
+  }
+
+  succ = protocol.registerFileProtocol('local', (request, callback) => {
+    const pathname = request.url.replace('local://', '')
+    const fileLocation = PathHelper.webRootPath(pathname)
+
+    // logger.debug(`local:// protocol called:,${request.url},${fileLocation}`)
+    callback(fileLocation)
+  })
+
+  if (!succ) {
+    logger.error('Failed to registerFileProtocol local:///')
     app.quit()
   }
 

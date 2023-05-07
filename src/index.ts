@@ -1,14 +1,16 @@
-// import 'module-alias/register'
-
 import { app } from 'electron'
 import unhandled from 'electron-unhandled'
 import { debugInfo, openNewGitHubIssue } from 'electron-util'
+import path from 'path'
 import { isTest } from 'src/constants/environment'
-import { logger } from 'src/services/libs/log'
+import { logger } from 'src/logger'
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS '] = 'true'
 
 app.commandLine.appendSwitch('enable-web-bluetooth', 'true')
+
+app.setPath('userData', path.join(app.getPath('appData'), 'aicodiny-hw'))
+app.setPath('sessionData', path.join(app.getPath('userData'), 'session'))
 
 function runMain() {
   const gotTheLock = app.requestSingleInstanceLock()
@@ -23,7 +25,7 @@ function runMain() {
     return
   }
 
-  return import('./bootstrapMainProcess')
+  return import('./main/bootstrapMainProcess')
 }
 
 runMain()

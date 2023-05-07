@@ -5,14 +5,14 @@ import { Link as RouterLink, LinkProps as RouterLinkProps } from 'react-router-d
 export type LinkProps = MuiLinkProps & Pick<RouterLinkProps, 'to' | 'replace'>
 
 export default function Link(props: LinkProps) {
-  const { replace, to, href } = props
+  const { replace, to } = props
 
   const CustomLink = React.useMemo(
     () =>
       React.forwardRef<HTMLAnchorElement, Omit<RouterLinkProps, 'to' | 'replace'>>(function Link(linkProps, ref) {
-        return <RouterLink ref={ref} to={to ?? ''} href={href} replace={replace} {...linkProps} />
+        return <RouterLink ref={ref} to={to ?? ''} replace={replace} {...linkProps} />
       }),
-    [to, replace, href],
+    [to, replace],
   )
 
   return <MuiLink component={CustomLink} {...props} />

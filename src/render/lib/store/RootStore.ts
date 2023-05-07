@@ -1,4 +1,4 @@
-import SidebarStore from './sub-stores/SidebarStore'
+import { SidebarStore } from './sub-stores/SidebarStore'
 
 /**
  * Mobx 루트 스토어
