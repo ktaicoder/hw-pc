@@ -9,12 +9,13 @@ import useSerialPortList from 'src/render/hooks/useSerialPortList'
 import { usePromiseValue } from 'src/render/hooks/useServiceValue'
 import { IContext } from 'src/services/context/interface'
 import { useHwServerState } from 'src/services/hw/useHwServerState'
+import PortsView from '../../components/PortsView'
 import ConnectedMessageView from './components/ConnectedMessageView'
 import ConsoleView from './components/ConsoleView'
 import NotConnectedMessageView from './components/NotConnectedMessageView'
-import PortsView from '../../components/PortsView'
 import ToolbarView from './components/ToolbarView'
 import TxRxView from './components/TxRxView'
+import { useMoveBackWhenUnselected } from 'src/render/hooks/useMoveBackWhenUnselected'
 
 type Props = {
   hwInfo: IHwInfo
@@ -34,13 +35,14 @@ const filterPcDrivers = (platform: string, arch: string, pcDrivers: PcDriver[]):
     })
 }
 
-function isNullish(t: any): boolean {
+function isNullish(t: any): t is undefined | null {
   if (t === undefined || t === null) return true
   return false
 }
 
 export default function DeviceSelectionHome(props: Props) {
   const { hwInfo: info } = props
+
   const context = usePromiseValue<IContext | undefined>(async () => await window.service.context.getAll(), undefined)
   const [portInfo, setPortInfo] = useState<ISerialPortInfo>()
   const [refreshToken, setRefreshToken] = useState(0)
@@ -56,6 +58,9 @@ export default function DeviceSelectionHome(props: Props) {
   }, [context, info.pcDrivers])
 
   const hwServerState = useHwServerState()
+
+  // 하드웨어 선택이 취소되면 홈화면으로 이동
+  useMoveBackWhenUnselected(info.hwId)
 
   useEffect(() => {
     const newPorts = portInfos
@@ -119,12 +124,10 @@ export default function DeviceSelectionHome(props: Props) {
         flexDirection: 'column',
         height: '100vh',
         overflow: 'hidden',
+        minWidth: 800,
       }}
     >
-      <ToolbarView
-        hwId={info.hwId}
-        hwName={typeof info.hwName === 'string' ? info.hwName : info.hwName.ko ?? info.hwName.en}
-      />
+      <ToolbarView hwName={typeof info.hwName === 'string' ? info.hwName : info.hwName.ko ?? info.hwName.en} />
 
       <Box
         sx={{
@@ -170,7 +173,6 @@ export default function DeviceSelectionHome(props: Props) {
                   minWidth: 180,
                   width: '100%',
                   height: '140px',
-                  border: '0px solid #ccc',
                   objectFit: 'contain',
                 }}
                 src={`static/images/devices/${info.hwId}.png`}
@@ -244,7 +246,6 @@ export default function DeviceSelectionHome(props: Props) {
           position: 'absolute',
           top: 56,
           left: 16,
-          //   right: 16,
           width: 'calc(100% - 32px)',
           height: 'calc(100% - 60px)',
           borderRadius: 1,

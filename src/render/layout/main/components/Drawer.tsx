@@ -1,6 +1,6 @@
 import MuiDrawer from '@mui/material/Drawer'
 import { CSSObject, styled, Theme } from '@mui/material/styles'
-import { SIDEMENU_BG_COLOR, SIDEMENU_WIDTH } from '../../main-layout-constants'
+import { SIDEMENU_BG_COLOR, SIDEMENU_WIDTH } from '../main-layout-constants'
 
 const openedMixin = (theme: Theme): CSSObject => ({
   width: SIDEMENU_WIDTH,

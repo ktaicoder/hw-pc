@@ -1,31 +1,21 @@
-import { HashRouter, Route, Switch } from 'react-router-dom'
-import Home from './pages/home/HomePage'
-import InspectSerialPage from './pages/InspectSerialPage'
-import InfoPage from './pages/InfoPage'
-import SettingsPage from './pages/SettingsPage'
-import CodingpackPage from './pages/CodingpackPage'
+import { RouterProvider } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import { appRouter } from './appRouter'
 import OpenDocDialogEventHandler from './custom-events/OpenDocDialogEventHandler'
 
-const DATA = [
-  { path: '/inspect-serial', comp: InspectSerialPage },
-  { path: '/codingpack', comp: CodingpackPage },
-  { path: '/info', comp: InfoPage },
-  { path: '/settings', comp: SettingsPage },
-  { path: '/', comp: Home },
-]
+// const DATA = [
+//   { path: '/inspect-serial', comp: InspectSerialPage },
+//   { path: '/codingpack', comp: CodingpackPage },
+//   { path: '/info', comp: InfoPage },
+//   { path: '/settings', comp: SettingsPage },
+//   { path: '/', comp: HomePage },
+// ]
 
 export default function App() {
   return (
     <>
-      <HashRouter>
-        <Switch>
-          {DATA.map((item) => (
-            <Route key={item.path} path={item.path} exact={true} component={item.comp} />
-          ))}
-        </Switch>
-      </HashRouter>
+      <RouterProvider router={appRouter} />
       <OpenDocDialogEventHandler />
       <ToastContainer
         position="top-center"

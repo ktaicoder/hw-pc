@@ -1,7 +1,7 @@
 import { WindowNames } from 'src/services/windows/WindowProperties'
 import App from './App'
-import AboutPage from './pages/about/AboutPage'
-import PreferencesPage from './pages/preferences/PreferencesPage'
+import AboutPage from './pages/AboutPage'
+import PreferencesPage from './pages/PreferencesPage'
 
 type Props = {
   windowName: WindowNames

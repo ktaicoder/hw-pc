@@ -1,6 +1,3 @@
-// const {
-//   utils: { fromBuildIdentifier },
-// } = require('@electron-forge/core')
 import { utils } from '@electron-forge/core'
 import { spawn } from 'child_process'
 import fs from 'fs'

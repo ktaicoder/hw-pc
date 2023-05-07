@@ -3,11 +3,11 @@ import { styled } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 import * as React from 'react'
 import useStore from 'src/render/store/useStore'
-import DrawerHeader from './components/drawer-header/DrawerHeader'
-import Drawer from './components/drawer/Drawer'
-import MainPageTopbar from './components/main-page-topbar'
+import DrawerHeader from './components/DrawerHeader'
+import Drawer from './components/Drawer'
+import MainPageTopbar from './components/MainPageTopbar'
 import Sidebar from './components/sidebar'
-import Topbar from './components/topbar'
+import Topbar from './components/Topbar'
 import { CONTENT_BG_COLOR } from './main-layout-constants'
 import MainLayoutContext from './MainLayoutContext'
 
@@ -62,15 +62,7 @@ function MainLayout(props: Props) {
   return (
     <MainLayoutContext.Provider value={contextData}>
       <Box sx={{ display: 'flex', position: 'relative' }}>
-        {isMainPage ? (
-          <MainPageTopbar
-            title={title}
-            isSidebarOpen={isSidebarOpen}
-            onClickMenuButton={() => sidebarStore.toggleOpen()}
-          />
-        ) : (
-          <Topbar title={title} isSidebarOpen={isSidebarOpen} onClickMenuButton={() => sidebarStore.toggleOpen()} />
-        )}
+        {isMainPage ? <MainPageTopbar title={title} /> : <Topbar title={title} />}
         <Drawer variant="permanent" open={isSidebarOpen}>
           <Sidebar />
         </Drawer>
@@ -81,6 +73,7 @@ function MainLayout(props: Props) {
               flexGrow: 1,
               display: 'flex',
               flexDirection: 'column',
+              minWidth: 400,
             }}
           >
             {children}

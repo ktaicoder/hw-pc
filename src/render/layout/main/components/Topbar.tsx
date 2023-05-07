@@ -2,7 +2,9 @@ import { Menu as MenuIcon, MenuOpen as MenuOpenIcon } from '@mui/icons-material'
 import { IconButton, Toolbar, Typography, useTheme, Box } from '@mui/material'
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar'
 import { styled } from '@mui/material/styles'
-import { SIDEMENU_WIDTH } from '../../main-layout-constants'
+import { SIDEMENU_WIDTH } from '../main-layout-constants'
+import useStore from 'src/render/store/useStore'
+import { observer } from 'mobx-react'
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean
@@ -42,20 +44,23 @@ const AppBar = styled(MuiAppBar, {
 type Props = {
   title: string
   className?: string
-  isSidebarOpen: boolean
-  onClickMenuButton?: any
 }
 
-export default function Topbar(props: Props) {
-  const { title = 'No title', isSidebarOpen, onClickMenuButton } = props
-  const theme = useTheme()
+function Topbar(props: Props) {
+  const { title = 'No title' } = props
+  const { sidebarStore } = useStore()
+  const isSidebarOpen = sidebarStore.isOpen
+
+  const handleClickMenuBtn = () => {
+    sidebarStore.toggleOpen()
+  }
 
   return (
     <AppBar position="fixed" open={isSidebarOpen}>
       <Toolbar variant="dense">
         <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
           <IconButton
-            onClick={onClickMenuButton}
+            onClick={handleClickMenuBtn}
             color="inherit"
             aria-label="open drawer"
             edge="start"
@@ -74,3 +79,5 @@ export default function Topbar(props: Props) {
     </AppBar>
   )
 }
+
+export default observer(Topbar)

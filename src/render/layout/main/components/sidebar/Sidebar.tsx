@@ -1,13 +1,12 @@
 import { Box, Divider, List, ListItem, ListItemText, useMediaQuery } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import Image from 'src/render/components/Image'
-import hist from 'src/render/services/history'
 import useStore from 'src/render/store/useStore'
 import { SIDEMENU_FG_COLOR } from '../../main-layout-constants'
-import { IMenu, isCurrentMenu, isCurrentSection, ISection, menus } from '../../sidebar-menu-define'
-import DrawerHeader from '../drawer-header/DrawerHeader'
+import { IMenu, ISection, isCurrentMenu, isCurrentSection, menus } from '../../sidebar-menu-define'
+import DrawerHeader from '../DrawerHeader'
 import MenuItem from './MenuItem'
 import SectionMenu from './SectionMenu'
 
@@ -15,10 +14,13 @@ const ALL_MENUS = menus
 
 function Sidebar() {
   const theme = useTheme()
+  const navigate = useNavigate()
+
   const { pathname: pathkey } = useLocation()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const { sidebarStore } = useStore()
-  const _onClickLink = () => {
+
+  const handleClickLink = () => {
     if (isMobile) {
       sidebarStore.setOpen(false)
     }
@@ -50,7 +52,7 @@ function Sidebar() {
 
         <Image
           component="img"
-          onClick={() => hist.push('/')}
+          onClick={() => navigate('/')}
           sx={{ maxWidth: '80%', height: 20, objectFit: 'contain' }}
           src="static/images/logo_white.png"
         />
@@ -62,7 +64,7 @@ function Sidebar() {
               <MenuItem
                 key={idx}
                 menu={item as IMenu}
-                onLinkClick={_onClickLink}
+                onLinkClick={handleClickLink}
                 active={isCurrentMenu(item.href, pathkey)}
               />
             )
@@ -93,7 +95,7 @@ function Sidebar() {
                 section={section}
                 currentHref={pathkey}
                 expanded={sidebarStore.expandedSectionIds.includes(section.sectionId)}
-                onClickLink={_onClickLink}
+                onClickLink={handleClickLink}
                 onClickSection={() => sidebarStore.toggleExpandSection(section.sectionId)}
               />
             )

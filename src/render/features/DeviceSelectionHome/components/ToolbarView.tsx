@@ -1,22 +1,21 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { Box, IconButton, Toolbar, Tooltip, Typography } from '@mui/material'
+import { BuildVars } from 'src/BuildVars'
 import Image from 'src/render/components/Image'
 
 type Props = {
-  hwId: string
   hwName: string
 }
 
 export default function ToolbarView(props: Props) {
-  const { hwId, hwName } = props
+  const { hwName } = props
 
   const handleClickBack = () => {
     window.service.hw.unselectHw()
   }
 
   const handleClickChrome = () => {
-    // window.service.hw.downloadDriver(driverPath)
-    window.service.native.openUrl('https://aicodiny.com/codex')
+    window.service.native.openUrl(BuildVars.blockcodingUrl)
   }
 
   return (
@@ -47,15 +46,7 @@ export default function ToolbarView(props: Props) {
         </Typography>
       </Box>
       <Tooltip title="브라우저 열기">
-        <IconButton
-          onClick={handleClickChrome}
-          color="inherit"
-          aria-label="open drawer"
-          edge="start"
-          sx={{
-            marginRight: '24px',
-          }}
-        >
+        <IconButton onClick={handleClickChrome} color="inherit" aria-label="open drawer" edge="start" sx={{ mr: 3 }}>
           <Image sx={{ width: 24, height: 24 }} src="static/images/ic_chrome.png" />
         </IconButton>
       </Tooltip>

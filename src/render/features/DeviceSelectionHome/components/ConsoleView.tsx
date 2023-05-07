@@ -218,7 +218,6 @@ function applyColor(level: UiLogLevel, text: string) {
 }
 
 function applyTermColor(level: UiLogLevel, logTag: string, msg: string) {
-  // prefix가 있을때는 level=d 일때도 컬러풀하게 출력하기
   if (level === 'd') {
     return logTag + ' ' + chalk.greenBright(msg)
   }
