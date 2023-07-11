@@ -1,10 +1,70 @@
+import { MdOrUp } from '@cp949/mui-common'
 import { Menu as MenuIcon, MenuOpen as MenuOpenIcon } from '@mui/icons-material'
 import { Box, IconButton, Toolbar, Typography } from '@mui/material'
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar'
 import { styled } from '@mui/material/styles'
 import { observer } from 'mobx-react'
+import { Choose } from 'react-extras'
 import { useStore } from 'src/render/lib/store/useStore'
 import { SIDEMENU_WIDTH } from '../main-layout-constants'
+
+type Props = {
+  title?: React.ReactNode
+  className?: string
+}
+
+function Topbar(props: Props) {
+  const { title = '' } = props
+  const { sidebarStore } = useStore()
+  const isSidebarOpen = sidebarStore.isOpen
+
+  const handleClickMenuBtn = () => {
+    sidebarStore.toggleOpen()
+  }
+
+  return (
+    <AppBar position="fixed" open={isSidebarOpen} className="Topbar-root">
+      <Toolbar variant="dense">
+        <Box
+          sx={{
+            flexGrow: 1,
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
+          <IconButton
+            onClick={handleClickMenuBtn}
+            color="inherit"
+            aria-label="open drawer"
+            edge="start"
+            sx={{ mr: '16px' }}
+          >
+            {isSidebarOpen ? <MenuOpenIcon /> : <MenuIcon />}
+          </IconButton>
+          <Choose>
+            <Choose.When condition={typeof title === 'string'}>
+              <MdOrUp>
+                <Typography
+                  variant="subtitle1"
+                  noWrap
+                  component="div"
+                  sx={{
+                    color: (theme) => theme.palette.primary.dark,
+                    fontSize: '1.0rem',
+                    fontWeight: 700,
+                  }}
+                >
+                  {title}
+                </Typography>
+              </MdOrUp>
+            </Choose.When>
+            <Choose.Otherwise>{title}</Choose.Otherwise>
+          </Choose>
+        </Box>
+      </Toolbar>
+    </AppBar>
+  )
+}
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean
@@ -19,7 +79,7 @@ const AppBar = styled(MuiAppBar, {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  color: '#005CA2',
+  color: theme.palette.primary.main,
   ...(open && {
     width: `calc(100% - ${SIDEMENU_WIDTH}px)`,
     marginLeft: SIDEMENU_WIDTH,
@@ -37,47 +97,5 @@ const AppBar = styled(MuiAppBar, {
     },
   }),
 }))
-
-/**
- * 대시보드 상단 Topbar
- */
-type Props = {
-  title: string
-  className?: string
-}
-
-function Topbar(props: Props) {
-  const { title = 'No title' } = props
-  const { sidebarStore } = useStore()
-  const isSidebarOpen = sidebarStore.isOpen
-
-  const handleClickMenuBtn = () => {
-    sidebarStore.toggleOpen()
-  }
-
-  return (
-    <AppBar position="fixed" open={isSidebarOpen}>
-      <Toolbar variant="dense">
-        <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
-          <IconButton
-            onClick={handleClickMenuBtn}
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            sx={{
-              // ...(isSidebarOpen && { display: 'none' }),
-              marginRight: '16px',
-            }}
-          >
-            {isSidebarOpen ? <MenuOpenIcon htmlColor="#005CA2" /> : <MenuIcon htmlColor="#005CA2" />}
-          </IconButton>
-          <Typography variant="subtitle1" noWrap component="div" sx={{ fontSize: '1.0rem', fontWeight: 600 }}>
-            {title}
-          </Typography>
-        </Box>
-      </Toolbar>
-    </AppBar>
-  )
-}
 
 export default observer(Topbar)

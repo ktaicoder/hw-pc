@@ -12,8 +12,133 @@ import { observer } from 'mobx-react'
 import React, { useContext } from 'react'
 import { useMeasure } from 'react-use'
 import { useStore } from 'src/render/lib/store/useStore'
-import MainLayoutContext from '../MainLayoutContext'
-import { SIDEMENU_WIDTH } from '../main-layout-constants'
+import MainLayoutContext from '../layout/main/MainLayoutContext'
+import { SIDEMENU_WIDTH } from '../layout/main/main-layout-constants'
+import { Choose } from 'react-extras'
+
+type Props = {
+  title?: React.ReactNode
+  className?: string
+}
+
+function MainPageTopbar(props: Props) {
+  const { title = '' } = props
+  const { sidebarStore } = useStore()
+
+  const isSidebarOpen = sidebarStore.isOpen
+
+  const [toolbarRef, { width: toolbarWidth }] = useMeasure<HTMLDivElement>()
+  const { hwKind, setHwKind, searchQuery, setSearchQuery } = useContext(MainLayoutContext)!
+
+  const handleChangeHwKind = (event: React.MouseEvent<HTMLElement>, newValue: string) => {
+    if (newValue === 'all' || newValue === 'serial' || newValue === 'bluetooth') {
+      setHwKind(newValue)
+    }
+  }
+
+  const handleChangeSearchQuery = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log({ event, value: event.target.value })
+    setSearchQuery(event.target.value)
+  }
+
+  const handleClickMenuBtn = () => {
+    sidebarStore.toggleOpen()
+  }
+
+  const isNarrow = !toolbarWidth || toolbarWidth < 660
+  // const isVeryNarrow = !toolbarWidth || toolbarWidth < 500
+
+  return (
+    <AppBar position="fixed" open={isSidebarOpen}>
+      <Toolbar variant="dense" ref={toolbarRef}>
+        <Box
+          sx={{
+            position: 'relative',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center' }}>
+            <IconButton
+              onClick={handleClickMenuBtn}
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              sx={{
+                // ...(isSidebarOpen && { display: 'none' }),
+                marginRight: '16px',
+              }}
+            >
+              {isSidebarOpen ? <MenuOpenIcon htmlColor="#005CA2" /> : <MenuIcon htmlColor="#005CA2" />}
+            </IconButton>
+            <Choose>
+              <Choose.When condition={typeof title === 'string'}>
+                <MdOrUp>
+                  <Typography variant="subtitle1" noWrap component="div" sx={{ fontSize: '1.0rem', fontWeight: 600 }}>
+                    {title}
+                  </Typography>
+                </MdOrUp>
+              </Choose.When>
+              <Choose.Otherwise>{title}</Choose.Otherwise>
+            </Choose>
+          </Box>
+
+          <Box
+            sx={{
+              display: 'inline-flex',
+              position: 'absolute',
+              left: '50%',
+              top: '50%',
+              background: (theme) => theme.palette.background.paper,
+              transform: 'translate(-50%, -50%)',
+              border: (theme) => `0px solid ${theme.palette.divider}`,
+              flexWrap: 'nowrap',
+            }}
+          >
+            <StyledToggleButtonGroup
+              size="small"
+              value={hwKind}
+              exclusive
+              onChange={handleChangeHwKind}
+              aria-label="text alignment"
+              color="primary"
+            >
+              <ToggleButton value="all" aria-label="all">
+                <RadioButtonCheckedIcon />
+                전체
+              </ToggleButton>
+              <ToggleButton value="serial" aria-label="serial">
+                <UsbIcon />
+                시리얼
+              </ToggleButton>
+              <ToggleButton value="bluetooth" aria-label="bluetooth">
+                <BluetoothIcon />
+                블루투스
+              </ToggleButton>
+            </StyledToggleButtonGroup>
+          </Box>
+
+          {!isNarrow && (
+            <Search>
+              <SearchIconWrapper>
+                <SearchIcon />
+              </SearchIconWrapper>
+              <StyledInputBase
+                placeholder="Search"
+                size="small"
+                value={searchQuery ?? ''}
+                onChange={handleChangeSearchQuery}
+                inputProps={{ 'aria-label': 'search' }}
+              />
+            </Search>
+          )}
+        </Box>
+      </Toolbar>
+    </AppBar>
+  )
+}
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   '& .MuiToggleButtonGroup-grouped': {
@@ -126,124 +251,5 @@ const AppBar = styled(MuiAppBar, {
     },
   }),
 }))
-
-type Props = {
-  title: string
-  className?: string
-}
-
-function MainPageTopbar(props: Props) {
-  const { title = 'No title' } = props
-  const { sidebarStore } = useStore()
-
-  const isSidebarOpen = sidebarStore.isOpen
-
-  const [toolbarRef, { width: toolbarWidth }] = useMeasure<HTMLDivElement>()
-  const { hwKind, setHwKind, searchQuery, setSearchQuery } = useContext(MainLayoutContext)!
-
-  const handleChangeHwKind = (event: React.MouseEvent<HTMLElement>, newValue: string) => {
-    if (newValue === 'all' || newValue === 'serial' || newValue === 'bluetooth') {
-      setHwKind(newValue)
-    }
-  }
-
-  const handleChangeSearchQuery = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log({ event, value: event.target.value })
-    setSearchQuery(event.target.value)
-  }
-
-  const handleClickMenuBtn = () => {
-    sidebarStore.toggleOpen()
-  }
-
-  const isNarrow = !toolbarWidth || toolbarWidth < 660
-  // const isVeryNarrow = !toolbarWidth || toolbarWidth < 500
-
-  return (
-    <AppBar position="fixed" open={isSidebarOpen}>
-      <Toolbar variant="dense" ref={toolbarRef}>
-        <Box
-          sx={{
-            position: 'relative',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center' }}>
-            <IconButton
-              onClick={handleClickMenuBtn}
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              sx={{
-                // ...(isSidebarOpen && { display: 'none' }),
-                marginRight: '16px',
-              }}
-            >
-              {isSidebarOpen ? <MenuOpenIcon htmlColor="#005CA2" /> : <MenuIcon htmlColor="#005CA2" />}
-            </IconButton>
-            <MdOrUp>
-              <Typography variant="subtitle1" noWrap component="div" sx={{ fontSize: '1.0rem', fontWeight: 600 }}>
-                {title}
-              </Typography>
-            </MdOrUp>
-          </Box>
-
-          <Box
-            sx={{
-              display: 'inline-flex',
-              position: 'absolute',
-              left: '50%',
-              top: '50%',
-              background: (theme) => theme.palette.background.paper,
-              transform: 'translate(-50%, -50%)',
-              border: (theme) => `0px solid ${theme.palette.divider}`,
-              flexWrap: 'nowrap',
-            }}
-          >
-            <StyledToggleButtonGroup
-              size="small"
-              value={hwKind}
-              exclusive
-              onChange={handleChangeHwKind}
-              aria-label="text alignment"
-              color="primary"
-            >
-              <ToggleButton value="all" aria-label="all">
-                <RadioButtonCheckedIcon />
-                전체
-              </ToggleButton>
-              <ToggleButton value="serial" aria-label="serial">
-                <UsbIcon />
-                시리얼
-              </ToggleButton>
-              <ToggleButton value="bluetooth" aria-label="bluetooth">
-                <BluetoothIcon />
-                블루투스
-              </ToggleButton>
-            </StyledToggleButtonGroup>
-          </Box>
-
-          {!isNarrow && (
-            <Search>
-              <SearchIconWrapper>
-                <SearchIcon />
-              </SearchIconWrapper>
-              <StyledInputBase
-                placeholder="Search"
-                size="small"
-                value={searchQuery ?? ''}
-                onChange={handleChangeSearchQuery}
-                inputProps={{ 'aria-label': 'search' }}
-              />
-            </Search>
-          )}
-        </Box>
-      </Toolbar>
-    </AppBar>
-  )
-}
 
 export default observer(MainPageTopbar)

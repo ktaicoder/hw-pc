@@ -13,7 +13,7 @@ import {
   timeout,
 } from 'rxjs'
 import { SerialPort } from 'serialport'
-import { BufferTimestamped, ISerialDevice, IUiLogger, SerialPortDeviceState } from 'src/custom-types'
+import { BufferTimestamped, ISerialDevice, IUiLogger, DeviceOpenState } from 'src/custom-types'
 import { RxSerialPort } from 'src/util/RxSerialPort'
 import Stream from 'stream'
 
@@ -33,7 +33,7 @@ type OnReadFn = (bytes: number) => void
 export class SerialDevice implements ISerialDevice {
   private debugTag_: string
 
-  private deviceState$ = new BehaviorSubject<SerialPortDeviceState>('closed')
+  private deviceState$ = new BehaviorSubject<DeviceOpenState>('closed')
 
   private receivedData$ = new Subject<BufferTimestamped>()
 
@@ -88,7 +88,7 @@ export class SerialDevice implements ISerialDevice {
   /**
    * implement ISerialDevice
    */
-  getState = (): SerialPortDeviceState => {
+  getState = (): DeviceOpenState => {
     return this.deviceState$.value
   }
 
@@ -249,7 +249,7 @@ export class SerialDevice implements ISerialDevice {
   /**
    * implement ISerialDevice
    */
-  observeDeviceState = (): Observable<SerialPortDeviceState> => this.deviceState$.asObservable()
+  observeDeviceState = (): Observable<DeviceOpenState> => this.deviceState$.asObservable()
 
   /**
    * implement ISerialDevice

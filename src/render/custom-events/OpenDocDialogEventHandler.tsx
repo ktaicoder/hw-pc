@@ -5,7 +5,7 @@ import { OpenDocDialogEvent } from './OpenDocDialogEvent'
 type DialogId = 'DocViewDialog'
 
 export default function OpenDocDialogEventHandler() {
-  const [docViewDialogProps, setDocViewDialogProps] = useState<Omit<DocViewDialogProps, 'open'>>()
+  const [docViewDialogProps, setDocViewDialogProps] = useState<DocViewDialogProps>()
   const [dialogId, setDialogId] = useState<DialogId>()
 
   //
@@ -19,6 +19,7 @@ export default function OpenDocDialogEventHandler() {
       setDialogId('DocViewDialog')
       setDocViewDialogProps({
         docId,
+        open: true,
         onClose: handleCloseDialog,
       })
     },
@@ -36,7 +37,7 @@ export default function OpenDocDialogEventHandler() {
   }, [openDocDialog])
 
   if (dialogId === 'DocViewDialog' && docViewDialogProps) {
-    return <DocViewDialog open={true} {...docViewDialogProps} />
+    return <DocViewDialog {...docViewDialogProps} />
   }
 
   return null

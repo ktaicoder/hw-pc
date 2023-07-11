@@ -182,7 +182,7 @@ export interface ISerialDevice {
 
   getSerialPortPath: () => string | undefined
 
-  getState: () => SerialPortDeviceState
+  getState: () => DeviceOpenState
 
   isOpened: () => boolean
 
@@ -190,7 +190,7 @@ export interface ISerialDevice {
 
   write: (values: Buffer | number[]) => Promise<boolean>
 
-  observeDeviceState: () => Observable<SerialPortDeviceState>
+  observeDeviceState: () => Observable<DeviceOpenState>
 
   observeOpenedOrNot: () => Observable<boolean>
 
@@ -208,7 +208,7 @@ export interface IUiLogger {
   e: (logTag: string, msg: UiLogMessageType) => void
 }
 
-export type SerialPortDeviceState = 'opening' | 'opened' | 'closing' | 'closed'
+export type DeviceOpenState = 'opening' | 'opened' | 'closing' | 'closed'
 
 export type BufferTimestamped = { timestamp: number; dataBuffer: Buffer }
 

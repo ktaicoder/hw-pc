@@ -3,10 +3,15 @@ import { HwChannel } from 'src/constants/channels'
 import { IHwInfo, ISerialPortInfo, IUiLogMessage, UiDeviceState } from 'src/custom-types/basic-types'
 import { ProxyPropertyType } from 'src/electron-ipc-cat/common'
 
-export type HwServerState = {
-  hwId?: string
-  running: boolean
-}
+export type HwServerState =
+  | {
+      hwId: string
+      running: true
+    }
+  | {
+      hwId: undefined
+      running: false
+    }
 
 export interface IHwService {
   consoleMessage$: Observable<IUiLogMessage>

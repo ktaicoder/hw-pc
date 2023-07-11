@@ -106,7 +106,7 @@ export class HwService implements IHwService {
       this.hwServer_ = undefined
     }
     this.deviceStateManager_.reset() // 디바이스 상태 리셋
-    this.hwServerState$.next({ running: false })
+    this.hwServerState$.next({ running: false, hwId: undefined })
   }
 
   private startHcpServer_ = async (hwDescriptor: IHwDescriptor): Promise<HcpWebSocketServer> => {
