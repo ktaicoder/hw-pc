@@ -1,10 +1,8 @@
 import { Subject } from 'rxjs'
 import { IUiLogger, IUiLogMessage, UiLogMessageType } from 'src/custom-types'
 
-const TRACE = true
-
 export class UiLogger implements IUiLogger {
-  constructor(private readonly message$: Subject<IUiLogMessage>) {}
+  readonly message$ = new Subject<IUiLogMessage>()
 
   d = (logTag: string, msg: UiLogMessageType) => {
     this.message$.next({ level: 'd', msg, logTag })
@@ -28,11 +26,23 @@ export class UiLogger implements IUiLogger {
 }
 
 export class DummyUiLogger implements IUiLogger {
-  d = (logTag: string, msg: UiLogMessageType) => {}
+  d = (logTag: string, msg: UiLogMessageType) => {
+    // empty
+  }
 
-  i = (logTag: string, msg: UiLogMessageType) => {}
+  i = (logTag: string, msg: UiLogMessageType) => {
+    // empty
+  }
 
-  w = (logTag: string, msg: UiLogMessageType) => {}
+  w = (logTag: string, msg: UiLogMessageType) => {
+    // empty
+  }
 
-  e = (logTag: string, msg: UiLogMessageType) => {}
+  e = (logTag: string, msg: UiLogMessageType) => {
+    // empty
+  }
 }
+
+export const dummyLogger = new DummyUiLogger()
+
+export const uiLogger = new UiLogger()

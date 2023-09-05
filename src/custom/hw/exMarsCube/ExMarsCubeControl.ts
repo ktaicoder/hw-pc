@@ -10,6 +10,7 @@ import {
   take,
   takeUntil,
 } from 'rxjs'
+import { uiLogger } from 'src/services/hw/UiLogger'
 import { AbstractHwConrtol } from '../AbstractHwControl'
 import {
   Action,
@@ -191,7 +192,12 @@ export class ExMarsCubeControl extends AbstractHwConrtol implements IExMarsCubeC
     await this.delay()
   }
 
-  async setFaceRotationOnlyColor(ctx: any, face: string, rotationDirection: string, angle: string): Promise<void> {
+  async setFaceRotationOnlyColor(
+    ctx: any,
+    face: string,
+    rotationDirection: string,
+    angle: string,
+  ): Promise<void> {
     const buffer: Packet = this.texPacketMoveFace(
       parseInt(face),
       this.calculrateAngle(parseInt(rotationDirection), parseInt(angle)),
@@ -200,7 +206,12 @@ export class ExMarsCubeControl extends AbstractHwConrtol implements IExMarsCubeC
     await this.delay()
   }
 
-  async setFaceRotation(ctx: any, face: string, rotationDirection: string, angle: string): Promise<void> {
+  async setFaceRotation(
+    ctx: any,
+    face: string,
+    rotationDirection: string,
+    angle: string,
+  ): Promise<void> {
     const buffer: Packet = this.texPacketFaceMoveWithMotor(
       parseInt(face),
       this.calculrateAngle(parseInt(rotationDirection), parseInt(angle)),
@@ -228,7 +239,12 @@ export class ExMarsCubeControl extends AbstractHwConrtol implements IExMarsCubeC
     await this.delay()
   }
 
-  async setSolveCube(ctx: any, faceColor: string, faceLocation: string, seconds: string): Promise<void> {
+  async setSolveCube(
+    ctx: any,
+    faceColor: string,
+    faceLocation: string,
+    seconds: string,
+  ): Promise<void> {
     const fc: number = parseInt(faceColor)
     const fl: number = parseInt(faceLocation)
     let face: number = FaceColor.yellow
@@ -423,7 +439,13 @@ export class ExMarsCubeControl extends AbstractHwConrtol implements IExMarsCubeC
   /**
    * 패킷 생성
    */
-  private txPacket(index: number, param1: number, param2: number, param3: number, param4: number): Packet {
+  private txPacket(
+    index: number,
+    param1: number,
+    param2: number,
+    param3: number,
+    param4: number,
+  ): Packet {
     const buffer: Packet = new Array<number>(this.sendPacketType)
 
     buffer[0] = PacketDelimiter.header
@@ -471,7 +493,12 @@ export class ExMarsCubeControl extends AbstractHwConrtol implements IExMarsCubeC
     return this.txPacket(index, para1, para2, para3, para4)
   }
 
-  private texPacketSetPosDirTor(face: number, position: number, direction: number, torque: number): Packet {
+  private texPacketSetPosDirTor(
+    face: number,
+    position: number,
+    direction: number,
+    torque: number,
+  ): Packet {
     const index: number = (face << 5) | Index.posDirTor
     let pos = 0
 
@@ -493,7 +520,11 @@ export class ExMarsCubeControl extends AbstractHwConrtol implements IExMarsCubeC
     if (0 <= rotation && rotation <= 15) {
       if (face === FaceColor.white || face === FaceColor.green || face === FaceColor.red) {
         para = (rotation << 4) & 240
-      } else if (face === FaceColor.yellow || face === FaceColor.blue || face === FaceColor.purple) {
+      } else if (
+        face === FaceColor.yellow ||
+        face === FaceColor.blue ||
+        face === FaceColor.purple
+      ) {
         para = rotation & 15
       }
     }
@@ -520,7 +551,11 @@ export class ExMarsCubeControl extends AbstractHwConrtol implements IExMarsCubeC
     if (0 <= rotation && rotation <= 15) {
       if (face === FaceColor.white || face === FaceColor.green || face === FaceColor.red) {
         para = (rotation << 4) & 240
-      } else if (face === FaceColor.yellow || face === FaceColor.blue || face === FaceColor.purple) {
+      } else if (
+        face === FaceColor.yellow ||
+        face === FaceColor.blue ||
+        face === FaceColor.purple
+      ) {
         para = rotation & 15
       }
     }
@@ -536,7 +571,12 @@ export class ExMarsCubeControl extends AbstractHwConrtol implements IExMarsCubeC
     return buffer
   }
 
-  private texPacketFacesMoveWithMotor(face1: number, rotation1: number, face2: number, rotation2: number): Packet {
+  private texPacketFacesMoveWithMotor(
+    face1: number,
+    rotation1: number,
+    face2: number,
+    rotation2: number,
+  ): Packet {
     let para2 = 0
     let para3 = 0
     let para4 = 0
@@ -769,7 +809,7 @@ export class ExMarsCubeControl extends AbstractHwConrtol implements IExMarsCubeC
 
   private rxLoop(ctx: any): void {
     const logTag = 'exMarsCube.rxLoop()'
-    this.log(ctx).i(logTag, 'start')
+    uiLogger.i(logTag, 'start')
 
     const device = this.device_(ctx)
     this.rxSubscription_ = device
@@ -788,7 +828,7 @@ export class ExMarsCubeControl extends AbstractHwConrtol implements IExMarsCubeC
       )
       .subscribe((buf) => {
         if (this.stopped$.value) {
-          this.log(ctx).i(logTag, 'stop')
+          uiLogger.i(logTag, 'stop')
           return
         }
         this.dividePacket(buf)
@@ -814,7 +854,7 @@ export class ExMarsCubeControl extends AbstractHwConrtol implements IExMarsCubeC
    */
   onDeviceOpened = async (ctx: any): Promise<void> => {
     const logTag = 'ExMarsCubeControl.onDeviceOpened()'
-    this.log(ctx).i(logTag, 'called')
+    uiLogger.i(logTag, 'called')
 
     // 변수 및 배열 초기화
     for (let i = 0; i < this.faceCell.length; i++) {
@@ -847,7 +887,7 @@ export class ExMarsCubeControl extends AbstractHwConrtol implements IExMarsCubeC
    */
   onDeviceWillClose = async (ctx: any): Promise<void> => {
     const logTag = 'ExMarsCubeControl.onDeviceWillClose()'
-    this.log(ctx).i(logTag, 'called')
+    uiLogger.i(logTag, 'called')
     this.stopped$.next(true)
 
     if (this.rxSubscription_) {
@@ -862,7 +902,7 @@ export class ExMarsCubeControl extends AbstractHwConrtol implements IExMarsCubeC
    */
   onWebSocketConnected = async (ctx: any): Promise<void> => {
     const logTag = 'ExMarsCubeControl.onWebSocketConnected()'
-    this.log(ctx).i(logTag, 'called')
+    uiLogger.i(logTag, 'called')
   }
 
   /**
@@ -872,6 +912,6 @@ export class ExMarsCubeControl extends AbstractHwConrtol implements IExMarsCubeC
    */
   onWebSocketDisconnected = async (ctx: any): Promise<void> => {
     const logTag = 'ExMarsCubeControl.onWebSocketDisconnected()'
-    this.log(ctx).i(logTag, 'called')
+    uiLogger.i(logTag, 'called')
   }
 }

@@ -13,7 +13,8 @@ import {
   timeout,
 } from 'rxjs'
 import { SerialPort } from 'serialport'
-import { BufferTimestamped, ISerialDevice, IUiLogger, DeviceOpenState } from 'src/custom-types'
+import { BufferTimestamped, DeviceOpenState, ISerialDevice } from 'src/custom-types'
+import { uiLogger } from 'src/services/hw/UiLogger'
 import { RxSerialPort } from 'src/util/RxSerialPort'
 import Stream from 'stream'
 
@@ -37,26 +38,25 @@ export class SerialDevice implements ISerialDevice {
 
   private receivedData$ = new Subject<BufferTimestamped>()
 
-  private port_?: SerialPort
+  private port_: SerialPort
+
+  private parser_?: Stream.Transform
 
   private stopped$ = new BehaviorSubject(false)
 
   private readSubscription_?: Subscription
 
-  private parser_?: Stream.Transform
-
-  private uiLogger_?: IUiLogger
-
   private hookOnWrite_?: OnWriteFn
   private hookOnRead_?: OnReadFn
 
-  constructor(debugTag: string, uiLogger: IUiLogger) {
-    this.uiLogger_ = uiLogger
-    if (debugTag) {
-      this.debugTag_ = `[${debugTag}] `
+  constructor(options: { debugTag: string; port: SerialPort; parser?: Stream.Transform }) {
+    if (options.debugTag) {
+      this.debugTag_ = `[${options.debugTag}] `
     } else {
       this.debugTag_ = ''
     }
+    this.port_ = options.port
+    this.parser_ = options.parser
   }
 
   private log_ = (message?: any, ...optionalParams: any[]) => {
@@ -69,13 +69,6 @@ export class SerialDevice implements ISerialDevice {
 
   setOnRead = (fn: OnReadFn | undefined) => {
     this.hookOnRead_ = fn
-  }
-
-  /**
-   * implement ISerialDevice
-   */
-  setUiLogger = (uiLogger: IUiLogger | undefined) => {
-    this.uiLogger_ = uiLogger
   }
 
   /**
@@ -108,9 +101,12 @@ export class SerialDevice implements ISerialDevice {
    * 디바이스 열기
    * implement ISerialDevice
    */
-  open = async (port: SerialPort, parser?: Stream.Transform): Promise<void> => {
+  open = async (): Promise<void> => {
+    const port = this.port_
+    const parser = this.parser_
+
     const logTag = `${this.debugTag_}SerialDevice.open()`
-    this.uiLogger_?.i(logTag, port.path)
+    uiLogger.i(logTag, port.path)
 
     if (this.deviceState$.value === 'opened') {
       console.log('SerialDevice', 'open() already opened')
@@ -128,7 +124,7 @@ export class SerialDevice implements ISerialDevice {
         },
         error: (ignore) => {
           console.log(ignore)
-          this.uiLogger_?.w(logTag, `serial port open fail: ${port}, ${errmsg(ignore)}`)
+          uiLogger.w(logTag, `serial port open fail: ${port}, ${errmsg(ignore)}`)
         },
       })
 
@@ -137,8 +133,8 @@ export class SerialDevice implements ISerialDevice {
       .pipe(takeUntil(this.closeTrigger_()))
       .subscribe({
         next: (err) => {
-          this.uiLogger_?.e(logTag, errmsg(err))
-          this.uiLogger_?.w(logTag, `serial port error occured, close port: ${port.path}`)
+          uiLogger.e(logTag, errmsg(err))
+          uiLogger.w(logTag, `serial port error occured, close port: ${port.path}`)
           this.close()
         },
         error: (ignore) => {
@@ -151,19 +147,19 @@ export class SerialDevice implements ISerialDevice {
         await new Promise<void>((resolve) => {
           port.open((err) => {
             if (err) {
-              this.uiLogger_?.w(logTag, 'port open fail:' + errmsg(err))
+              uiLogger.w(logTag, 'port open fail:' + errmsg(err))
             }
             resolve()
           })
         })
       } catch (err) {
-        this.uiLogger_?.w(logTag, 'port open fail:' + errmsg(err))
+        uiLogger.w(logTag, 'port open fail:' + errmsg(err))
         console.log(err)
       }
     }
 
     if (!port.readable) {
-      this.uiLogger_?.w(logTag, 'port is not readable, force close')
+      uiLogger.w(logTag, 'port is not readable, force close')
       this.close()
     }
   }
@@ -176,7 +172,7 @@ export class SerialDevice implements ISerialDevice {
       path: serialPort.path,
       baudRate: serialPort.baudRate,
     }
-    this.uiLogger_?.i(logTag, `${path}, baudRate=${baudRate},  ` + JSON.stringify(rest))
+    uiLogger.i(logTag, `${path}, baudRate=${baudRate},  ` + JSON.stringify(rest))
 
     this.port_ = serialPort
     this.parser_ = parser
@@ -189,11 +185,11 @@ export class SerialDevice implements ISerialDevice {
 
   private startReadLoop_ = async () => {
     const logTag = `${this.debugTag_}SerialDevice.startReadLoop()`
-    this.uiLogger_?.d(logTag, 'started')
+    uiLogger.d(logTag, 'started')
 
     const port = this.port_
     if (!port) {
-      this.uiLogger_?.w(logTag, `SerialDevice is not opened: ${this.deviceState$.value}`)
+      uiLogger.w(logTag, `SerialDevice is not opened: ${this.deviceState$.value}`)
       return
     }
     this.readSubscription_?.unsubscribe()
@@ -205,15 +201,15 @@ export class SerialDevice implements ISerialDevice {
       .subscribe({
         next: (dataBuffer: Buffer) => {
           if (TRACE) console.log('SerialDevice.startReadLoop()', dataBuffer)
-          this.uiLogger_?.d('RX', dataBuffer)
+          uiLogger.d('RX', dataBuffer)
           this.hookOnRead_?.(dataBuffer.byteLength)
           this.receivedData$.next({ timestamp: Date.now(), dataBuffer })
         },
         error: (err) => {
-          this.uiLogger_?.w(logTag, errmsg(err))
+          uiLogger.w(logTag, errmsg(err))
         },
         complete: () => {
-          this.uiLogger_?.d(logTag, 'finished')
+          uiLogger.d(logTag, 'finished')
         },
       })
   }
@@ -224,12 +220,12 @@ export class SerialDevice implements ISerialDevice {
   write = async (values: Buffer | number[]): Promise<boolean> => {
     const logTag = `${this.debugTag_}SerialDevice.write()`
 
-    // this.uiLogger_?.d(logTag, values)
+    // uiLogger.d(logTag, values)
 
     const port = this.port_
     if (!port) {
       this.log_(logTag, `port not configured: ${this.deviceState$.value}`)
-      this.uiLogger_?.w(logTag, `port not configured, ${this.deviceState$.value}`)
+      uiLogger.w(logTag, `port not configured, ${this.deviceState$.value}`)
       return false
     }
 
@@ -241,7 +237,7 @@ export class SerialDevice implements ISerialDevice {
       )
       return true
     } catch (ignore) {
-      this.uiLogger_?.w(logTag, `failed: ${errmsg(ignore)}`)
+      uiLogger.w(logTag, `failed: ${errmsg(ignore)}`)
     }
     return false
   }
@@ -275,7 +271,7 @@ export class SerialDevice implements ISerialDevice {
   waitUntilOpen = (timeoutMillis = 0): Promise<boolean> => {
     const logTag = `${this.debugTag_}SerialDevice.waitUntilOpen()`
     if (DEBUG) this.log_(`SerialDevice.waitUntilOpen(${timeoutMillis}ms)`)
-    this.uiLogger_?.d(logTag, `${timeoutMillis}ms`)
+    uiLogger.d(logTag, `${timeoutMillis}ms`)
 
     let src$ = this.observeOpenedOrNot()
     if (timeoutMillis > 0) {
@@ -290,16 +286,16 @@ export class SerialDevice implements ISerialDevice {
   close = async (): Promise<void> => {
     const logTag = `${this.debugTag_}SerialDevice.close()`
     if (this.deviceState$.value === 'closed') {
-      this.uiLogger_?.i(logTag, 'already closed')
+      uiLogger.i(logTag, 'already closed')
       return
     }
 
     if (this.deviceState$.value === 'closing') {
-      this.uiLogger_?.i(logTag, 'already closing')
+      uiLogger.i(logTag, 'already closing')
       return
     }
 
-    this.uiLogger_?.w(logTag, 'called')
+    uiLogger.w(logTag, 'called')
     this.deviceState$.next('closing')
 
     if (!this.stopped$.value) {
@@ -310,29 +306,25 @@ export class SerialDevice implements ISerialDevice {
     this.readSubscription_ = undefined
     try {
       const port = this.port_
-      this.port_ = undefined
       this.parser_ = undefined
-
-      if (port) {
-        port.removeAllListeners()
-      }
 
       if (port && port.isOpen) {
         await new Promise<void>((resolve) => {
           port.close((err) => {
             if (err) {
-              this.uiLogger_?.i(logTag, `ignore port.close() error ${errmsg(err)}`)
+              uiLogger.i(logTag, `ignore port.close() error ${errmsg(err)}`)
             } else {
-              this.uiLogger_?.i(logTag, 'port.close() success')
+              uiLogger.i(logTag, 'port.close() success')
             }
             resolve()
           })
         })
       } else {
-        this.uiLogger_?.i(logTag, 'already port closed')
+        uiLogger.i(logTag, 'already port closed')
       }
+      port?.removeAllListeners()
     } catch (ignore) {
-      this.uiLogger_?.i(logTag, 'ignore close error')
+      uiLogger.i(logTag, 'ignore close error')
     } finally {
       this.deviceState$.next('closed')
     }

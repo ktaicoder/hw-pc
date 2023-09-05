@@ -1,7 +1,8 @@
 import { BehaviorSubject, filter, Observable, take, takeUntil } from 'rxjs'
 import { codingpack as CODINGPACK } from 'src/codingpack'
-import { IHwControl, ISerialDevice, IUiLogger } from 'src/custom-types'
+import { DeviceOpenState, IHwControl, ISerialDevice } from 'src/custom-types'
 import { SerialDeviceManager } from 'src/hw-server/serialport/SerialDeviceManager'
+import { uiLogger } from 'src/services/hw/UiLogger'
 
 export class CodingpackHwManager {
   private readonly deviceManager_: SerialDeviceManager
@@ -10,8 +11,8 @@ export class CodingpackHwManager {
 
   private readonly stopTrigger$ = new BehaviorSubject(false)
 
-  constructor(private readonly uiLogger: IUiLogger) {
-    this.deviceManager_ = new SerialDeviceManager(CODINGPACK.hw, uiLogger)
+  constructor() {
+    this.deviceManager_ = new SerialDeviceManager(CODINGPACK.hw)
     this.hwControl_ = CODINGPACK.hw.createControl()
   }
 
@@ -33,6 +34,10 @@ export class CodingpackHwManager {
     return this.deviceManager_.getConnectedSerialDevice()
   }
 
+  observeDeviceOpenState = (): Observable<DeviceOpenState> => {
+    return this.deviceManager_.observeDeviceOpenState()
+  }
+
   openSerialPort = async (path: string) => {
     this.stopTrigger$.next(false)
     await this.deviceManager_.open(path)
@@ -50,7 +55,7 @@ export class CodingpackHwManager {
     try {
       // 시리얼포트를 닫기 전에, onDeviceWillClose()를 호출한다
       // 클라이언트의 연결이 끊어진 경우에도 호출된다
-      await this.hwControl_.onDeviceOpened({ device, uiLogger: this.uiLogger })
+      await this.hwControl_.onDeviceOpened({ device })
     } catch (ignore) {
       console.log(ignore)
     }
@@ -66,14 +71,13 @@ export class CodingpackHwManager {
       return
     }
 
-    this.uiLogger.i('CodingpackHwManager.close() ', device.getSerialPortPath() ?? '')
+    uiLogger.i('CodingpackHwManager.close() ', device.getSerialPortPath() ?? '')
 
     try {
       // 시리얼포트를 닫기 전에, onDeviceWillClose()를 호출한다
       // 클라이언트의 연결이 끊어진 경우에도 호출된다
       await this.hwControl_.onDeviceWillClose({
         device,
-        uiLogger: this.uiLogger,
       })
     } catch (ignore) {
       console.log(ignore)

@@ -26,7 +26,6 @@ export interface IConstants {
   osArch: string
   osHomeDir: string
   platform: string
-
   // extra
   appPath: string
   appIsPackaged: boolean

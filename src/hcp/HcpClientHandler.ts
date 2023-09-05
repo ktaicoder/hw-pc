@@ -1,13 +1,15 @@
-import { BehaviorSubject, combineLatest, filter, map, take, takeUntil } from 'rxjs'
-import { ISerialDevice, IUiLogger } from 'src/custom-types'
+import { BehaviorSubject, combineLatest, filter, map, switchMap, take, takeUntil } from 'rxjs'
+import { IDevice } from 'src/custom-types'
+import { uiLogger } from 'src/services/hw/UiLogger'
 import { WebSocket } from 'ws'
 import { ObservableField } from '../util/ObservableField'
-import { HwChannelHandler } from './handlers/HwChannelHandler'
-import { MetaChannelHandler } from './handlers/MetaChannelHandler'
-import { IHcpPacketHandler } from './hcp-types'
-import { HcpHwManager } from './HcpHwManager'
+import { HcpHwNotificationManager } from './HcpNotificationManager'
 import { HcpPacket } from './HcpPacket'
 import { HcpPacketHelper } from './HcpPacketHelper'
+import { HwChannelHandler } from './handlers/HwChannelHandler'
+import { MetaChannelHandler } from './handlers/MetaChannelHandler'
+import { HwNotificationPayload } from './hcp-notification-payload'
+import { IHcpHwManager, IHcpPacketHandler } from './hcp-types'
 
 const DEBUG = false
 
@@ -20,7 +22,7 @@ export class HcpClientHandler {
 
   private readonly socket_: WebSocket
 
-  private readonly hcpHwManager_: HcpHwManager
+  private readonly hcpHwManager_: IHcpHwManager
 
   /**
    * 하드웨어
@@ -40,7 +42,7 @@ export class HcpClientHandler {
 
   private readonly destroyTrigger$ = new BehaviorSubject(false)
 
-  private readonly uiLogger_: IUiLogger
+  private readonly notificationManager = new HcpHwNotificationManager()
 
   /**
    * onWebSocketDisconnected() 가 호출되었으면 true이다
@@ -51,15 +53,13 @@ export class HcpClientHandler {
   constructor(
     public readonly id: string, //
     socket: WebSocket,
-    uiLogger: IUiLogger,
-    hcpHwManager: HcpHwManager,
+    hcpHwManager: IHcpHwManager,
   ) {
     this.channelHandlers_ = {
-      hw: new HwChannelHandler(socket, uiLogger, this.hwReady$, hcpHwManager),
-      meta: new MetaChannelHandler(socket, this.socketVerified$, uiLogger),
+      hw: new HwChannelHandler(socket, this.hwReady$, hcpHwManager),
+      meta: new MetaChannelHandler(socket, this.socketVerified$),
     }
     this.socket_ = socket
-    this.uiLogger_ = uiLogger
     this.hcpHwManager_ = hcpHwManager
     this.startHandling_()
   }
@@ -97,17 +97,43 @@ export class HcpClientHandler {
       .subscribe((device) => {
         this.callWebSocketConnected_(device)
       })
+
+    // 하드웨어 연결이 되었고,
+    // 웹소켓이 verified 되었으면 하드웨어 notification을 시작
+    combineLatest([
+      // 하드웨어 연결
+      this.hcpHwManager_.observeConnectedDevice().pipe(take(1)),
+
+      // hello, welcome 통신을 한 경우
+      this.socketVerified$.observe().pipe(
+        filter((it) => it),
+        take(1),
+      ),
+    ])
+      .pipe(
+        map(([device]) => device),
+        switchMap((device) => this.notificationManager.observe()),
+        takeUntil(this.destroyTrigger$.pipe(filter((it) => it))),
+      )
+      .subscribe((notification) => {
+        this.sendHwNotification_(notification)
+      })
+  }
+
+  private sendHwNotification_ = (body: HwNotificationPayload) => {
+    // console.log('HcpClientHandler.sendHwNotification_', body)
+    this.socket_.send(HcpPacketHelper.createJsonPacket('hw,notify', { body }), { binary: true })
   }
 
   /**
    * onWebSocketConnected()를 호출합니다.
    * 웹소켓 클라이언트가 연결되었고, device가 오픈되었을때 호출됩니다.
    */
-  private callWebSocketConnected_ = (device: ISerialDevice) => {
-    const control = this.hcpHwManager_.getHwControl()
-
-    // 하드웨어에 웹소켓이 연결되었음을 알림
-    control.onWebSocketConnected({ device, uiLogger: this.uiLogger_ })
+  private callWebSocketConnected_ = async (device: IDevice) => {
+    await this.hcpHwManager_.onWebSocketConnected({
+      device,
+      notificationManager: this.notificationManager,
+    })
     this.hwReady$.setValue(true)
 
     // 웹소켓 연결이 끊어지면, onWebSocketDisconnected()호출
@@ -123,11 +149,7 @@ export class HcpClientHandler {
   private callWebSocketDisconnected_ = async () => {
     if (!this.onWebSocketDisconnectedCalled_) {
       this.onWebSocketDisconnectedCalled_ = true
-      const control = this.hcpHwManager_.getHwControl()
-      const device = this.hcpHwManager_.getConnectedDevice()
-      if (device) {
-        await control.onWebSocketDisconnected({ device, uiLogger: this.uiLogger_ })
-      }
+      await this.hcpHwManager_.onWebSocketDisconnected()
     }
   }
 
@@ -136,7 +158,7 @@ export class HcpClientHandler {
    */
   private dispatchToChannelHandler_ = (msg: HcpPacket) => {
     if (DEBUG) console.log('HcpClientHandler.dispatchToChannelHandler_()', msg.channelId())
-    // this.uiLogger_.d('HcpClientHandler.dispatchToChannelHandler_()', msg.toString())
+    // uiLogger.d('HcpClientHandler.dispatchToChannelHandler_()', msg.toString())
     if (msg.channelId() === 'hw' && !this.hasReceivedHwCmd$.value) {
       this.hasReceivedHwCmd$.setValue(true)
     }
@@ -146,12 +168,12 @@ export class HcpClientHandler {
       handler.handle(msg)
     } else {
       console.log('unknown msg:', msg)
-      this.uiLogger_.w('HcpClientHandler.dispatchToChannelHandler_() unknown msg', msg.toString())
+      uiLogger.w('HcpClientHandler.dispatchToChannelHandler_() unknown msg', msg.toString())
     }
   }
 
   close = async () => {
-    this.uiLogger_.i('HcpClientHandler.close()', 'called')
+    uiLogger.i('HcpClientHandler.close()', 'called')
     await this.callWebSocketDisconnected_()
     this.socket_.close()
     this.socket_.removeAllListeners()

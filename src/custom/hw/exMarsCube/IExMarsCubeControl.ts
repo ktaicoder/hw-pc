@@ -221,7 +221,12 @@ export interface IExMarsCubeControl {
   /**
    * faceIndex 면의 LED 색상을 rotationDirection 방향으로 angle º 만큼 회전하기
    */
-  setFaceRotationOnlyColor(ctx: any, face: string, rotationDirection: string, angle: string): Promise<void>
+  setFaceRotationOnlyColor(
+    ctx: any,
+    face: string,
+    rotationDirection: string,
+    angle: string,
+  ): Promise<void>
 
   /**
    * face 면을 rotationDirection 방향으로 angle º 만큼 회전하기

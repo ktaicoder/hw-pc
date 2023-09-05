@@ -1,7 +1,7 @@
 import { BehaviorSubject, Observable, Subject, Subscription, takeUntil } from 'rxjs'
 import { Server } from 'socket.io'
 import { BuildVars } from 'src/BuildVars'
-import { IHwServer, IUiLogger } from 'src/custom-types/basic-types'
+import { IHwServer } from 'src/custom-types/basic-types'
 import { RxSocketIoServer } from 'src/util/RxSocketIoServer'
 import { createSocketIoServer } from '../util/createSocketIoServer'
 import { CodingpackClientHandler } from './CodingpackClientHandler'
@@ -24,20 +24,16 @@ export class CodingpackSocketIoServer implements IHwServer {
 
   private destroyTrigger$ = new Subject<any>()
 
-  private readonly uiLogger_: IUiLogger
-
   private readonly clientCount$: BehaviorSubject<number>
 
   constructor(
     clientCount$: BehaviorSubject<number>,
     hwManager: CodingpackHwManager,
-    uiLogger: IUiLogger,
     opts?: { listenPort: number },
   ) {
     this.options_ = { ...(opts ?? DEFAULT_OPTIONS) }
     this.clientCount$ = clientCount$
     this.hwManager_ = hwManager
-    this.uiLogger_ = uiLogger
   }
 
   getHwId = () => {

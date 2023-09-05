@@ -1,13 +1,10 @@
 import { filter, firstValueFrom } from 'rxjs'
-import chalk from 'chalk'
-import { IUiLogger } from 'src/custom-types'
+import { uiLogger } from 'src/services/hw/UiLogger'
 import { WebSocket } from 'ws'
 import { ObservableField } from '../../util/ObservableField'
-import { IHcpPacketHandler } from '../hcp-types'
-import { HcpHwManager } from '../HcpHwManager'
 import { HcpPacket } from '../HcpPacket'
 import { HcpPacketHelper } from '../HcpPacketHelper'
-import { runHwControlCmd } from './runHwControlCmd'
+import { IHcpHwManager, IHcpPacketHandler } from '../hcp-types'
 
 const DEVICE_OPEN_TIMEOUT = 7000
 
@@ -20,13 +17,12 @@ type ProcHandler = (packet: HcpPacket) => Promise<void>
 export class HwChannelHandler implements IHcpPacketHandler {
   private channelProcs_: Record<string, ProcHandler> = {}
 
-  private hcpHwManager_: HcpHwManager
+  private hcpHwManager_: IHcpHwManager
 
   constructor(
     private readonly socket: WebSocket,
-    private readonly uiLogger: IUiLogger,
     private readonly hwReady$: ObservableField<boolean>,
-    hcpHwManager: HcpHwManager,
+    hcpHwManager: IHcpHwManager,
   ) {
     this.channelProcs_ = {
       control: this.onControl_,
@@ -38,7 +34,7 @@ export class HwChannelHandler implements IHcpPacketHandler {
     const proc = packet.proc()
     const procHandler = this.channelProcs_[packet.proc()]
     if (!procHandler) {
-      this.uiLogger.w('unknown channelCmd:', proc)
+      uiLogger.w('unknown channelCmd:', proc)
       return
     }
     return procHandler(packet)
@@ -67,7 +63,8 @@ export class HwChannelHandler implements IHcpPacketHandler {
       message = error['message']
     }
 
-    this.uiLogger.w(`[${channel}] sendError(): `, `errorCode=${errorCode}, message: ${message}`)
+    console.error(error)
+    uiLogger.w(`[${channel}] sendError(): `, `errorCode=${errorCode}, message: ${message}`)
     socketSend(
       this.socket,
       HcpPacketHelper.createJsonPacket(channel, {
@@ -87,24 +84,24 @@ export class HwChannelHandler implements IHcpPacketHandler {
     const hwId = packet.hwId()
     const requestId = packet.requestId()
     if (!hwId || !requestId) {
-      this.uiLogger.e('hwId and requestId missing', JSON.stringify({ hwId, requestId }))
+      uiLogger.e('hwId and requestId missing', JSON.stringify({ hwId, requestId }))
       return
     }
 
     if (hwId !== this.hcpHwManager_.getHwId()) {
-      this.uiLogger.w('hardware id mismatched', `request hwId:${hwId}, current hwId: ${this.hcpHwManager_.getHwId()}`)
+      uiLogger.w('hardware id mismatched', `request hwId:${hwId}, current hwId: ${this.hcpHwManager_.getHwId()}`)
       return
     }
 
     const { cmd, args = [] } = packet.bodyAsJson() as {
       hwId: string
       cmd: string
-      args?: unknown[]
+      args?: any[]
     }
 
     const device = this.hcpHwManager_.getDevice()
     if (!device) {
-      this.sendError_('hw,control', requestId, 'E1_HW_CONTROL_FAIL', '하드웨어 연결 실패(1)')
+      this.sendError_('hw,control', requestId, 'E1_HW_CONTROL_FAIL', 'hardware connect fail(1)')
       return
     }
 
@@ -113,12 +110,9 @@ export class HwChannelHandler implements IHcpPacketHandler {
     }
 
     if (!device.isOpened()) {
-      this.sendError_('hw,control', requestId, 'E1_HW_CONTROL_FAIL', '하드웨어 연결 실패(2)')
+      this.sendError_('hw,control', requestId, 'E1_HW_CONTROL_FAIL', 'hardware connect fail(2)')
       return
     }
-
-    const control = this.hcpHwManager_.getHwControl()
-    const ctx = { device, uiLogger: this.uiLogger }
 
     if (!this.hwReady$.value) {
       await firstValueFrom(this.hwReady$.observe().pipe(filter((it) => it)))
@@ -130,7 +124,7 @@ export class HwChannelHandler implements IHcpPacketHandler {
     // }
 
     try {
-      const callResult = await runHwControlCmd(ctx, control, cmd, args)
+      const callResult = await this.hcpHwManager_.runControlCmd(cmd, args)
       this.sendSuccessResult_('hw,control', requestId, callResult)
     } catch (err) {
       this.sendError_('hw,control', requestId, 'E1_HW_CONTROL_FAIL', err)

@@ -9,4 +9,6 @@ export const BuildVars = {
   defaultServerIP: '0.0.0.0',
 
   codingpackListenPort: 13996,
+
+  hcpWebSocketListenPort: 13997,
 }

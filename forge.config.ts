@@ -1,4 +1,3 @@
-import { utils } from '@electron-forge/core'
 import { spawn } from 'child_process'
 import fs from 'fs'
 import path from 'path'
@@ -10,6 +9,7 @@ import { MakerRpm } from '@electron-forge/maker-rpm'
 import { WebpackPlugin } from '@electron-forge/plugin-webpack'
 import { mainConfig } from './webpack.main.config'
 import { rendererConfig } from './webpack.renderer.config'
+// import { utils } from '@electron-forge/core'
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -36,7 +36,7 @@ const config: ForgeConfig = {
   ],
   hooks: {
     packageAfterPrune: async (forgeConfig, buildPath) => {
-      console.log(buildPath)
+      console.log('buildPath=', buildPath)
 
       const packageJson = JSON.parse(fs.readFileSync(path.resolve(buildPath, 'package.json')).toString())
 

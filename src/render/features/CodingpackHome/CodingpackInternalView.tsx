@@ -13,7 +13,7 @@ import PortsView from 'src/render/components/PortsView'
 import { OpenDocDialogEvent } from 'src/render/custom-events/OpenDocDialogEvent'
 import CodingpackActionDialog, { CodingpackActionDialogProps } from 'src/render/dialogs/CodingpackActionDialog'
 import { usePromiseValue } from 'src/render/hooks/useServiceValue'
-import { IContext } from 'src/services/context/interface'
+import { IContext } from 'src/services/context/IContextService'
 import { useHwServerState } from 'src/services/hw/useHwServerState'
 import { CodingpackActions } from './CodingpackActions'
 import CodingpackActionRow from './components/CodingpackActionRow'
@@ -102,8 +102,6 @@ export default function CodingpackInternalView(props: Props) {
 
   useEffect(() => {
     if (!portInfo) {
-      // alert('포트인포 없어')
-      // window.service.hw.stopServer()
       return
     }
     const hwId = info.hwId

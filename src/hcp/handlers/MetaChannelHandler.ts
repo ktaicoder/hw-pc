@@ -1,9 +1,8 @@
-import { IUiLogger } from 'src/custom-types'
 import { ObservableField } from 'src/util/ObservableField'
 import { WebSocket } from 'ws'
-import { IHcpPacketHandler } from '../hcp-types'
 import { HcpPacket } from '../HcpPacket'
 import { HcpPacketHelper } from '../HcpPacketHelper'
+import { IHcpPacketHandler } from '../hcp-types'
 
 function socketSend(sock: WebSocket, data: any) {
   sock.send(data, { binary: true })
@@ -23,7 +22,6 @@ export class MetaChannelHandler implements IHcpPacketHandler {
   constructor(
     private readonly socket: WebSocket, //
     private readonly socketVerified$: ObservableField<boolean>, //
-    private readonly uiLogger: IUiLogger,
   ) {
     this.channelProcs_ = {
       hello: this.onHello_,

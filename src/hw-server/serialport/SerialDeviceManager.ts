@@ -1,39 +1,37 @@
 import { EMPTY, filter, map, Observable, switchMap, take } from 'rxjs'
-import { IHw, ISerialDevice, IUiLogger } from 'src/custom-types'
+import { DeviceOpenState, IHw, ISerialDevice } from 'src/custom-types'
+import { uiLogger } from 'src/services/hw/UiLogger'
 import { ObservableField } from 'src/util/ObservableField'
 
 export class SerialDeviceManager {
   readonly serialDevice$ = new ObservableField<ISerialDevice | null>(null)
 
-  private lastDevice_: ISerialDevice | null = null
-
   constructor(
-    public readonly hw: IHw, //
-    private readonly uiLogger: IUiLogger,
-  ) {}
+    public readonly hw: IHw
+  ) {
+    // empty
+  }
 
   open = async (serialPortPath: string): Promise<ISerialDevice> => {
     await this.close()
-    this.uiLogger.d('SerialDeviceManager.open() try open:', serialPortPath)
-    const device = this.hw.openDevice({ serialPortPath, uiLogger: this.uiLogger })
-    this.lastDevice_ = device
+    uiLogger.d('SerialDeviceManager.open() try open:', serialPortPath)
+    const device = this.hw.openDevice({ serialPortPath }) as ISerialDevice
     this.serialDevice$.setValue(device)
     return device
   }
 
   close = async () => {
-    const lastDevice = this.lastDevice_
+    const lastDevice = this.serialDevice$.value
     if (!lastDevice) {
       this.serialDevice$.setValue(null)
       return
     }
 
     if (lastDevice.getState() !== 'closed' && lastDevice.getState() !== 'closing') {
-      this.uiLogger.d('SerialDeviceManager.close()', lastDevice.getSerialPortPath() ?? '')
+      uiLogger.d('SerialDeviceManager.close()', lastDevice.getSerialPortPath() ?? '')
       await lastDevice.close()
     }
 
-    this.lastDevice_ = null
     this.serialDevice$.setValue(null)
   }
 
@@ -49,6 +47,17 @@ export class SerialDeviceManager {
 
   observeDevice = (): Observable<ISerialDevice | null> => {
     return this.serialDevice$.observe()
+  }
+
+  observeDeviceOpenState = (): Observable<DeviceOpenState> => {
+    return this.serialDevice$.observe().pipe(
+      switchMap((device) => {
+        if (!device) {
+          return EMPTY
+        }
+        return device.observeDeviceState()
+      }),
+    )
   }
 
   observeConnectedDevice = (): Observable<ISerialDevice> => {

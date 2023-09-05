@@ -1,6 +1,5 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { AsyncReturnType } from 'type-fest'
-import useDebouncedCallback from 'beautiful-react-hooks/useDebouncedCallback'
 
 /**
  * Use value from service, especially constant value that never changes
@@ -23,41 +22,4 @@ export function usePromiseValue<T, DefaultValueType = T | undefined>(
   }, dependency)
 
   return value
-}
-
-export function usePromiseValueAndSetter<T, DefaultValueType = T | undefined>(
-  asyncValue: () => Promise<T>,
-  asyncSetter: (newValue: T | DefaultValueType) => Promise<unknown>,
-  defaultValue?: AsyncReturnType<typeof asyncValue>,
-): [T | DefaultValueType, (newValue: T | DefaultValueType) => void] {
-  const [value, valueSetter] = useState<T | DefaultValueType>(defaultValue as T | DefaultValueType)
-
-  // use initial value
-  useEffect(() => {
-    void (async () => {
-      valueSetter(await asyncValue())
-    })()
-  }, [asyncValue])
-
-  // update remote value on change
-  const updateRemoteValue = useDebouncedCallback(
-    async (newValue: T | DefaultValueType) => {
-      const previousValue = await asyncValue()
-      if (value !== previousValue) {
-        void asyncSetter(value)
-      }
-    },
-    [asyncValue, asyncSetter],
-    300,
-  )
-
-  const setter = useCallback(
-    async (newValue: T | DefaultValueType) => {
-      valueSetter(newValue)
-      await updateRemoteValue(newValue)
-    },
-    [valueSetter, updateRemoteValue],
-  )
-
-  return [value, setter]
 }

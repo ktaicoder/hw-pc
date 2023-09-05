@@ -1,3 +1,4 @@
+import { uiLogger } from 'src/services/hw/UiLogger'
 import { AbstractHwConrtol } from '../AbstractHwControl'
 import { IWiseXboardPremiumControl } from './IWiseXboardPremiumControl'
 
@@ -227,7 +228,7 @@ export class WiseXboardPremiumControl extends AbstractHwConrtol implements IWise
    */
   onDeviceOpened = async (ctx: any): Promise<void> => {
     const logTag = 'WiseXboardPremiumControl.onDeviceOpened()'
-    this.log(ctx).i(logTag, 'called')
+    uiLogger.i(logTag, 'called')
   }
 
   /**
@@ -235,7 +236,7 @@ export class WiseXboardPremiumControl extends AbstractHwConrtol implements IWise
    */
   onDeviceWillClose = async (ctx: any): Promise<void> => {
     const logTag = 'WiseXboardPremiumControl.onDeviceWillClose()'
-    this.log(ctx).i(logTag, 'called')
+    uiLogger.i(logTag, 'called')
   }
 
   /**
@@ -245,7 +246,7 @@ export class WiseXboardPremiumControl extends AbstractHwConrtol implements IWise
    */
   onWebSocketConnected = async (ctx: any): Promise<void> => {
     const logTag = 'WiseXboardPremiumControl.onWebSocketConnected()'
-    this.log(ctx).i(logTag, 'called')
+    uiLogger.i(logTag, 'called')
   }
 
   /**
@@ -255,7 +256,7 @@ export class WiseXboardPremiumControl extends AbstractHwConrtol implements IWise
    */
   onWebSocketDisconnected = async (ctx: any): Promise<void> => {
     const logTag = 'WiseXboardPremiumControl.onWebSocketDisconnected()'
-    this.log(ctx).i(logTag, 'called')
+    uiLogger.i(logTag, 'called')
 
     // 모터 중지
     try {

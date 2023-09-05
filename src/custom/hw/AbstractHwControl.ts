@@ -1,5 +1,5 @@
 import { filter, firstValueFrom, map, take } from 'rxjs'
-import { IHwControl, IUiLogger } from 'src/custom-types'
+import { IHwControl } from 'src/custom-types'
 import { SerialDevice } from 'src/hw-server/serialport/SerialDevice'
 
 export abstract class AbstractHwConrtol implements IHwControl {
@@ -9,14 +9,6 @@ export abstract class AbstractHwConrtol implements IHwControl {
   protected device_ = (ctx: any): SerialDevice => {
     const { device } = ctx
     return device as SerialDevice
-  }
-
-  /**
-   * PC 프로그램의 콘솔 로거
-   */
-  protected log = (ctx: any): IUiLogger => {
-    const { uiLogger } = ctx
-    return uiLogger as IUiLogger
   }
 
   /**

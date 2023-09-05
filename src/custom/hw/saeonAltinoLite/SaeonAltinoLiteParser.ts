@@ -57,6 +57,8 @@ export class SaeonAltinoLiteParser extends Transform {
             const tmpBuf = this.buffer.subarray(idx)
             tmpBuf.copy(this.buffer)
             this.bufferByteCount = tmpBuf.byteLength
+          } else {
+            this.bufferByteCount = 0
           }
         }
       }

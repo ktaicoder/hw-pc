@@ -22,7 +22,6 @@ AI Codiny에서 하드웨어 제어를 위한 PC용 프로그램입니다. `elec
 | electron-forge  | 6.0.0-beta.64  | 6.0.5          |
 | node            | 16.x 이상      | 18.x 이상      |
 | React           | 17             | 18             |
-| Package Manager | yarn classic   | npm            |
 | serialport      | 9.x            | 10.x           |
 
 

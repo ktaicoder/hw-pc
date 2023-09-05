@@ -1,7 +1,7 @@
 import { ObservableField } from 'src/util/ObservableField'
 import { combineLatest, map, Observable, tap, throttleTime } from 'rxjs'
 
-export class DeviceStateManager {
+class DeviceStateManager {
   private txBytes$ = new ObservableField(0)
   private txTimestamp$ = new ObservableField(0)
   private rxBytes$ = new ObservableField(0)
@@ -46,3 +46,5 @@ export class DeviceStateManager {
     )
   }
 }
+
+export const deviceStateManager = new DeviceStateManager()

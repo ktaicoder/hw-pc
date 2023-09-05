@@ -1,6 +1,4 @@
 import { Observable } from 'rxjs'
-import { SerialPort } from 'serialport'
-import Stream from 'stream'
 
 /**
  * 시리얼포트 정보
@@ -74,15 +72,14 @@ export interface IHwInfo {
 
   /**
    * 시리얼포트 자동 선택 여부
-   * 시리얼포트 목록을 로드할 때 자동으로 시리얼 포트를 자동으로 선택합니다.
-   * 특별한 경우가 아니라면 true로 설정하세요.
+   * 시리얼포트 목록을 로드할 때 자동으로 시리얼 포트를 선택합니다.
+   * 사용자 편의를 위해 특별한 경우가 아니라면 true로 설정하세요.
    */
   autoSelect: boolean
 }
 
 export interface ISerialDeviceOpenParams {
   serialPortPath: string
-  uiLogger: IUiLogger
 }
 
 export interface IHw {
@@ -90,7 +87,7 @@ export interface IHw {
   hwKind: HwKindKey
   isPortMatch: (portInfo: ISerialPortInfo, logger?: IUiLogger) => boolean
   createControl: () => IHwControl
-  openDevice: (params: ISerialDeviceOpenParams) => ISerialDevice
+  openDevice: (params: ISerialDeviceOpenParams) => IDevice
 }
 
 export type HcpConnectionStatus = 'disconnected' | 'connecting' | 'preparing' | 'connected'
@@ -133,7 +130,6 @@ export interface IHwControl {
 export interface IHwDescriptor {
   hwId: string
   hwKind: HwKindKey
-
   hw: IHw
   info: IHwInfo
 }
@@ -174,19 +170,19 @@ export interface IUiLogMessage {
   msg: UiLogMessageType
 }
 
+export interface IDevice {
+  isOpened: () => boolean
+  open: () => Promise<void>
+  close: () => Promise<void>
+  waitUntilOpen: (timeoutMilli: number) => Promise<boolean>
+  getSerialPortPath(): string | undefined
+}
+
 /**
  * 하드웨어를 의미한다
  */
-export interface ISerialDevice {
-  setUiLogger: (logger: IUiLogger | undefined) => void
-
-  getSerialPortPath: () => string | undefined
-
+export interface ISerialDevice extends IDevice {
   getState: () => DeviceOpenState
-
-  isOpened: () => boolean
-
-  open: (port: SerialPort, parser?: Stream.Transform) => Promise<void>
 
   write: (values: Buffer | number[]) => Promise<boolean>
 
@@ -195,10 +191,6 @@ export interface ISerialDevice {
   observeOpenedOrNot: () => Observable<boolean>
 
   observeReceivedData: () => Observable<BufferTimestamped>
-
-  waitUntilOpen: (timeoutMilli: number) => Promise<boolean>
-
-  close: () => Promise<void>
 }
 
 export interface IUiLogger {
@@ -208,7 +200,7 @@ export interface IUiLogger {
   e: (logTag: string, msg: UiLogMessageType) => void
 }
 
-export type DeviceOpenState = 'opening' | 'opened' | 'closing' | 'closed'
+export type DeviceOpenState = 'opening' | 'preparing' | 'opened' | 'closing' | 'closed' | 'error'
 
 export type BufferTimestamped = { timestamp: number; dataBuffer: Buffer }
 

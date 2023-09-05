@@ -1,14 +1,17 @@
 import { BehaviorSubject } from 'rxjs'
-import { IUiLogger } from 'src/custom-types'
-import { HcpHwManager } from 'src/hcp/HcpHwManager'
+import { BuildVars } from 'src/BuildVars'
 import { HcpWebSocketServer } from 'src/hcp/HcpWebSocketServer'
+import { IHcpHwManager } from 'src/hcp/hcp-types'
 
 export function createHcpServer(
   clientCount$: BehaviorSubject<number>,
-  uiLogger: IUiLogger,
-  hcpHwManager: HcpHwManager,
+  hcpHwManager: IHcpHwManager,
 ): HcpWebSocketServer {
-  const server = new HcpWebSocketServer({ port: 13997 }, clientCount$, uiLogger, hcpHwManager)
+  const server = new HcpWebSocketServer(
+    { port: BuildVars.hcpWebSocketListenPort },
+    clientCount$,
+    hcpHwManager,
+  )
 
   return server
 }

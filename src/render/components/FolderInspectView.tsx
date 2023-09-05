@@ -1,7 +1,7 @@
 import { Portlet, PortletContent, PortletHeader, PortletLabel } from '@cp949/mui-common'
 import InfoIcon from '@mui/icons-material/Info'
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material'
-import { IContext } from 'src/services/context/interface'
+import { IContext } from 'src/services/context/IContextService'
 import { usePromiseValue } from '../hooks/useServiceValue'
 
 export default function FolderInspectView() {

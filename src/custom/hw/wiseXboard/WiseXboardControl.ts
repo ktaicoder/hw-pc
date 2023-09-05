@@ -1,3 +1,4 @@
+import { uiLogger } from 'src/services/hw/UiLogger'
 import { AbstractHwConrtol } from '../AbstractHwControl'
 import { IWiseXboardControl } from './IWiseXboardControl'
 
@@ -59,7 +60,13 @@ export class WiseXboardControl extends AbstractHwConrtol implements IWiseXboardC
    * @param l2
    * @param r2
    */
-  setDCMotorSpeed = async (ctx: any, l1: number, r1: number, l2: number, r2: number): Promise<void> => {
+  setDCMotorSpeed = async (
+    ctx: any,
+    l1: number,
+    r1: number,
+    l2: number,
+    r2: number,
+  ): Promise<void> => {
     if (l1 < -10) l1 = -10
     if (r1 < -10) r1 = -10
     if (l2 > 10) l2 = 10
@@ -89,12 +96,12 @@ export class WiseXboardControl extends AbstractHwConrtol implements IWiseXboardC
 
   onDeviceOpened = async (ctx: any): Promise<void> => {
     const logTag = 'WiseXboardControl.onDeviceOpened()'
-    this.log(ctx).i(logTag, 'called')
+    uiLogger.i(logTag, 'called')
   }
 
   onDeviceWillClose = async (ctx: any): Promise<void> => {
     const logTag = 'WiseXboardControl.onDeviceWillClose()'
-    this.log(ctx).i(logTag, 'called')
+    uiLogger.i(logTag, 'called')
   }
 
   /**
@@ -103,7 +110,7 @@ export class WiseXboardControl extends AbstractHwConrtol implements IWiseXboardC
    */
   onWebSocketConnected = async (ctx: any): Promise<void> => {
     const logTag = 'WiseXboardControl.onWebSocketConnected()'
-    this.log(ctx).i(logTag, 'called')
+    uiLogger.i(logTag, 'called')
   }
 
   /**
@@ -112,7 +119,7 @@ export class WiseXboardControl extends AbstractHwConrtol implements IWiseXboardC
    */
   onWebSocketDisconnected = async (ctx: any): Promise<void> => {
     const logTag = 'WiseXboardControl.onWebSocketDisconnected()'
-    this.log(ctx).i(logTag, 'called')
+    uiLogger.i(logTag, 'called')
 
     // 모터 중지
     try {

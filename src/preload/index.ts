@@ -11,7 +11,7 @@ contextBridge.exposeInMainWorld('service', service)
 contextBridge.exposeInMainWorld('meta', browserViewMetaData)
 
 ipcRenderer.on(MetaDataChannel.getViewMetaData, (event) => {
-  event.returnValue = browserViewMetaData
+  event['returnValue'] = browserViewMetaData
 })
 
 declare global {

@@ -1,45 +1,37 @@
 RELEASE NOTES
 =============
-Silicon Labs Virtual COM Port (VCP) Universal Driver for Windows 10
+Silicon Labs Virtual COM Port (VCP) driver for Windows
 
-Package version: 10.1.10
-Release date:    2021-01-13
+Package version: 6.7.6
+Release date:    2018-06-05
 
-This package contains a Virtual COM Port Universal driver for Microsoft
-Windows 10 for use with Silicon Labs VCP USB Serial Bridges.  These devices
-include the CP2102N, CP2102, CP2103, CP2104, CP2105, CP2108, CP2109.
+This package contains a Virtual COM Port driver for Microsoft Windows
+for use with Silicon Labs VCP USB Serial Bridges.  These devices include
+the CP2102N, CP2102, CP2103, CP2104, CP2105, CP2108, CP2109.
 
 OS VERSIONS
 -----------
 This package provides the CP210x VCP driver for the following versions
 of Windows:
 
-- Windows 10    (x64, x86)
-
-CHOOSING VCP DRIVER VERSION
----------------------------
-VCP drivers of version 10.0.0 and later are released for Windows 10 as
-Universal Drivers.  This means they do not work on older version of Windows
-such as Window 7 and 8.1.  You should use this driver if you only need
-support for Windows 10, or you need the Universal driver.  If you require
-support on older versions of Windows, you should use the legacy VCP driver
-which can be found on the Silicon Labs web site.  The legacy Windows VCP
-drivers have version numbers less than 10.0.0.
+- Windows 8.1   (x86 32/64 bit)
+- Windows 8     (x86 32/64 bit)
+- Windows 7     (x86 32/64 bit)
 
 CONTENTS
 --------
 The VCP driver package contains the following files and directories:
-- silabser.inf -- Driver information file
+- slabvcp.inf -- Driver information file
 - CP210xVCPInstaller_x64.exe -- 64-bit installer
 - CP210xVCPInstaller_x86.exe -- 32-bit installer
 - SLAB_License_Agreement_VCP_Windows.txt -- Software License
-- CP210x_Universal_Windows_Driver_ReleaseNotes.txt -- this file
+- v6-7-6-driver-release-notes.txt -- this file
 
 Additional files needed by installer
 - dpinst.xml
-- silabser.cat
-- x64/silabser.sys
-- x86/silabser.sys
+- slabvcp.cat
+- x64/
+- x86/
 
 INSTALLING
 ----------
@@ -83,167 +75,14 @@ For technical support please visit the Silicon Labs support site:
 https://www.silabs.com/support
 
 ******************************************************************************
-    RELEASE NOTES FOR 10.1.10 (2021-01-13)
-
-Changes for VCP Driver
-==============================================================================
-MCUSW-651    | Support baud rate up to 2187500 for CP2102, CP2104, CP2109
-MCUSW-685    | Fixed the Blue Screen issue when running Windows Hardware Lab   
-             | Kit for customized driver                                       
-MCUSW-783    | Microsoft Windows Certified (aka "WHQL Certified") for Windows  
-             | 10 version 20H2 (2020-10-20)                                    
-
-
-
-
-******************************************************************************
-    RELEASE NOTES FOR 10.1.9 (2020-07-30)
-
-Changes for VCP Driver
-==============================================================================
-MCUSW-566    | Remove sanity/error checking on IOCTL_SERIAL_SET_BAUD_RATE for  
-             | CP2103 devices.                                                 
-MCUSW-596    | Microsoft Windows Certified (aka "WHQL Certified") for Windows  
-             | 10 version 2004 (2020-05-27)                                    
-MCUSW-619    | Support for Directed PoFx (DFx - Directed Power Management      
-             | Framework).                                                     
-
-
-******************************************************************************
-    RELEASE NOTES FOR 10.1.8 (2019-06-24 (DriverVer = 06/20/2019,10.1.8.2466))
-
-Changes for VCP Driver
-==============================================================================
-MCUSW-412    | Certified for Windows 10 RS6.                                   
-MCUSW-484    | WDFVERIFY() added to the driver. Configurable via Registry.    
-MCUSW-493    | Improved the tagging/tracking and parent-hierarchy of framework
-             | objects and framework object reference counts. 
-MCUSW-495    | Clear RTS on CloseHandle().                                     
-MCUSW-508    | IOCTL_SERIAL_GET_COMMSTATUS refactored to reduce USB-bus        
-             | bandwidth, while still offering timely reporting.               
-MCUSW-518    | WDFVerifier parameter ForceLogsInMiniDump Registry parameter    
-             | added for improved supportability.                              
-MCUSW-519    | Resolve an SDV-identified issue: do not double-complete a       
-             | Request on error paths.                                         
-MCUSW-526    | Creates the framework USB device object with client contract    
-             | version USBD_CLIENT_CONTRACT_VERSION_602/0x602 (I.e. Register   
-             | with "new" (to Windows 8) Windows USB driver stack).            
-
-
-******************************************************************************
-    RELEASE NOTES FOR 10.1.7 (2019-03-26 (DriverVer = 03/26/2019,10.1.7.2399))
-
-Changes for VCP Driver
-==============================================================================
-MCUSW-473    | Fix length of nul-terminated legacy Dos Name string written to  
-             | HARDWARE\DEVICEMAP\SERIALCOMM Registry key.                     
-MCUSW-483    | Fixed bug for Max Baud rate for CP2101, CP2104, CP2105 and
-             | CP2108 devices.                                                        
-
-
-******************************************************************************
-    RELEASE NOTES FOR 10.1.6 (2019-03-19 (DriverVer = 03/15/2019,10.1.6.2388))
-
-Changes for VCP Driver
-==============================================================================
-MCUSW-445    | Fix a blue-screen system crash bug with handling of ioctl       
-             | IOCTL_SERIAL_WAIT_ON_MASK during power state changes.           
-
-
-******************************************************************************
-    RELEASE NOTES FOR 10.1.5 (2019-02-19 (DriverVer = 02/19/2019,10.1.5.2368))
-
-Changes for VCP Driver
-==============================================================================
-MCUSW-414    | Implement an undocumented Registry-configured feature to ignore 
-             | IOCTL_SERIAL_PURGE.                                             
-MCUSW-417    | Read many of the Registry "parameter"-type settings first from  
-             | the "parameters key" and then from the "hardware key", with the 
-             | "hardware key" taking precedence (allows "driver wide, all      
-             | devices" setting, but provides the capability to specify per-   
-             | device settings (before we only supported per-device            
-             | settings)).                                                     
-             |                                                                 
-MCUSW-439    | Fixed a bug whereby Close()-Open() on a CP2102N could get USB   
-             | data toggle confused (I.e. issue USB CLEAR_FEATURE(HALT) to     
-             | bulk endpoints to reset data toggle back to DATA0).             
-MCUSW-449    | Fix a Max Baud Rate bug (use device-specific MaxBauds (from the 
-             | data-sheets): 3 Mbaud for CP2102N, 1 Mbaud for all other CP210x 
-             | devices.).                                                      
-MCUSW-450    | Fix Verification BSOD (race condition in the VCP device driver  
-             | that can cause double completions): Only call                   
-             | DetachForCompletionUNcancelable on success of UNmark as         
-             | cancelable in handling of IOCTL_SERIAL_WAIT_ON_MASK-related     
-             | requests.                                                       
-
-
-******************************************************************************
-    RELEASE NOTES FOR 10.1.4 (2018-12-07 (DriverVer = 11/26/2018,10.1.4.2290))
-
-Changes for VCP Driver
-==============================================================================
-MCUSW-134    | Fixed an issue with handling of IOCTL_SERIAL_SET_WAIT_MASK,     
-             | IOCTL_SERIAL_WAIT_ON_MASK, with the SERIAL_EV_RXCHAR event and  
-             | data arriving from the device into the driver. Previously, an   
-             | indication of arriving data was made before making the data     
-             | available, causing, in some conditions, subsequent requests for 
-             | data after notification of data available to not deliver any    
-             | data.                                                           
-MCUSW-144    | Onecore-based editions of Windows 10 (I.e. Windows 10 IoT Core) 
-             | do not, by design, create PortName entries in the Registry to   
-             | specify the device's legacy DOS name (I.e. COM<n).              
-             | Consequently, VCP enhanced to not treat this as a failing       
-             | condition and to continue without creating legacy COM<n> DOS    
-             | devices.                                                        
-MCUSW-148    | Rearchitected into two VCP driver packages:                     
-             |  1) Windows 7 and later Desktop Editions x86 and x64 driver     
-             | package, and                                                    
-             |  2) Windows Universal (10 and later; Desktop, tablet, mobile,   
-             | embedded) x86, x64, ARM, ARM64 driver package.                  
-MCUSW-214    | Windows 10 Universal driver release (I.e. no Windows 7, 8 or    
-             | 8.1 support)                                                    
-MCUSW-352    | Workaround to issue where close during receipt of serial data   
-             | caused CP2102N to hang.                                         
-MCUSW-369    | Certified for Windows 10 RS5.                                   
-MCUSW-393    | Fix bug due to some BaudRate-related math causing a divide-by-  
-             | zero.                                                           
-MCUSW-396    | Be defensive against the impossible case of getting a NULL      
-             | object in the object completion routine.                        
-
-
-******************************************************************************
-    RELEASE NOTES FOR 10.1.3 (2018-05-29)
+    RELEASE NOTES FOR 6.7.6 (2018-06-05)
 
 Changes for VCP Driver
 ==============================================================================
 MCUSW-326    | Clear DTR on CloseHandle().                                     
 
 
-******************************************************************************
-    RELEASE NOTES FOR 10.1.2 (2018-05-14)
 
-Changes for VCP Driver
-==============================================================================
-MCUSW-134    | Fixed an issue with handling of IOCTL_SERIAL_SET_WAIT_MASK,     
-             | IOCTL_SERIAL_WAIT_ON_MASK, with the SERIAL_EV_RXCHAR event and  
-             | data arriving from the device into the driver. Previously, an   
-             | indication of arriving data was made before making the data     
-             | available, causing, in some conditions, subsequent requests for 
-             | data after notification of data available to not deliver any    
-             | data.                                                           
-MCUSW-211    | Windows 10 Universal driver release (I.e. no Windows 7, 8 or    
-             | 8.1 support)                                                    
-MCUSW-288    | Fix IOCTL_SERIAL_GET_PROPERTIES.                                
-MCUSW-291    | Fix IOCTL_SERIAL_GET_PROPERTIES/SERIAL_COMMPROP for CP210x-like 
-             | "Voice MB v2.0" device.                                         
-MCUSW-315    | Certified for RS4/1803.                                         
-
-
-******************************************************************************
-    RELEASE NOTES FOR 10.1.1 (DriverVer=11/15/2017,10.1.1.1951)
-
-Changes for VCP Driver
-==============================================================================
 MCUSW-134    | Fixed an issue with handling of IOCTL_SERIAL_SET_WAIT_MASK,
              | IOCTL_SERIAL_WAIT_ON_MASK, with the SERIAL_EV_RXCHAR event
              | and data arriving from the device into the driver. Previously,
@@ -251,16 +90,11 @@ MCUSW-134    | Fixed an issue with handling of IOCTL_SERIAL_SET_WAIT_MASK,
              | available, causing, in some conditions, subsequent requests
              | for data after notification of data available to not deliver
              | any data. 
+MCUSW-288    | Fix IOCTL_SERIAL_GET_PROPERTIES.                                
+MCUSW-291    | Fix IOCTL_SERIAL_GET_PROPERTIES/SERIAL_COMMPROP for CP210x-like 
+             | "Voice MB v2.0" device.                                         
 
-
-******************************************************************************
-LEGACY HISTORY
---------------
-Everything below is the shared development history before creation of the
-Windows 10 Universal driver.  Everything above is development history of
-the Universal driver.
-
-
+			 
 ******************************************************************************
     RELEASE NOTES FOR 6.7.5 (2017-10-13)
 
