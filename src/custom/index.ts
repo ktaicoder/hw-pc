@@ -1,3 +1,4 @@
+import { drDrone } from './hw/drDrone'
 import { exMarsCube } from './hw/exMarsCube'
 import { saeonAl } from './hw/saeonAl'
 import { saeonAltinoLite } from './hw/saeonAltinoLite'
@@ -13,6 +14,7 @@ export const HardwareDescriptors = {
   exMarsCube,
   saeonAltinoLite,
   saeonAl,
+  drDrone,
 }
 
 export type HardwareDescriptorKey = keyof typeof HardwareDescriptors
