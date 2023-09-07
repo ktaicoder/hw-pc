@@ -13,11 +13,7 @@ const DEBUG_TAG = 'exMarsCube'
 export function isPortMatch(port: ISerialPortInfo): boolean {
   // const { manufacturer, productId, vendorId } = port
   const { manufacturer = '' } = port
-
-  const manufacturerLower = manufacturer.toLowerCase()
-  const matched = ['wch.cn'].some((it) => manufacturerLower.includes(it))
-
-  return matched
+  return manufacturer.toLowerCase().includes('wch.cn')
 }
 
 /**
