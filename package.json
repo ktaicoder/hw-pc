@@ -1,7 +1,7 @@
 {
   "name": "aicodiny-hw",
   "productName": "aicodiny-hw",
-  "version": "2.0.16",
+  "version": "2.0.17",
   "description": "AI Codiny hardware control application",
   "main": ".webpack/main",
   "author": {
