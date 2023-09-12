@@ -29,14 +29,16 @@ export class DrDroneControl extends AbstractHwConrtol implements IDrDroneControl
    * 이륙
    */
   takeOff = async (ctx: any): Promise<void> => {
-    await this.writeCmd_(ctx, 7)
+    await this.writeCmd_(ctx, 0x30)
+    await sleepAsync(3000)
   }
 
   /**
    * 착륙
    */
   land = async (ctx: any): Promise<void> => {
-    await this.writeCmd_(ctx, 7)
+    await this.writeCmd_(ctx, 0x35)
+    await sleepAsync(5000)
   }
 
   /**
@@ -48,20 +50,34 @@ export class DrDroneControl extends AbstractHwConrtol implements IDrDroneControl
     speed: number,
     durationSec: number,
   ): Promise<void> => {
+    const logTag = 'DrDroneControl.onDeviceOpened()'
     if (!DrDronAction[action]) {
-      uiLogger.w('DrDroneControl.move()', `invalid action:${action}`)
+      uiLogger.i(logTag, `invalid action:${action}`)
       return
     }
 
     const clampedSpeed = clamp(speed, 0, 100)
     if (clampedSpeed !== speed) {
-      uiLogger.w(
-        'DrDroneControl.move()',
-        `speed value must be in range 0~100, but ${speed} received.`,
-      )
+      uiLogger.i(logTag, `speed value must be in range 0~100, but ${speed} received.`)
+    }
+    uiLogger.i(logTag, action)
+    const MOVE_CMD = {
+      forward: 0x10,
+      backword: 0x12,
+      left: 0x14,
+      right: 0x16,
+      ccw: 0x19,
+      cw: 0x18,
+      up: 0x1a,
+      down: 0x1c,
+    }
+    const cmd = MOVE_CMD[action]
+    if (typeof cmd === 'number') {
+      await this.writeCmd_(ctx, 0x10, cmd, clampedSpeed, durationSec)
+    } else {
+      await this.writeCmd_(ctx, 7, clampedSpeed, durationSec)
     }
 
-    await this.writeCmd_(ctx, 7, clampedSpeed, durationSec)
     await sleepAsync(durationSec * 1000)
   }
 
@@ -118,8 +134,7 @@ export class DrDroneControl extends AbstractHwConrtol implements IDrDroneControl
     const logTag = 'DrDroneControl.onWebSocketDisconnected()'
     uiLogger.i(logTag, 'called')
     try {
-      // ex) 모터 중지
-      // await this.stopDCMotor(ctx)
+      await this.writeCmd_(ctx, 0x35)
     } catch (err) {}
   }
 }
