@@ -63,9 +63,9 @@ export class DrDroneControl extends AbstractHwConrtol implements IDrDroneControl
     uiLogger.i(logTag, action)
     const MOVE_CMD = {
       forward: 0x10,
-      backword: 0x12,
-      left: 0x14,
-      right: 0x16,
+      backward: 0x12,
+      left: 0x16,
+      right: 0x14,
       ccw: 0x19,
       cw: 0x18,
       up: 0x1a,
@@ -135,6 +135,8 @@ export class DrDroneControl extends AbstractHwConrtol implements IDrDroneControl
     uiLogger.i(logTag, 'called')
     try {
       await this.writeCmd_(ctx, 0x35)
-    } catch (err) {}
+    } catch (err) {
+      // ignore
+    }
   }
 }

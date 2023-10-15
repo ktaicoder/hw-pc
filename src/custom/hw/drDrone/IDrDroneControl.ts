@@ -13,8 +13,8 @@ const create = (title: string, cmd: number) => ({ title, cmd })
 export const DrDronAction: Record<DrDronActionKey, { title: string; cmd: number }> = {
   forward: create('앞으로', 0x10),
   backward: create('뒤로', 0x12),
-  left: create('왼쪽', 0x14),
-  right: create('오른쪽', 0x16),
+  left: create('왼쪽', 0x16),
+  right: create('오른쪽', 0x14),
   ccw: create('반시계', 0x18),
   cw: create('시계방향', 0x19),
   up: create('상승', 0x1a),
