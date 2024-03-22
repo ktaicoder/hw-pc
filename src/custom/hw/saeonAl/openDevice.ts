@@ -23,7 +23,7 @@ export function isPortMatch(portInfo: ISerialPortInfo): boolean {
   // 매칭 규칙을 설정할 수 없으니, 기본적으로 모두 허용합니다.
   // 하지만, 유명한 몇 개만 걸러내도 사용자에게 유용할 것 같습니다.
   // silicon labs(CP210)와 wch.cn(CH340)을 걸러냅니다.
-  const blackList = new Set(['silicon labs', 'wch.cn'])
+  const blackList = new Set(['wch.cn'])
   const matched = !blackList.has(manufacturer.toLowerCase())
 
   return matched

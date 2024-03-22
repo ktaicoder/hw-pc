@@ -1,9 +1,9 @@
 import { SerialPort } from 'serialport'
 import { ISerialDeviceOpenParams, ISerialPortInfo } from 'src/custom-types'
 import { SerialDevice } from 'src/hw-server/serialport/SerialDevice'
-import { SaeonAltinoLiteParser } from './SaeonAltinoLiteParser'
+import { SaeonSmartFarmParser } from './SaeonSmartFarmParser'
 
-const DEBUG_TAG = 'saeonAltinoLite'
+const DEBUG_TAG = 'saeonSmartFarm'
 
 /**
  * 지원하는 시리얼포트 여부 체크
@@ -53,7 +53,7 @@ export function openDevice(params: ISerialDeviceOpenParams): SerialDevice {
       autoOpen: false, // autoOpen은 반드시 false
       lock: false, // windows does not support false
     }),
-    parser: new SaeonAltinoLiteParser(), // RX 데이터 파서
+    parser: new SaeonSmartFarmParser(), // RX 데이터 파서
   })
 
   // 시리얼 디바이스 열기
